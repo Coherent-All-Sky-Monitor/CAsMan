@@ -1,2 +1,2 @@
-# CAsM
+# CAsMan
 CASM Assembly Manager
