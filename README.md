@@ -1,6 +1,6 @@
 # CASM Assembly Manager (CAsMan)
 
-CASM Assembly Manager is a tool designed to manage and visualize the sequence of parts in the assembly process. It allows users to input parts via barcode scanning or enter manually, storing them in a local database with timestamps for future reference and analysis.
+CASM Assembly Manager is a collection of scripts to manage and visualize the sequence of parts in the assembly process. It allows users to input parts via barcode scanning or enter manually, storing them in a local database with timestamps for future reference and analysis.
 
 - **Generate Bar codes**: Generate Bar codes for parts.
 - **Local Database Storage**: Store parts with timestamps using SQLite.
