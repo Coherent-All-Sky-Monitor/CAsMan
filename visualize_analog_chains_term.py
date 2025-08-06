@@ -1,5 +1,5 @@
 """
-visualizer.py
+visualize_analog_chains_term.py
 
 This script visualizes the connections between parts in the
 assembled_casm.db database. It prints the assembly connections

@@ -1,3 +1,7 @@
+"""
+Prints all database entries
+"""
+
 import sqlite3
 
 
