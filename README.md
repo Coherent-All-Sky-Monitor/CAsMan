@@ -9,14 +9,16 @@ A toolkit for managing and visualizing CASM (Coherent All-Sky Monitor) assembly 
 graph TD
     A[ANTENNA (ANT)]
     B[LNA (LNA)]
-    C[COAX1 (COX1)]
-    D[COAX2 (COX2)]
+    C[COAX1 (CX1)]
+    D[COAX2 (CX2)]
     E[BACBOARD (BAC)]
+    F[SNAP (SNAP)]
 
     A --> B
     B --> C
     C --> D
     D --> E
+    E --> F
 ```
 
 ## Installation
@@ -89,24 +91,54 @@ casman/
 ├── __init__.py           # Package initialization
 ├── cli.py               # Command-line interface entry point
 ├── cli/                 # CLI command modules
+│   ├── __init__.py
 │   ├── main.py         # Main CLI logic
 │   ├── parts_commands.py
 │   ├── assembly_commands.py
 │   ├── barcode_commands.py
-│   └── visualization_commands.py
+│   ├── visualization_commands.py
+│   └── utils.py        # CLI utilities
 ├── assembly.py          # Assembly and scanning (legacy)
 ├── assembly/            # Assembly modules
+│   ├── __init__.py
+│   ├── chains.py       # Chain analysis and management
+│   ├── connections.py  # Connection handling
+│   ├── data.py         # Assembly data structures
+│   └── interactive.py  # Interactive assembly tools
 ├── parts/               # Part management modules
+│   ├── __init__.py
+│   ├── db.py           # Database operations for parts
+│   ├── generation.py   # Part number generation
+│   ├── interactive.py  # Interactive part management
+│   ├── part.py         # Part data structures
+│   ├── search.py       # Part searching functionality
+│   ├── types.py        # Part type definitions
+│   └── validation.py   # Part validation
 ├── database/            # Database operations
+│   ├── __init__.py
+│   ├── connection.py   # Database connections
+│   ├── initialization.py # Database setup
+│   ├── migrations.py   # Database migrations
+│   └── operations.py   # Database operations
 ├── visualization.py     # Visualization tools (legacy)
 ├── visualization/       # Visualization modules
+│   ├── __init__.py
 │   ├── core.py         # Core visualization functions
 │   └── web.py          # Web visualization utilities
 ├── barcode_utils.py     # Barcode generation (legacy)
 ├── barcode/             # Barcode modules
-├── config/              # Configuration modules
-└── static/
-    └── fonts/           # Fonts for barcode generation
+│   ├── __init__.py
+│   ├── generation.py   # Barcode generation
+│   ├── operations.py   # Barcode operations
+│   ├── printing.py     # Print page generation
+│   └── validation.py   # Barcode validation
+├── config.py            # Configuration handling (legacy)
+└── config/              # Configuration modules
+    ├── __init__.py
+    ├── core.py         # Core configuration
+    ├── environments.py # Environment management
+    ├── schema.py       # Configuration schema
+    └── utils.py        # Configuration utilities
 ```
 
 ## Configuration
@@ -120,13 +152,16 @@ Barcodes are generated in the `barcodes/` directory, organized by part type.
 
 ## Part Types
 
-CAsMan supports three main part types:
+CAsMan supports multiple part types:
 
 1. **ANTENNA** (ANT) - Antenna components
-2. **LNA** (LNA) - Low Noise Amplifier components
-3. **BACBOARD** (BAC) - Backboard components
+2. **LNA** (LNA) - Low Noise Amplifier components  
+3. **COAX1** (CX1) - Coaxial cable components (first type)
+4. **COAX2** (CX2) - Coaxial cable components (second type)
+5. **BACBOARD** (BAC) - Backboard components
+6. **SNAP** (SNAP) - SNAP components
 
-Part numbers follow the format: `[TYPE]P1-[NUMBER]` (e.g., `ANTP1-00001`)
+Part numbers follow the format: `[ABBREVIATION]-P[POLARIZATION]-[NUMBER]` (e.g., `ANT-P1-00001`)
 
 ## Development
 
@@ -180,9 +215,12 @@ This package replaces the individual scripts in the `scripts/` directory:
 
 ### Core Dependencies
 
-- **Flask** - Web framework for the web interface
 - **Pillow** - Image processing for barcode generation
 - **python-barcode** - Barcode generation library
+
+### Optional Dependencies
+
+- **Flask** - Used by standalone web visualization scripts
 
 ### Development Dependencies
 
