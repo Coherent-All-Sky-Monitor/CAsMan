@@ -24,25 +24,33 @@ def cmd_visualize() -> None:
     None
     """
     parser = argparse.ArgumentParser(
-        description="CAsMan Visualization Tools",
+        description="CAsMan Assembly Chain Visualization Tools\n\n"
+                   "Advanced visualization capabilities including ASCII chain display,\n"
+                   "duplicate detection, connection statistics, and comprehensive\n"
+                   "assembly analysis with timestamps and validation.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  casman visualize chains              # Show ASCII chains
-  casman visualize summary             # Show summary statistics
+  casman visualize chains              # Show ASCII chains with duplicate detection
+  casman visualize summary             # Show detailed summary statistics
         """,
     )
 
     subparsers = parser.add_subparsers(dest="action", help="Visualization actions")
 
-    # Legacy chains command
-    subparsers.add_parser("chains", help="Show ASCII visualization chains")
+    # Enhanced chains command
+    subparsers.add_parser("chains", help="Display ASCII visualization of assembly chains with duplicate detection")
 
-    # Summary command
-    subparsers.add_parser("summary", help="Show visualization summary")
+    # Enhanced summary command  
+    subparsers.add_parser("summary", help="Show comprehensive assembly statistics and chain analysis")
 
     # Parse arguments
     if len(sys.argv) < 3:
+        parser.print_help()
+        return
+
+    # Check if help is requested or no arguments provided
+    if len(sys.argv) <= 2 or (len(sys.argv) == 3 and sys.argv[2] in ['-h', '--help']):
         parser.print_help()
         return
 

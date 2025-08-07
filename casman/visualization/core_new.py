@@ -6,7 +6,7 @@ in the main visualization.py module.
 """
 
 import logging
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set
 
 from casman.assembly import build_connection_chains, get_assembly_connections
 
@@ -75,69 +75,7 @@ def format_ascii_chains() -> str:
                         chain_queue.append(chain + [next_part])
 
     output_lines.append("-" * 88)
-    
-    # Add duplicate connections information
-    duplicates = get_duplicate_connections()
-    if duplicates:
-        output_lines.append("")
-        output_lines.append("DUPLICATE CONNECTIONS DETECTED:")
-        output_lines.append("-" * 88)
-        for part, entries in duplicates.items():
-            output_lines.append(f"Part {part} has {len(entries)} database entries:")
-            for i, (connected_to, scan_time, connected_scan_time) in enumerate(entries, 1):
-                output_lines.append(f"  {i}. FRM: {scan_time}, NXT: {connected_scan_time}, connects to: {connected_to}")
-        output_lines.append("-" * 88)
-    
     return "\n".join(output_lines)
-
-
-def get_duplicate_connections() -> Dict[str, List[Tuple[str, str, str]]]:
-    """
-    Get information about duplicate connections in the database.
-    
-    Returns
-    -------
-    Dict[str, List[Tuple[str, str, str]]]
-        Dictionary mapping part numbers to list of (connected_to, scan_time, connected_scan_time) tuples
-        for parts that appear multiple times in the database.
-    """
-    import sqlite3
-    from casman.database import get_database_path
-    
-    try:
-        db_path = get_database_path("assembled_casm.db")
-        with sqlite3.connect(db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                SELECT part_number, connected_to, scan_time, connected_scan_time
-                FROM assembly
-                ORDER BY scan_time
-                """
-            )
-            records = cursor.fetchall()
-    except sqlite3.Error as e:
-        logger.error("Database error getting duplicate connections: %s", e)
-        return {}
-    
-    # Group connections by part number
-    part_connections: Dict[str, List[Tuple[str, str, str]]] = {}
-    for part_number, connected_to, scan_time, connected_scan_time in records:
-        if part_number not in part_connections:
-            part_connections[part_number] = []
-        part_connections[part_number].append((
-            connected_to or "None", 
-            scan_time or "None", 
-            connected_scan_time or "None"
-        ))
-    
-    # Return only parts with duplicates
-    duplicates = {}
-    for part_number, entries in part_connections.items():
-        if len(entries) > 1:
-            duplicates[part_number] = entries
-    
-    return duplicates
 
 
 def get_visualization_data() -> Dict[str, List[Dict[str, str]]]:
@@ -185,7 +123,6 @@ def get_chain_summary() -> Dict[str, float]:
         return {
             "total_parts": 0,
             "total_connections": 0,
-            "total_chains": 0,
             "average_chain_length": 0.0,
             "longest_chain": 0,
         }
@@ -195,15 +132,13 @@ def get_chain_summary() -> Dict[str, float]:
     
     # Calculate chain lengths
     chain_lengths = []
-    visited: Set[str] = set()
+    visited = set()
     
     for part in chains:
         if part not in visited:
             length = _calculate_chain_length(part, chains, visited)
             if length > 0:
                 chain_lengths.append(length)
-    
-    total_chains = len(chain_lengths)
     
     if chain_lengths:
         average_length = sum(chain_lengths) / len(chain_lengths)
@@ -215,7 +150,6 @@ def get_chain_summary() -> Dict[str, float]:
     return {
         "total_parts": total_parts,
         "total_connections": total_connections,
-        "total_chains": total_chains,
         "average_chain_length": average_length,
         "longest_chain": longest_chain,
     }
@@ -275,35 +209,3 @@ def format_chain_summary() -> str:
     output_lines.append("=" * 50)
     
     return "\n".join(output_lines)
-
-
-def print_visualization_summary() -> None:
-    """Print a summary of the visualization data."""
-    summary = get_chain_summary()
-
-    print("Assembly Visualization Summary:")
-    print("-" * 40)
-    print(f"Total parts: {summary['total_parts']}")
-    print(f"Total connections: {summary['total_connections']}")
-    print(f"Longest chain: {summary['longest_chain']} parts")
-    print(f"Average chain length: {summary['average_chain_length']:.1f} parts")
-    print("-" * 40)
-
-
-def main() -> None:
-    """Main function for command-line usage."""
-    print("CASM Visualization")
-    print("1: Show ASCII chains")
-    print("2: Show summary")
-
-    try:
-        choice = int(input("Enter your choice: "))
-
-        if choice == 1:
-            print("\n" + format_ascii_chains())
-        elif choice == 2:
-            print_visualization_summary()
-        else:
-            print("Invalid choice.")
-    except ValueError:
-        print("Invalid input. Please enter a valid number.")

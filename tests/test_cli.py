@@ -6,7 +6,6 @@ from unittest.mock import Mock, patch
 import pytest
 
 from casman.cli import (
-    cmd_assemble,
     cmd_barcode,
     cmd_parts,
     cmd_scan,
@@ -80,14 +79,6 @@ class TestCLI:
             main()
 
             mock_cmd_barcode.assert_called_once()
-
-    @patch("casman.cli.main.cmd_assemble")
-    def test_main_assemble_command(self, mock_cmd_assemble: Mock) -> None:
-        """Test main function with assemble command."""
-        with patch("sys.argv", ["casman", "assemble"]):
-            main()
-
-            mock_cmd_assemble.assert_called_once()
 
     @patch("casman.cli.parts_commands.add_parts_interactive")
     @patch("casman.cli.parts_commands.init_all_databases")
@@ -195,4 +186,3 @@ class TestCLI:
         assert callable(cmd_scan)
         assert callable(cmd_visualize)
         assert callable(cmd_barcode)
-        assert callable(cmd_assemble)

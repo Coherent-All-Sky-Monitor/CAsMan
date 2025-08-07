@@ -13,17 +13,33 @@ CAsMan is a comprehensive Python package for managing Coherent All-Sky Monitor (
 
 ## Quick Start
 
-1. **Install the package:**
+### Installation
+
+1. **Set up virtual environment (recommended):**
+   ```bash
+   # Create and activate virtual environment
+   python -m venv .venv
+   
+   # On macOS/Linux:
+   source .venv/bin/activate
+   
+   # On Windows:
+   # .venv\Scripts\activate
+   ```
+
+2. **Install the package:**
    ```bash
    pip install -e .
    ```
 
-2. **Initialize databases:**
+### Basic Usage
+
+1. **Initialize databases:**
    ```bash
    casman parts list  # This will create necessary databases
    ```
 
-3. **Add parts:**
+2. **Add parts:**
    ```bash
    casman parts add
    ```
@@ -33,9 +49,9 @@ CAsMan is a comprehensive Python package for managing Coherent All-Sky Monitor (
    casman barcode printpages --part-type ANTENNA --start-number 1 --end-number 10
    ```
 
-5. **Record assembly connections:**
+5. **Interactive assembly scanning:**
    ```bash
-   casman assemble connect --part1 ANT-P1-00001 --part1-type ANTENNA --part2 LNA-P1-00001 --part2-type LNA --polarization P1
+   casman scan connection
    ```
 
 6. **Visualize assembly chains:**

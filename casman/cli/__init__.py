@@ -5,7 +5,7 @@ This module provides the command-line interface functionality organized into
 focused submodules for different command categories.
 """
 
-from .assembly_commands import cmd_assemble, cmd_scan
+from .assembly_commands import cmd_scan
 from .barcode_commands import cmd_barcode
 from .main import main
 from .parts_commands import cmd_parts
@@ -52,7 +52,6 @@ __all__ = [
     "main",
     "cmd_parts",
     "cmd_scan",
-    "cmd_assemble",
     "cmd_barcode",
     "cmd_visualize",
     "show_completion_help",

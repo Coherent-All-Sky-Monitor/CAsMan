@@ -231,16 +231,6 @@ def main() -> None:
             continue
         part_type = REQUIRED_ORDER[part_type_index]
 
-        # Enforce starting with ANTENNA for a proper assembly chain
-        if part_type != "ANTENNA":
-            print(
-                "Warning: Assembly chains should start with ANTENNA for proper connectivity."
-            )
-            print("Do you want to continue with a partial chain? (y/n): ", end="")
-            confirm = input().strip().lower()
-            if confirm != "y":
-                continue
-
         choice = input(
             "Press 1 to scan using USB scanner or 2 to enter manually: "
         ).strip()

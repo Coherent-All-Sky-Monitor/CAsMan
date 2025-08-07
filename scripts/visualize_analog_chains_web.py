@@ -8,7 +8,7 @@ assembled_casm.db database.
 import os
 import sqlite3
 import sys
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from flask import Flask, render_template_string, request
 
@@ -45,6 +45,8 @@ def index() -> str:
     parts = get_all_parts()
     # Fetch all chains and connection data
     chains, connections = get_all_chains(selected_part)
+    # Get duplicate information
+    duplicates = get_duplicate_info()
     # Get the last update timestamp
     last_update = get_last_update()
     # Render the HTML template with the data
@@ -54,6 +56,7 @@ def index() -> str:
         parts=parts,
         chains=chains,
         connections=connections,
+        duplicates=duplicates,
         selected_part=selected_part,
         last_update=last_update,
     )
@@ -87,6 +90,9 @@ def get_all_chains(
 ]:
     """
     Fetch all connection chains from the assembled_casm.db database.
+    
+    This function builds proper chains with duplicate detection,
+    ensuring ANT parts are connected to their LNA chains.
 
     Args:
         selected_part (Optional[str]): \
@@ -105,54 +111,122 @@ def get_all_chains(
     c = conn.cursor()
     c.execute(
         "SELECT part_number, connected_to, scan_time, connected_scan_time "
-        "FROM assembly"
+        "FROM assembly ORDER BY scan_time"
     )
     records = c.fetchall()
-    connections: Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]] = {}
-    for part_number, connected_to, scan_time, connected_scan_time in records:
-        connections[part_number] = (connected_to, scan_time, connected_scan_time)
     conn.close()
-    all_chains: List[List[str]] = []
-    visited: Set[str] = set()
-    for part in connections:
-        if part not in visited:
-            chain = build_chain(part, connections, visited)
-            all_chains.append(chain)
+    
+    # Build chains with duplicate detection
+    all_chains, connections = build_chains_with_duplicates_web(records)
+    
     if selected_part:
-        all_chains = [chain for chain in all_chains if selected_part in chain]
+        all_chains = [chain for chain in all_chains if any(selected_part in part for part in chain)]
+    
     return all_chains, connections
 
 
-def build_chain(
-    start_part: str,
-    connections: Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]],
-    visited: Set[str],
-) -> List[str]:
+def build_chains_with_duplicates_web(records):
     """
-    Build a chain of connections starting from the given part.
-
-    Args:
-        start_part (str): The part number to start the chain from \
-          connections (Dict[str, Tuple[Optional[str], Optional[str], \
-            Optional[str]]]): Mapping from part_number to (connected_to, \
-              scan_time, connected_scan_time).
-        visited (Set[str]): Set of part numbers already visited in this traversal.
-
+    Build chains while detecting and handling duplicates for web interface.
+    
     Returns:
-        List[str]: The chain of connected part numbers starting from start_part.
+        Tuple[List[List[str]], Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]]]: 
+        (chains, connections_dict)
     """
-    chain: List[str] = []
-    queue: List[str] = [start_part]
-    while queue:
-        current_part = queue.pop(0)
-        if current_part in visited:
+    # Use the same logic as the CLI to build basic chains
+    from casman.assembly.chains import build_connection_chains
+    
+    chains_dict = build_connection_chains()
+    
+    # Build the connections_dict for display data
+    connections_dict = {}
+    for part_number, connected_to, scan_time, connected_scan_time in records:
+        connections_dict[part_number] = (connected_to, scan_time, connected_scan_time)
+    
+    if not chains_dict:
+        return [], connections_dict
+
+    # Track which parts have been printed to avoid duplicates
+    printed_parts = set()
+
+    # Find starting points (parts that aren't connected to by others)
+    all_connected_parts = set()
+    for connected_list in chains_dict.values():
+        all_connected_parts.update(connected_list)
+
+    starting_parts = [part for part in chains_dict.keys() if part not in all_connected_parts]
+
+    # If no clear starting points, use all parts
+    if not starting_parts:
+        starting_parts = list(chains_dict.keys())
+
+    # Build chains starting from each starting point (same as CLI)
+    chains = []
+    for start_part in sorted(starting_parts):  # Sort for consistent output
+        if start_part in printed_parts:
             continue
-        visited.add(current_part)
-        chain.append(current_part)
-        next_part = connections.get(current_part, (None, None, None))[0]
-        if next_part and next_part not in visited:
-            queue.append(next_part)
-    return chain
+
+        # Use BFS to find all connected parts
+        chain_queue = [[start_part]]
+
+        while chain_queue:
+            chain = chain_queue.pop(0)
+            current_part = chain[-1]
+
+            if current_part in printed_parts:
+                continue
+
+            printed_parts.add(current_part)
+
+            # Get connected parts
+            next_parts = chains_dict.get(current_part, [])
+
+            if not next_parts:
+                # If there are no further connections, save the chain
+                chains.append(chain)
+            else:
+                # Extend the chain for each connected part
+                for next_part in next_parts:
+                    if next_part not in printed_parts:
+                        chain_queue.append(chain + [next_part])
+    
+    return chains, connections_dict
+
+
+def get_duplicate_info() -> Dict[str, List[Tuple[str, str, str]]]:
+    """
+    Get information about duplicate connections for display.
+    
+    Returns:
+        Dict[str, List[Tuple[str, str, str]]]: Mapping from part to list of (connected_to, scan_time, connected_scan_time)
+    """
+    db_path = get_config("CASMAN_ASSEMBLED_DB", "database/assembled_casm.db")
+    if db_path is None:
+        raise ValueError("Database path for assembled_casm.db is not set.")
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    c.execute(
+        "SELECT part_number, connected_to, scan_time, connected_scan_time "
+        "FROM assembly ORDER BY scan_time"
+    )
+    records = c.fetchall()
+    conn.close()
+    
+    # Group connections by part number to find duplicates
+    part_connections: Dict[str, List[Tuple[str, str, str]]] = {}
+    for part_number, connected_to, scan_time, connected_scan_time in records:
+        if part_number not in part_connections:
+            part_connections[part_number] = []
+        part_connections[part_number].append((connected_to, scan_time, connected_scan_time))
+    
+    # Return only parts with duplicates
+    duplicates = {}
+    for part_number, entries in part_connections.items():
+        if len(entries) > 1:
+            duplicates[part_number] = entries
+    
+    return duplicates
+
 
 
 def format_display_data(
@@ -170,18 +244,24 @@ def format_display_data(
     Returns:
         str: HTML-formatted string for display in the web interface.
     """
+    # Check if this is a duplicate part (has _N suffix)
+    is_duplicate = "_" in part and part.split("_")[-1].isdigit()
+    base_part = part.split("_")[0] if is_duplicate else part
+    
+    # Style for duplicate parts (red)
+    part_style = "color: red; font-weight: bold;" if is_duplicate else ""
+    part_class = "national-park-bold"
 
     # FRM: connected_scan_time where this part is connected_to (when previous
     # part connects to this part)
     frm_time = None
     for row in connections.values():
         connected_to, _, connected_scan_time = row
-        if connected_to == part and connected_scan_time:
+        if connected_to == base_part and connected_scan_time:
             frm_time = connected_scan_time
             break
 
     # NOW and NXT: from the row where this part is part_number
-
     now_time: Optional[str] = None
     nxt_time: Optional[str] = None
     part_row: Optional[Tuple[Optional[str], Optional[str], Optional[str]]] = (
@@ -198,7 +278,7 @@ def format_display_data(
         return val if val else ts_placeholder
 
     display_lines: List[str] = [
-        f"<span class='national-park-bold'>{part}</span>",
+        f"<span class='{part_class}' style='{part_style}'>{part}</span>",
         "<br>",  # One line space between part number and timestamps
         f"<span class='monospace'>FRM: {ts(frm_time)}</span>",
         f"<span class='monospace'>NOW: {ts(now_time)}</span>",

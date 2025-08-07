@@ -25,10 +25,31 @@ def cmd_parts() -> None:
     -------
     None
     """
-    parser = argparse.ArgumentParser(description="CAsMan Parts Management")
-    parser.add_argument("action", choices=["list", "add"], help="Action to perform")
-    parser.add_argument("--type", help="Part type to filter by")
-    parser.add_argument("--polarization", help="Polarization to filter by")
+    parser = argparse.ArgumentParser(
+        description="CAsMan Parts Database Management\n\n"
+                   "Comprehensive part management including listing, adding, and filtering.\n"
+                   "Supports all CASM part types with validation and database integration.",
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        "action", 
+        choices=["list", "add"], 
+        help="Action to perform:\n"
+             "  list - Display parts from database with optional filtering\n"
+             "  add  - Interactive part addition with validation (supports single type or ALL types)"
+    )
+    parser.add_argument("--type", help="Filter parts by type (ANTENNA, LNA, COAX1, COAX2, BACBOARD, SNAP)")
+    parser.add_argument("--polarization", help="Filter parts by polarization (e.g., 1, 2)")
+
+    # Check if help is requested or no arguments provided
+    if len(sys.argv) <= 2 or (len(sys.argv) == 3 and sys.argv[2] in ['-h', '--help']):
+        parser.print_help()
+        return
+
+    # Check if help is requested or no arguments provided
+    if len(sys.argv) <= 2 or (len(sys.argv) == 3 and sys.argv[2] in ['-h', '--help']):
+        parser.print_help()
+        return
 
     args = parser.parse_args(sys.argv[2:])  # Skip 'casman parts'
 

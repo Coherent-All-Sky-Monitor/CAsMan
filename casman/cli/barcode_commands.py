@@ -26,17 +26,40 @@ def cmd_barcode() -> None:
     -------
     None
     """
-    parser = argparse.ArgumentParser(description="CAsMan Barcode Generation")
-    parser.add_argument("action", choices=["printpages"], help="Action to perform")
-    parser.add_argument(
-        "--part-type", required=True, help="Part type for barcode generation"
+    parser = argparse.ArgumentParser(
+        description="CAsMan Barcode Generation and Printing Tools\n\n"
+                   "Generate professional barcode labels and printable pages for CASM parts.\n"
+                   "Supports all part types with customizable numbering ranges and formats.",
+        formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
-        "--start-number", type=int, default=1, help="Starting part number"
+        "action", 
+        choices=["printpages"], 
+        help="Action to perform:\n"
+             "  printpages - Generate printable barcode pages for part labeling"
     )
     parser.add_argument(
-        "--end-number", type=int, required=True, help="Ending part number"
+        "--part-type", 
+        required=True, 
+        help="Part type for barcode generation (ANTENNA, LNA, COAX1, COAX2, BACBOARD, SNAP)"
     )
+    parser.add_argument(
+        "--start-number", 
+        type=int, 
+        default=1, 
+        help="Starting part number (default: 1)"
+    )
+    parser.add_argument(
+        "--end-number", 
+        type=int, 
+        required=True, 
+        help="Ending part number (inclusive)"
+    )
+
+    # Check if help is requested or no arguments provided
+    if len(sys.argv) <= 2 or (len(sys.argv) == 3 and sys.argv[2] in ['-h', '--help']):
+        parser.print_help()
+        return
 
     args = parser.parse_args(sys.argv[2:])  # Skip 'casman barcode'
 

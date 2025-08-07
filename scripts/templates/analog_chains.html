@@ -171,6 +171,64 @@
         font-size: 0.9em;
       }
     }
+    
+    /* Duplicates Section Styling */
+    .duplicates-section {
+      margin-top: 40px;
+      padding: 20px;
+      border-top: 3px solid #e74c3c;
+      background-color: rgba(231, 76, 60, 0.1);
+      border-radius: 8px;
+      width: 100%;
+      max-width: 1200px;
+    }
+    
+    .duplicates-section h2 {
+      color: #e74c3c;
+      font-family: 'National Park ExtraBold', sans-serif;
+      font-weight: 900;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    
+    .duplicates-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .duplicate-part {
+      background-color: rgba(255, 255, 255, 0.7);
+      padding: 15px;
+      border-radius: 6px;
+      border-left: 4px solid #e74c3c;
+    }
+    
+    .duplicate-part h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-family: 'National Park Bold', sans-serif;
+    }
+    
+    .duplicate-part ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .duplicate-part li {
+      margin-bottom: 5px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+    
+    body.dark-mode .duplicate-part {
+      background-color: rgba(0, 0, 0, 0.3);
+      color: #f0f0f5;
+    }
+    
+    body.dark-mode .duplicates-section {
+      background-color: rgba(231, 76, 60, 0.2);
+    }
   </style>
 </head>
 <body>
@@ -230,6 +288,28 @@
         <p>No records found in the assembled database.</p>
       {% endif %}
     </div>
+    
+    <!-- Duplicate Connections Section -->
+    {% if duplicates %}
+    <div class="duplicates-section">
+      <h2>DUPLICATE CONNECTIONS DETECTED</h2>
+      <div class="duplicates-container">
+        {% for part, entries in duplicates.items() %}
+        <div class="duplicate-part">
+          <h3 style="color: red; font-weight: bold;">Part {{ part }} has {{ entries|length }} database entries:</h3>
+          <ul>
+            {% for entry in entries %}
+            <li class="monospace">
+              {{ loop.index }}. FRM: {{ entry[1] }}, NXT: {{ entry[2] }}, connects to: {{ entry[0] }}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    
     <p id="last-update">Last Part scanned on {{ last_update or '' }}</p>
   </div> <!-- centered-container -->
   <script>

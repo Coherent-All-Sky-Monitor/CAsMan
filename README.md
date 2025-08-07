@@ -2,33 +2,64 @@
 
 # CAsMan - CASM Assembly Manager
 
-A toolkit for managing and visualizing CASM (Coherent All-Sky Monitor) assembly processes. CAsMan provides scripts for part management, barcode generation, assembly tracking, and visualization.
+A comprehensive toolkit for managing and visualizing CASM (Coherent All-Sky Monitor) assembly processes. CAsMan provides CLI tools for part management, barcode generation, assembly tracking with connection validation, and interactive visualization.
 
+## Key Features
+
+- **🔧 Part Management**: Database-driven part tracking with validation
+- **📊 Interactive Scanning**: Barcode scanning with real-time connection validation  
+- **🔗 Connection Validation**: Enforces strict assembly chain rules and prevents invalid connections
+- **📈 Visualization**: ASCII and web-based chain visualization with duplicate detection
+- **🏷️ Barcode Generation**: Automated barcode creation for parts and printing pages
+- **📋 Assembly Tracking**: Complete assembly history with timestamps
+
+## Assembly Chain Validation
+
+CAsMan enforces strict assembly chain rules to ensure proper CASM assembly:
 
 ```mermaid
 graph TD
-    A[ANTENNA (ANT)]
-    B[LNA (LNA)]
-    C[COAX1 (CX1)]
-    D[COAX2 (CX2)]
-    E[BACBOARD (BAC)]
-    F[SNAP (SNAP)]
+    A["ANTENNA (ANT)"]
+    B["LNA (LNA)"]
+    C["COAX1 (CX1)"]
+    D["COAX2 (CX2)"]
+    E["BACBOARD (BAC)"]
+    F["SNAP (SNAP)"]
 
     A --> B
     B --> C
     C --> D
     D --> E
     E --> F
+    
+    style A fill:#e1f5fe
+    style F fill:#f3e5f5
 ```
+
+### Connection Rules
+
+- **🔒 Sequence Enforcement**: Parts must connect in order: `ANT → LNA → COAX1 → COAX2 → BACBOARD → SNAP`
+- **🔒 Directionality**: ANTENNA parts can only be sources, SNAP parts can only be targets
+- **🔒 No Duplicates**: Each part can have only one outgoing and one incoming connection
+- **🔒 Part Validation**: All parts validated against database and SNAP mapping files
 
 ## Installation
 
-### From Source
+### From Source with Virtual Environment (Recommended)
 
 ```bash
 # Clone the repository
 git clone https://github.com/Coherent-All-Sky-Monitor/CAsMan.git
 cd CAsMan
+
+# Create and activate a virtual environment
+python -m venv .venv
+
+# On macOS/Linux:
+source .venv/bin/activate
+
+# On Windows:
+# .venv\Scripts\activate
 
 # Install in development mode
 pip install -e .
@@ -40,30 +71,94 @@ pip install .
 ### With Development Dependencies
 
 ```bash
+# After activating your virtual environment
 pip install -e ".[dev]"
+```
+
+### Alternative: Direct Installation
+
+```bash
+# If you prefer not to use a virtual environment
+pip install git+https://github.com/Coherent-All-Sky-Monitor/CAsMan.git
 ```
 
 ## Quick Start
 
+**Note**: If you installed using a virtual environment, make sure to activate it before using CAsMan:
+```bash
+# On macOS/Linux:
+source .venv/bin/activate
+
+# On Windows:
+# .venv\Scripts\activate
+```
+
 ### Command Line Usage
 
 ```bash
-# Main CLI interface
+# Main CLI interface with comprehensive help
 casman --help
 
+# List available commands
+casman --list-commands
+
 # Part management
-casman parts list
-casman parts add
+casman parts list                    # List all parts in database
+casman parts add                     # Interactive part addition (can add single type or all types)
+casman parts search "ANT-P1"         # Search for specific parts
 
-# Scanning and assembly
-casman scan interactive
+# Interactive scanning with connection validation
+casman scan connection               # Interactive assembly scanning
+casman scan stats                    # Assembly statistics
 
-# Visualization
-casman visualize chains
-casman visualize summary
+# Visualization with duplicate detection
+casman visualize chains              # ASCII chain visualization  
+casman visualize summary             # Summary statistics
 
 # Barcode generation
 casman barcode printpages --part-type ANTENNA --start-number 1 --end-number 50
+```
+
+### Enhanced Part Management
+
+The `casman parts add` command provides flexible part creation options:
+
+```bash
+# Interactive part addition with type selection
+casman parts add
+
+# Example session options:
+# 1: ANTENNA (alias: ANT)    - Add antenna parts
+# 2: LNA (alias: LNA)        - Add LNA parts  
+# 3: COAX1 (alias: CX1)      - Add COAX1 parts
+# 4: COAX2 (alias: CX2)      - Add COAX2 parts
+# 5: BACBOARD (alias: BAC)   - Add backboard parts
+# 0: ALL (add parts for all types) - Add parts for all types at once
+
+# Enter number of parts to create and polarization (1 or 2)
+# Parts are automatically numbered and barcodes generated
+```
+
+### Enhanced Interactive Scanning
+
+The `casman scan connection` command provides an interactive scanning experience with comprehensive validation:
+
+- ✅ **Real-time part validation** against parts database
+- ✅ **SNAP part validation** using snap_feng_map.yaml  
+- ✅ **Connection sequence validation** (enforces ANT→LNA→COAX1→COAX2→BACBOARD→SNAP)
+- ✅ **Duplicate prevention** (blocks multiple connections)
+- ✅ **Chain directionality** (ANTENNA=sources only, SNAP=targets only)
+
+```bash
+# Start interactive scanning session
+casman scan connection
+
+# Example session:
+# Scan first part: ANT-P1-00001
+# ✅ Valid part: ANT-P1-00001 (ANTENNA, 1)
+# Scan connected part: LNA-P1-00001  
+# ✅ Valid part: LNA-P1-00001 (LNA, 1)
+# ✅ Connection recorded: ANT-P1-00001 --> LNA-P1-00001
 ```
 
 ### Individual Tools
@@ -207,7 +302,7 @@ This package replaces the individual scripts in the `scripts/` directory:
 |------------|-------------|------------|
 | `gen_add_part_numbers.py` | `casman parts add` | `casman.parts` |
 | `read_parts_db.py` | `casman parts list` | `casman.parts` |
-| `scan_and_assemble.py` | `casman scan interactive` | `casman.assembly` |
+| `scan_and_assemble.py` | `casman scan connection` | `casman.assembly` |
 | `visualize_analog_chains_term.py` | `casman visualize chains` | `casman.visualization` |
 | `gen_barcode_printpages.py` | `casman barcode printpages` | `casman.barcode_utils` |
 
@@ -272,7 +367,7 @@ casman parts list
 
 ### Add new parts interactively
 ```sh
-casman parts add
+casman parts add                     # Choose specific part type or ALL types
 ```
 
 ### Generate barcodes for a part type
@@ -280,9 +375,9 @@ casman parts add
 casman barcode printpages --part-type ANTENNA --start-number 1 --end-number 10
 ```
 
-### Record an assembly connection
+### Interactive assembly connection scanning
 ```sh
-casman assemble connect --part1 ANT-P1-00001 --part1-type ANTENNA --part2 LNA-P1-00001 --part2-type LNA --polarization P1
+casman scan connection             # Start interactive assembly scanning with validation
 ```
 
 ### Visualize assembly chains in ASCII

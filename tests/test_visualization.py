@@ -146,18 +146,17 @@ class TestVisualization:
         cursor = conn.cursor()
 
         test_connections = [
-            ("ANTP1-00001", None, "2024-01-01 10:00:00"),
-            ("LNAP1-00001", "ANTP1-00001", "2024-01-01 10:01:00"),
-            ("BACP1-00001", "LNAP1-00001", "2024-01-01 10:02:00"),
-            ("ANTP1-00002", "BACP1-00001", "2024-01-01 10:03:00"),
+            # part_number, part_type, polarization, scan_time, connected_to, connected_to_type, connected_polarization, connected_scan_time
+            ("ANT-P1-00001", "ANTENNA", "1", "2024-01-01 10:00:00", "LNA-P1-00001", "LNA", "1", "2024-01-01 10:01:00"),
+            ("LNA-P1-00001", "LNA", "1", "2024-01-01 10:01:00", "COAX1-P1-00001", "COAX1", "1", "2024-01-01 10:02:00"),
+            ("COAX1-P1-00001", "COAX1", "1", "2024-01-01 10:02:00", "BACBOARD-P1-00001", "BACBOARD", "1", "2024-01-01 10:03:00"),
             # Separate chain
-            ("LNAP1-00002", None, "2024-01-01 10:04:00"),
-            ("BACP1-00002", "LNAP1-00002", "2024-01-01 10:05:00"),
+            ("ANT-P1-00002", "ANTENNA", "1", "2024-01-01 10:04:00", "LNA-P1-00002", "LNA", "1", "2024-01-01 10:05:00"),
         ]
 
         for connection in test_connections:
             cursor.execute(
-                "INSERT INTO assembly (part_number, connected_to, scan_time) VALUES (?, ?, ?)",
+                "INSERT INTO assembly (part_number, part_type, polarization, scan_time, connected_to, connected_to_type, connected_polarization, connected_scan_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 connection,
             )
 
@@ -167,10 +166,10 @@ class TestVisualization:
         # Test getting summary
         summary = get_chain_summary()
 
-        assert summary["total_parts"] == 6
-        assert summary["total_connections"] == 4  # 4 non-null connections
+        assert summary["total_parts"] == 4
+        assert summary["total_connections"] == 4  # 4 connections
         assert summary["total_chains"] >= 1
-        # At least 3 parts in longest chain
+        # At least 3 parts in longest chain (ANT->LNA->COAX1->BACBOARD = 4 parts)
         assert summary["longest_chain"] >= 3
         assert summary["average_chain_length"] > 0
 
