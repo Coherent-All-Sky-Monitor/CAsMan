@@ -53,6 +53,7 @@ def main() -> None:
                    "  visualize  - Visualize assembly chains and connection statistics\n"
                    "    └─ chains      Display ASCII visualization with duplicate detection\n"
                    "    └─ summary     Show comprehensive assembly statistics\n"
+                   "    └─ web         Launch web-based visualization interface\n"
                    "  barcode    - Generate barcodes and printable pages for part identification\n"
                    "    └─ printpages  Generate printable barcode pages for labeling\n"
                    "  completion - Show shell completion setup instructions\n\n"

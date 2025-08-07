@@ -189,7 +189,6 @@ casman --list-commands
 # Part management
 casman parts list                    # List all parts in database
 casman parts add                     # Interactive part addition (can add single type or all types)
-casman parts search "ANT-P1"         # Search for specific parts
 
 # Interactive scanning with connection validation
 casman scan connection               # Interactive assembly scanning
@@ -198,6 +197,8 @@ casman scan stats                    # Assembly statistics
 # Visualization with duplicate detection
 casman visualize chains              # ASCII chain visualization  
 casman visualize summary             # Summary statistics
+casman visualize web                 # Launch web-based visualization interface
+casman visualize web --port 8080     # Launch web interface on custom port
 
 # Barcode generation
 casman barcode printpages --part-type ANTENNA --start-number 1 --end-number 50
@@ -388,6 +389,7 @@ This package replaces the individual scripts in the `scripts/` directory:
 | `read_parts_db.py` | `casman parts list` | `casman.parts` |
 | `scan_and_assemble.py` | `casman scan connection` | `casman.assembly` |
 | `visualize_analog_chains_term.py` | `casman visualize chains` | `casman.visualization` |
+| `visualize_analog_chains_web.py` | `casman visualize web` | `casman.cli.visualization_commands` |
 | `gen_barcode_printpages.py` | `casman barcode printpages` | `casman.barcode_utils` |
 
 ## Dependencies
@@ -483,4 +485,10 @@ casman scan connection             # Start interactive assembly scanning with va
 ### Visualize assembly chains in ASCII
 ```sh
 casman visualize chains
+```
+
+### Launch web-based visualization interface
+```sh
+casman visualize web                 # Launch on default port (5000)
+casman visualize web --port 8080     # Launch on custom port
 ```

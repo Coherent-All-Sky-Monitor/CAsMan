@@ -310,6 +310,17 @@ def get_last_update() -> Optional[str]:
     return str(last_update) if last_update is not None else None
 
 
+def ensure_app_configured(flask_app: Flask) -> None:
+    """
+    Ensure the Flask app is properly configured with Jinja globals.
+    
+    Args:
+        flask_app (Flask): The Flask application instance to configure.
+    """
+    # Set up Jinja2 globals for the Flask app
+    flask_app.jinja_env.globals.update(format_display_data=format_display_data)
+
+
 def run_flask_with_free_port(
     app: Flask, start_port: int = 5000, max_tries: int = 10
 ) -> None:
@@ -323,6 +334,9 @@ def run_flask_with_free_port(
     """
     import socket
 
+    # Ensure the Flask app is properly configured
+    ensure_app_configured(app)
+
     port = start_port
     for _ in range(max_tries):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -330,7 +344,8 @@ def run_flask_with_free_port(
             sock.bind(("127.0.0.1", port))
             sock.close()
             print(f"Starting Flask app on port {port}")
-            app.run(debug=True, port=port)
+            print(f"🌐 Web interface available at: http://127.0.0.1:{port}")
+            app.run(debug=False, port=port, use_reloader=False)
             break
         except OSError as e:
             sock.close()
