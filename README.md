@@ -13,6 +13,90 @@ A comprehensive toolkit for managing and visualizing CASM (Coherent All-Sky Moni
 - **🏷️ Barcode Generation**: Automated barcode creation for parts and printing pages
 - **📋 Assembly Tracking**: Complete assembly history with timestamps
 
+## Testing & Coverage
+
+![Tests](https://img.shields.io/badge/tests-122%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-53.0%25-red)
+
+CAsMan maintains comprehensive test coverage across all modules:
+
+| Module | Coverage | Lines Covered |
+|--------|----------|---------------|
+| **__Init__** | 100.0% | 2/2 |
+| **Assembly Data** | 100.0% | 32/32 |
+| **Barcode __Init__** | 100.0% | 5/5 |
+| **Database __Init__** | 100.0% | 5/5 |
+| **Database Migrations** | 100.0% | 63/63 |
+| **Parts __Init__** | 100.0% | 10/10 |
+| **Parts Db** | 100.0% | 4/4 |
+| **Parts Validation** | 100.0% | 41/41 |
+| **Database Operations** | 98.0% | 52/53 |
+| **Database Connection** | 96.0% | 24/25 |
+| **Parts Generation** | 93.0% | 50/54 |
+| **Parts Part** | 89.0% | 54/61 |
+| **Database Initialization** | 84.0% | 32/38 |
+| **Cli Parts_Commands** | 83.0% | 29/35 |
+| **Config __Init__** | 83.0% | 25/30 |
+| **Config Core** | 83.0% | 97/117 |
+| **Parts Types** | 82.0% | 9/11 |
+| **Config Schema** | 81.0% | 17/21 |
+| **Config Environments** | 79.0% | 60/76 |
+| **Cli Assembly_Commands** | 75.0% | 18/24 |
+| **Parts Search** | 71.0% | 46/65 |
+| **Visualization Core** | 67.0% | 97/145 |
+| **Cli Barcode_Commands** | 64.0% | 18/28 |
+| **Barcode_Utils** | 61.0% | 46/76 |
+| **Cli __Init__** | 54.0% | 13/24 |
+| **Cli Main** | 52.0% | 33/64 |
+| **Cli Utils** | 52.0% | 16/31 |
+| **Cli Visualization_Commands** | 49.0% | 21/43 |
+| **Barcode Generation** | 39.0% | 18/46 |
+| **Assembly Chains** | 32.0% | 14/44 |
+| **Assembly Connections** | 29.0% | 6/21 |
+| **Config Utils** | 28.0% | 28/101 |
+| **Visualization __Init__** | 22.0% | 4/18 |
+| **Assembly __Init__** | 20.0% | 8/40 |
+| **Barcode Printing** | 16.0% | 8/51 |
+| **Barcode Operations** | 14.0% | 18/125 |
+| **Barcode Validation** | 9.0% | 6/64 |
+| **Parts Interactive** | 8.0% | 9/120 |
+| **Assembly Interactive** | 7.0% | 13/174 |
+| **Overall** | **53.0%** | **1051/1987** |
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+coverage run -m pytest
+coverage report --include="casman/*"
+
+# Run specific test modules
+pytest tests/test_parts.py -v
+pytest tests/test_cli.py -v
+
+# Quick coverage check script
+./coverage_check.sh
+```
+
+### Automated Coverage Tracking
+
+A coverage check script is provided for development workflow:
+
+```bash
+# Run coverage analysis and check threshold
+./coverage_check.sh
+
+# The script will:
+# 1. Run all tests with coverage
+# 2. Display detailed coverage report
+# 3. Check against minimum threshold (50%)
+# 4. Provide feedback on coverage status
+```
+
+The git pre-commit hook can optionally run coverage checks to ensure code quality before commits.
+
 ## Assembly Chain Validation
 
 CAsMan enforces strict assembly chain rules to ensure proper CASM assembly:
@@ -320,9 +404,25 @@ This package replaces the individual scripts in the `scripts/` directory:
 ### Development Dependencies
 
 - **pytest** - Testing framework
+- **coverage** - Code coverage analysis  
 - **black** - Code formatter
 - **flake8** - Linting
 - **mypy** - Type checking
+
+### Code Quality Tools
+
+CAsMan includes automated tools for maintaining code quality:
+
+```bash
+# Quick coverage check with threshold validation
+./coverage_check.sh
+
+# Update README with latest coverage statistics
+python3 update_coverage.py
+
+# Git pre-commit hook (optional) - validates coverage before commits
+bash .git/hooks/pre-commit
+```
 
 ## License
 
