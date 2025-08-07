@@ -54,10 +54,6 @@ Documentation = "https://github.com/Coherent-All-Sky-Monitor/CAsMan/blob/main/RE
 
 [project.scripts]
 casman = "casman.cli:main"
-casman-parts = "casman.parts:main"
-casman-scan = "casman.assembly:main"
-casman-visualize = "casman.visualization:main"
-casman-barcode = "casman.barcode_utils:main"
 
 [tool.setuptools]
 packages = ["casman"]

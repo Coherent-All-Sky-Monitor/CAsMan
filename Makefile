@@ -10,6 +10,12 @@ install:
 install-dev:
 	pip install -e ".[dev]"
 
+# Clean installation (useful for new machines)
+install-clean: clean
+	pip uninstall -y casman || true
+	pip install -e .
+	@echo "✅ Clean installation complete"
+
 # Testing targets
 test:
 	python -m pytest
@@ -35,6 +41,19 @@ update-docs: docs
 
 # Development workflow
 check: lint test coverage
+
+# Troubleshooting
+troubleshoot:
+	@echo "🔍 Running CAsMan installation diagnostics..."
+	@echo "Python version:"
+	python --version
+	@echo "Package location:"
+	python -c "import casman; print(casman.__file__)" 2>/dev/null || echo "❌ casman package not found"
+	@echo "CLI import test:"
+	python -c "from casman.cli import main; print('✅ CLI import successful')" 2>/dev/null || echo "❌ CLI import failed"
+	@echo "Entry point test:"
+	which casman 2>/dev/null || echo "❌ casman command not found in PATH"
+	@echo "🔍 Diagnostics complete"
 
 # Linting and formatting
 lint:
@@ -77,17 +96,19 @@ release-prep: clean test update-docs
 # Help target
 help:
 	@echo "Available targets:"
-	@echo "  install      - Install package in development mode"
-	@echo "  install-dev  - Install with development dependencies"
-	@echo "  test         - Run all tests"
-	@echo "  test-verbose - Run tests with verbose output"
-	@echo "  coverage     - Run tests with coverage report"
-	@echo "  docs         - Generate documentation"
-	@echo "  update-docs  - Update docs and coverage info"
-	@echo "  lint         - Run linting checks"
-	@echo "  format       - Format code with black and isort"
-	@echo "  clean        - Remove build artifacts"
-	@echo "  setup-hooks  - Install pre-commit hooks"
-	@echo "  dev-setup    - Set up development environment"
-	@echo "  dev          - Full development check (clean, lint, test, docs)"
-	@echo "  help         - Show this help message"
+	@echo "  install        - Install package in development mode"
+	@echo "  install-dev    - Install with development dependencies"
+	@echo "  install-clean  - Clean uninstall and reinstall"
+	@echo "  test           - Run all tests"
+	@echo "  test-verbose   - Run tests with verbose output"
+	@echo "  coverage       - Run tests with coverage report"
+	@echo "  docs           - Generate documentation"
+	@echo "  update-docs    - Update docs and coverage info"
+	@echo "  lint           - Run linting checks"
+	@echo "  format         - Format code with black and isort"
+	@echo "  clean          - Remove build artifacts"
+	@echo "  setup-hooks    - Install pre-commit hooks"
+	@echo "  dev-setup      - Set up development environment"
+	@echo "  dev            - Full development check (clean, lint, test, docs)"
+	@echo "  troubleshoot   - Run installation diagnostics"
+	@echo "  help           - Show this help message"
