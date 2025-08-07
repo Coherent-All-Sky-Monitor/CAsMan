@@ -8,13 +8,13 @@ migrations, backups, and integrity checking.
 
 import tempfile
 
-from casman.database import (
+from casman.database.migrations import (
     DatabaseMigrator,
     backup_database,
     check_database_integrity,
     get_table_info,
-    init_all_databases,
 )
+from casman.database.initialization import init_all_databases
 
 
 def main():

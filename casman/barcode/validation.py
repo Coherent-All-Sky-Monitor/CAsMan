@@ -153,7 +153,8 @@ def validate_barcode_content(
             prefix = match.group(1)
 
             # Import here to avoid circular imports
-            from casman.parts import PART_TYPES
+            from casman.parts.types import load_part_types
+            PART_TYPES = load_part_types()
 
             expected_prefix = None
             for _, (full_name, abbrev) in PART_TYPES.items():

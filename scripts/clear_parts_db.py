@@ -12,8 +12,8 @@ import argparse
 import os
 import sqlite3
 
-from casman.config import get_config
-from casman.database import get_database_path
+from casman.config.core import get_config
+from casman.database.connection import get_database_path
 
 
 def clear_database(db_dir: str) -> None:

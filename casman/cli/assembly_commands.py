@@ -5,8 +5,9 @@ Assembly-related CLI commands for CAsMan.
 import argparse
 import sys
 
-from casman.assembly import get_assembly_stats
-from casman.database import init_all_databases
+from casman.assembly.data import get_assembly_stats
+from casman.assembly.interactive import scan_and_assemble_interactive
+from casman.database.initialization import init_all_databases
 
 
 def cmd_scan() -> None:
@@ -26,13 +27,15 @@ def cmd_scan() -> None:
     """
     parser = argparse.ArgumentParser(
         description="CAsMan Interactive Scanning and Assembly Management\n\n"
-                   "Provides interactive scanning capabilities with comprehensive connection validation.\n"
-                   "Features real-time part validation, sequence enforcement, and duplicate prevention.",
+                   "Provides interactive scanning capabilities with "
+                   "comprehensive connection validation.\n"
+                   "Features real-time part validation, sequence enforcement, "
+                   "and duplicate prevention.",
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
-        "action", 
-        choices=["stats", "connection"], 
+        "action",
+        choices=["stats", "connection"],
         help="Action to perform:\n"
              "  stats      - Display assembly statistics and connection counts\n"
              "  connection - Start interactive connection scanning with validation"
@@ -59,6 +62,4 @@ def cmd_scan() -> None:
             print("No assembly statistics available.")
     elif args.action == "connection":
         # Launch interactive connection scanner
-        from casman.assembly import scan_and_assemble_interactive
         scan_and_assemble_interactive()
-

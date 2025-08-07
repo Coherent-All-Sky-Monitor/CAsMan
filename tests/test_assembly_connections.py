@@ -34,7 +34,7 @@ class TestAssemblyConnections:
             assert success is True
 
             # Verify the record was inserted using get_database_path
-            from casman.database import get_database_path
+            from casman.database.connection import get_database_path
             db_path = get_database_path("assembled_casm.db", temp_dir)
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()

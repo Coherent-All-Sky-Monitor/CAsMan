@@ -18,8 +18,10 @@ import logging
 import os
 import sqlite3
 
-from casman.database import get_parts_by_criteria
-from casman.parts import PART_TYPES
+from casman.database.operations import get_parts_by_criteria
+from casman.parts.types import load_part_types
+
+PART_TYPES = load_part_types()
 
 # Configure logging
 logging.basicConfig(

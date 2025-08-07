@@ -9,7 +9,8 @@ import logging
 import sqlite3
 from typing import Optional
 
-from casman.database import get_database_path, init_assembled_db
+from casman.database.connection import get_database_path
+from casman.database.initialization import init_assembled_db
 
 logger = logging.getLogger(__name__)
 

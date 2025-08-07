@@ -8,15 +8,14 @@ from unittest.mock import MagicMock, patch
 # Third-party imports
 import pytest
 
-from casman.database import init_parts_db
+from casman.database.initialization import init_parts_db
 
 # Project imports
-from casman.parts import (
-    PART_TYPES,
-    generate_part_numbers,
-    get_last_part_number,
-    read_parts,
-)
+from casman.parts.types import load_part_types
+from casman.parts.generation import generate_part_numbers, get_last_part_number
+from casman.parts.db import read_parts
+
+PART_TYPES = load_part_types()
 
 
 @pytest.fixture(autouse=True)
@@ -57,7 +56,7 @@ class TestParts:
             pass
         conn.commit()
         conn.close()
-        result = get_last_part_number("ANTENNA")
+        result = get_last_part_number("ANTENNA", temporary_directory)
         assert result is None
 
     def test_get_last_part_number_with_data(self, temporary_directory: str) -> None:
@@ -103,11 +102,11 @@ class TestParts:
         conn.commit()
         conn.close()
         # Check last part numbers for each type
-        last_antenna = get_last_part_number("ANTENNA")
+        last_antenna = get_last_part_number("ANTENNA", temporary_directory)
         assert last_antenna == "ANTP1-00002"
-        last_lna = get_last_part_number("LNA")
+        last_lna = get_last_part_number("LNA", temporary_directory)
         assert last_lna == "LNAP1-00001"
-        last_missing = get_last_part_number("NONEXISTENT")
+        last_missing = get_last_part_number("NONEXISTENT", temporary_directory)
         assert last_missing is None
 
     @patch("casman.parts.generation.generate_barcode")
@@ -131,7 +130,7 @@ class TestParts:
         conn.commit()
         conn.close()
         # Generate new part numbers
-        new_parts = generate_part_numbers("ANTENNA", 3, "1")
+        new_parts = generate_part_numbers("ANTENNA", 3, "1", temporary_directory)
         assert len(new_parts) == 3
         assert new_parts[0] == "ANT-P1-00001"
         assert new_parts[1] == "ANT-P1-00002"
@@ -160,15 +159,15 @@ class TestParts:
         )
         conn.commit()
         conn.close()
-        new_parts = generate_part_numbers("LNA", 2, "1")
+        new_parts = generate_part_numbers("LNA", 2, "1", temporary_directory)
         assert len(new_parts) == 2
         assert new_parts[0] == "LNA-P1-00006"
         assert new_parts[1] == "LNA-P1-00007"
 
-    def test_generate_part_numbers_invalid_type(self) -> None:
+    def test_generate_part_numbers_invalid_type(self, temporary_directory: str) -> None:
         """Test that ValueError is raised for unknown part type."""
         with pytest.raises(ValueError, match="Unknown part type"):
-            generate_part_numbers("INVALID_TYPE", 1, "1")
+            generate_part_numbers("INVALID_TYPE", 1, "1", temporary_directory)
 
     def test_read_parts_empty_db(self, temporary_directory: str) -> None:
         """Test read_parts returns empty list for empty DB."""
@@ -182,7 +181,7 @@ class TestParts:
             pass
         conn.commit()
         conn.close()
-        parts = read_parts()
+        parts = read_parts(db_dir=temporary_directory)
         assert parts == []
 
     def test_read_parts_with_data(self, temporary_directory: str) -> None:
@@ -210,21 +209,21 @@ class TestParts:
             )
         conn.commit()
         conn.close()
-        parts = read_parts()
+        parts = read_parts(db_dir=temporary_directory)
         assert len(parts) == 3
         for part in parts:
             assert part[1] in ["ANT-P1-00001", "LNA-P1-00001", "BAC-P1-00001"]
             assert part[2] in ["ANTENNA", "LNA", "BACBOARD"]
             assert len(part) >= 6
 
-    def test_generate_part_numbers_zero_count(self) -> None:
+    def test_generate_part_numbers_zero_count(self, temporary_directory: str) -> None:
         """Test generate_part_numbers returns empty list for zero count."""
-        result = generate_part_numbers("ANTENNA", 0, "1")
+        result = generate_part_numbers("ANTENNA", 0, "1", temporary_directory)
         assert not result
 
-    def test_generate_part_numbers_negative_count(self) -> None:
+    def test_generate_part_numbers_negative_count(self, temporary_directory: str) -> None:
         """Test generate_part_numbers returns empty list for negative count."""
-        result = generate_part_numbers("ANTENNA", -1, "1")
+        result = generate_part_numbers("ANTENNA", -1, "1", temporary_directory)
         assert not result
 
     @patch("casman.parts.generation.generate_barcode")
@@ -243,7 +242,7 @@ class TestParts:
             pass
         conn.commit()
         conn.close()
-        new_parts = generate_part_numbers("BACBOARD", 2, "V")
+        new_parts = generate_part_numbers("BACBOARD", 2, "V", temporary_directory)
         conn = sqlite3.connect(os.path.join(temporary_directory, "parts.db"))
         cursor = conn.cursor()
         cursor.execute(
@@ -271,7 +270,7 @@ class TestParts:
         # Patch barcode generation for all types
         with patch("casman.parts.generation.generate_barcode"):
             for _, (part_type, abbrev) in PART_TYPES.items():
-                new_parts = generate_part_numbers(part_type, 1, "1")
+                new_parts = generate_part_numbers(part_type, 1, "1", temporary_directory)
                 assert len(new_parts) == 1
                 part_number = new_parts[0]
                 expected_prefix = f"{abbrev}-P1-"

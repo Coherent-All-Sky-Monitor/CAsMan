@@ -7,7 +7,7 @@ Prints the full schema (all tables and columns) of the assembled_casm.db databas
 import os
 import sqlite3
 
-from casman.config import get_config
+from casman.config.core import get_config
 
 
 def print_db_schema(db_path: str) -> None:

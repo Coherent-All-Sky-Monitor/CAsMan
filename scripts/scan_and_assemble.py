@@ -22,9 +22,13 @@ from typing import List, Optional
 
 import yaml
 
-from casman.assembly import record_assembly_connection
-from casman.database import check_part_in_db, get_database_path, init_all_databases
-from casman.parts import PART_TYPES
+from casman.assembly.connections import record_assembly_connection
+from casman.database.operations import check_part_in_db
+from casman.database.connection import get_database_path
+from casman.database.initialization import init_all_databases
+from casman.parts.types import load_part_types
+
+PART_TYPES = load_part_types()
 
 # Dynamically determine the required part order from PART_TYPES dict
 # Only use the first N-1 part types for the main scan menu

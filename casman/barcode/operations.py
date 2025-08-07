@@ -50,12 +50,18 @@ def scan_barcode_directory(directory: str) -> Dict[str, List[str]]:
     if not os.path.exists(directory):
         return {}
 
-    file_types = {"png": [], "jpg": [], "jpeg": [], "bmp": [], "other": []}
+    file_types: Dict[str, List[str]] = {
+        "png": [],
+        "jpg": [],
+        "jpeg": [],
+        "bmp": [],
+        "other": []
+    }
 
-    for file in os.listdir(directory):
-        file_path = os.path.join(directory, file)
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
         if os.path.isfile(file_path):
-            extension = file.lower().split(".")[-1] if "." in file else "other"
+            extension = filename.lower().split(".")[-1] if "." in filename else "other"
             if extension in file_types:
                 file_types[extension].append(file_path)
             else:
@@ -105,7 +111,11 @@ def validate_barcode_file(file_path: str) -> Tuple[bool, Optional[str]]:
 
         return True, None
 
-    except Exception as e:
+    except (OSError, IOError) as e:
+        return False, f"Cannot read image file: {e}"
+    except ImportError as e:
+        return False, f"PIL/Pillow not available: {e}"
+    except Exception as e:  # Catch PIL-specific exceptions and others
         return False, f"Invalid image file: {e}"
 
 
@@ -178,12 +188,12 @@ def cleanup_invalid_barcodes(directory: str, dry_run: bool = True) -> List[str]:
     if not os.path.exists(directory):
         return []
 
-    files_to_delete = []
+    files_to_delete: List[str] = []
 
-    for file in os.listdir(directory):
-        file_path = os.path.join(directory, file)
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
         if os.path.isfile(file_path):
-            is_valid, error = validate_barcode_file(file_path)
+            is_valid, _error = validate_barcode_file(file_path)
             if not is_valid:
                 files_to_delete.append(file_path)
                 if not dry_run:
@@ -271,7 +281,7 @@ def arrange_barcodes_in_pdf(directory: str, output_pdf: str) -> None:
         x_offset += max_width + 50  # Add some horizontal spacing
 
     # Add the last page if it has content
-    if y_offset > margin:
+    if y_offset >= margin or len(image_files) > 0:
         pages.append(page)
 
     # Save all pages as a PDF

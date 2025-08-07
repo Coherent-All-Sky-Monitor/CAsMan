@@ -196,3 +196,41 @@ def generate_print_summary(part_type: str, start_number: int, end_number: int) -
         "recommended_layout": cost_info["layout"],
         "printing_info": cost_info,
     }
+
+
+def main() -> None:
+    """
+    Main entry point for barcode printing CLI.
+    
+    Provides interactive interface for generating barcode print pages.
+    """
+    print("CAsMan Barcode Printing Tool")
+    print("=" * 30)
+    
+    try:
+        part_type = input("Enter part type (ANTENNA, LNA, BACBOARD, etc.): ").strip().upper()
+        if not part_type:
+            print("Part type is required.")
+            return
+            
+        start_num = int(input("Enter start number: "))
+        end_num = int(input("Enter end number: "))
+        
+        if start_num > end_num:
+            print("Start number must be <= end number.")
+            return
+            
+        print(f"\nGenerating barcodes for {part_type} from {start_num} to {end_num}...")
+        generate_barcode_printpages(part_type, start_num, end_num)
+        
+    except (ValueError, KeyboardInterrupt) as e:
+        if isinstance(e, KeyboardInterrupt):
+            print("\nOperation cancelled.")
+        else:
+            print(f"Error: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+
+
+if __name__ == "__main__":
+    main()

@@ -5,9 +5,9 @@ import sqlite3
 
 import pytest
 
-from casman.database import (
-    get_database_path,
-    get_parts_by_criteria,
+from casman.database.connection import get_database_path
+from casman.database.operations import get_parts_by_criteria
+from casman.database.initialization import (
     init_all_databases,
     init_assembled_db,
     init_parts_db,
@@ -133,21 +133,21 @@ class TestDatabase:
         conn.close()
 
         # Test getting all parts
-        all_parts = get_parts_by_criteria()
+        all_parts = get_parts_by_criteria(db_dir=temporary_directory)
         assert len(all_parts) == 3
 
         # Test filtering by part type
-        antenna_parts = get_parts_by_criteria(part_type="ANTENNA")
+        antenna_parts = get_parts_by_criteria(part_type="ANTENNA", db_dir=temporary_directory)
         assert len(antenna_parts) == 1
         assert antenna_parts[0][1] == "ANTP1-00001"  # part_number
 
         # Test filtering by polarization
-        x_parts = get_parts_by_criteria(polarization="X")
+        x_parts = get_parts_by_criteria(polarization="X", db_dir=temporary_directory)
         assert len(x_parts) == 1
         assert x_parts[0][3] == "X"  # polarization
 
         # Test filtering by both
-        filtered_parts = get_parts_by_criteria(part_type="LNA", polarization="Y")
+        filtered_parts = get_parts_by_criteria(part_type="LNA", polarization="Y", db_dir=temporary_directory)
         assert len(filtered_parts) == 1
         assert filtered_parts[0][1] == "LNAP1-00001"
 

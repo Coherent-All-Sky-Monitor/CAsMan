@@ -4,6 +4,28 @@
 
 A comprehensive toolkit for managing and visualizing CASM (Coherent All-Sky Monitor) assembly processes. CAsMan provides CLI tools for part management, barcode generation, assembly tracking with connection validation, and interactive visualization.
 
+## 🚨 Breaking Changes in v2.0+
+
+**Important**: CAsMan v2.0+ introduces breaking changes to the import structure for better modularity:
+
+### Old Import Style (Deprecated)
+```python
+# ❌ No longer works
+from casman import parts, assembly, visualization
+from casman.parts import add_parts_interactive
+```
+
+### New Import Style (Required)
+```python
+# ✅ New modular imports
+from casman.parts.interactive import add_parts_interactive
+from casman.assembly.chains import print_assembly_chains
+from casman.visualization.core import format_ascii_chains
+from casman.database.operations import get_parts_by_criteria
+```
+
+All top-level compatibility modules have been removed. See [Migration Guide](#migration-guide) for detailed update instructions.
+
 ## Key Features
 
 - **🔧 Part Management**: Database-driven part tracking with validation
@@ -15,9 +37,9 @@ A comprehensive toolkit for managing and visualizing CASM (Coherent All-Sky Moni
 
 ## Testing & Coverage
 
-![Tests](https://img.shields.io/badge/tests-122%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-53.0%25-red)
+![Tests](https://img.shields.io/badge/tests-141%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-53.0%25-red)
 
-CAsMan maintains comprehensive test coverage across all modules:
+CAsMan maintains comprehensive test coverage across all modules with 141 passing tests:
 
 | Module | Coverage | Lines Covered |
 |--------|----------|---------------|
@@ -164,6 +186,61 @@ pip install -e ".[dev]"
 ```bash
 # If you prefer not to use a virtual environment
 pip install git+https://github.com/Coherent-All-Sky-Monitor/CAsMan.git
+```
+
+## Migration Guide
+
+If you're upgrading from CAsMan v1.x to v2.x, you'll need to update your imports due to the new modular architecture.
+
+### Common Migration Patterns
+
+#### Parts Management
+```python
+# Old (v1.x)
+from casman.parts import add_parts_interactive, get_last_part_number
+
+# New (v2.x)
+from casman.parts.interactive import add_parts_interactive
+from casman.parts.generation import get_last_part_number
+```
+
+#### Assembly Operations
+```python
+# Old (v1.x)
+from casman.assembly import build_connection_chains, print_assembly_chains
+
+# New (v2.x)
+from casman.assembly.chains import build_connection_chains, print_assembly_chains
+```
+
+#### Database Operations
+```python
+# Old (v1.x)
+from casman.database import get_parts_by_criteria, init_parts_db
+
+# New (v2.x)
+from casman.database.operations import get_parts_by_criteria
+from casman.database.initialization import init_parts_db
+```
+
+#### Visualization
+```python
+# Old (v1.x)
+from casman.visualization import format_ascii_chains, get_chain_summary
+
+# New (v2.x)
+from casman.visualization.core import format_ascii_chains, get_chain_summary
+```
+
+### CLI Usage (Unchanged)
+
+The command-line interface remains the same - only Python imports have changed:
+
+```bash
+# These CLI commands work the same in both versions
+casman parts add
+casman scan connection
+casman visualize chains
 ```
 
 ## Quick Start

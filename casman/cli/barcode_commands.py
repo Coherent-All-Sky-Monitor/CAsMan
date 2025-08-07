@@ -5,9 +5,9 @@ Barcode and visualization CLI commands for CAsMan.
 import argparse
 import sys
 
-from casman.barcode_utils import generate_barcode_printpages
-from casman.database import init_all_databases
-from casman.visualization import format_ascii_chains
+from casman.barcode import generate_barcode_printpages
+from casman.database.initialization import init_all_databases
+from casman.visualization.core import format_ascii_chains
 
 
 def cmd_barcode() -> None:
@@ -33,26 +33,26 @@ def cmd_barcode() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
-        "action", 
-        choices=["printpages"], 
+        "action",
+        choices=["printpages"],
         help="Action to perform:\n"
              "  printpages - Generate printable barcode pages for part labeling"
     )
     parser.add_argument(
-        "--part-type", 
-        required=True, 
+        "--part-type",
+        required=True,
         help="Part type for barcode generation (ANTENNA, LNA, COAX1, COAX2, BACBOARD, SNAP)"
     )
     parser.add_argument(
-        "--start-number", 
-        type=int, 
-        default=1, 
+        "--start-number",
+        type=int,
+        default=1,
         help="Starting part number (default: 1)"
     )
     parser.add_argument(
-        "--end-number", 
-        type=int, 
-        required=True, 
+        "--end-number",
+        type=int,
+        required=True,
         help="Ending part number (inclusive)"
     )
 

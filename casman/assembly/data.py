@@ -9,7 +9,7 @@ import logging
 import sqlite3
 from typing import Any, Dict, List, Optional, Tuple
 
-from casman.database import get_database_path
+from casman.database.connection import get_database_path
 
 logger = logging.getLogger(__name__)
 

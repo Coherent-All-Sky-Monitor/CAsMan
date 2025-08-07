@@ -26,9 +26,12 @@ Usage
 
 import argparse
 
-from casman.config import get_config
-from casman.database import init_all_databases
-from casman.parts import PART_TYPES, generate_part_numbers
+from casman.config.core import get_config
+from casman.database.initialization import init_all_databases
+from casman.parts.generation import generate_part_numbers
+from casman.parts.types import load_part_types
+
+PART_TYPES = load_part_types()
 
 # Parse command-line arguments
 

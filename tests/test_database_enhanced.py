@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 import pytest
 
-from casman.database import (
+from casman.database.migrations import (
     DatabaseMigrator,
     backup_database,
     check_database_integrity,
@@ -218,22 +218,25 @@ class TestDatabasePackageIntegration:
     """Test integration between database package modules."""
 
     def test_package_imports(self):
-        """Test that all expected functions are available from package."""
-        from casman.database import (
-            DatabaseMigrator,
-            backup_database,
-            check_database_integrity,
+        """Test that all expected functions are available from direct package imports."""
+        from casman.database.connection import find_project_root, get_database_path
+        from casman.database.operations import (
             check_part_in_db,
-            find_project_root,
             get_all_parts,
             get_assembly_records,
-            get_database_path,
             get_last_update,
             get_parts_by_criteria,
-            get_table_info,
+        )
+        from casman.database.initialization import (
             init_all_databases,
             init_assembled_db,
             init_parts_db,
+        )
+        from casman.database.migrations import (
+            DatabaseMigrator,
+            backup_database,
+            check_database_integrity,
+            get_table_info,
         )
 
         # All imports should succeed

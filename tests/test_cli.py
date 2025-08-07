@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from casman.cli import (
+from casman.cli.main import (
     cmd_barcode,
     cmd_parts,
     cmd_scan,
@@ -141,8 +141,8 @@ class TestCLI:
             mock_init_db.assert_called_once()
             mock_get_stats.assert_called_once()
 
-    @patch("casman.visualization.format_ascii_chains")
-    @patch("casman.database.init_all_databases")
+    @patch("casman.visualization.core.format_ascii_chains")
+    @patch("casman.database.initialization.init_all_databases")
     @patch("sys.argv", ["casman", "visualize", "chains"])
     def test_cmd_visualize_chains(self, mock_init_db: Mock, mock_format: Mock) -> None:
         """Test visualize command with chains action."""

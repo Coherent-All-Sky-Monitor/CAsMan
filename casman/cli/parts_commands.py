@@ -5,8 +5,9 @@ Parts-related CLI commands for CAsMan.
 import argparse
 import sys
 
-from casman.database import get_parts_by_criteria, init_all_databases
-from casman.parts import add_parts_interactive, display_parts_interactive
+from casman.database.operations import get_parts_by_criteria
+from casman.database.initialization import init_all_databases
+from casman.parts.interactive import add_parts_interactive, display_parts_interactive
 
 
 def cmd_parts() -> None:
@@ -32,8 +33,8 @@ def cmd_parts() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
-        "action", 
-        choices=["list", "add"], 
+        "action",
+        choices=["list", "add"],
         help="Action to perform:\n"
              "  list - Display parts from database with optional filtering\n"
              "  add  - Interactive part addition with validation (supports single type or ALL types)"

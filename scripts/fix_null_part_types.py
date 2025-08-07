@@ -6,7 +6,9 @@ Script to retroactively fix NULL part_type values \
 import sqlite3
 from typing import Optional
 
-from casman.parts import PART_TYPES
+from casman.parts.types import load_part_types
+
+PART_TYPES = load_part_types()
 
 
 def infer_part_type(part_number: str) -> Optional[str]:

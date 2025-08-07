@@ -150,7 +150,8 @@ def generate_barcode_range(
     # Get prefix if not provided
     if prefix is None:
         # Import here to avoid circular imports
-        from casman.parts import PART_TYPES
+        from casman.parts.types import load_part_types
+        PART_TYPES = load_part_types()
 
         part_abbrev = None
         for _, (full_name, abbrev) in PART_TYPES.items():

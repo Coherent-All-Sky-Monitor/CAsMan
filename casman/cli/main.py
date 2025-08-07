@@ -69,14 +69,14 @@ def main() -> None:
 
     commands = {
         "parts": "Manage parts in the database - list, add, search, and validate parts",
-        "scan": "Interactive scanning and assembly with real-time validation", 
+        "scan": "Interactive scanning and assembly with real-time validation",
         "visualize": "Visualize assembly chains and connection statistics with duplicate detection",
         "barcode": "Generate barcodes and printable pages for part identification",
         "completion": "Show shell completion setup instructions for enhanced CLI experience",
     }
 
     # Check if a command with help is requested before full parsing
-    if len(sys.argv) >= 3 and (sys.argv[2] in ['-h', '--help'] or 
+    if len(sys.argv) >= 3 and (sys.argv[2] in ['-h', '--help'] or
                                (len(sys.argv) >= 4 and sys.argv[3] in ['-h', '--help'])):
         command = sys.argv[1]
         if command == "parts":

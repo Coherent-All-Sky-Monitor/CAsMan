@@ -9,12 +9,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Project imports
-from casman.assembly import (
-    build_connection_chains,
-    get_assembly_connections,
-    get_assembly_stats,
-)
-from casman.database import init_assembled_db
+from casman.assembly.chains import build_connection_chains
+from casman.assembly.data import get_assembly_connections, get_assembly_stats
+from casman.database.initialization import init_assembled_db
 
 
 class TestAssembly:
@@ -90,7 +87,7 @@ class TestAssembly:
 
         # Test getting connections (now returns 5-tuple: part_number,
         # connected_to, scan_time, part_type, polarization)
-        connections = get_assembly_connections()
+        connections = get_assembly_connections(temporary_directory)
         assert len(connections) == 3
         assert connections[0] == (
             "ANT-P1-00001",
@@ -154,7 +151,7 @@ class TestAssembly:
         conn.close()
 
         # Test building chains
-        chains = build_connection_chains()
+        chains = build_connection_chains(temporary_directory)
 
         assert "ANT-P1-00001" in chains
         assert "LNA-P1-00001" in chains
@@ -210,7 +207,7 @@ class TestAssembly:
         conn.close()
 
         # Test getting stats
-        stats = get_assembly_stats()
+        stats = get_assembly_stats(temporary_directory)
 
         assert stats["total_scans"] == 4
         # ANTP1-00001, LNAP1-00001, BACP1-00001

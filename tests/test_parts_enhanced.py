@@ -9,15 +9,12 @@ import tempfile
 
 import pytest
 
-from casman.database import init_parts_db
-from casman.parts import (
-    Part,
-    create_part,
-    find_part,
+from casman.database.initialization import init_parts_db
+from casman.parts.part import Part, create_part
+from casman.parts.search import find_part, get_part_statistics, search_parts
+from casman.parts.validation import (
     get_part_info,
-    get_part_statistics,
     normalize_part_number,
-    search_parts,
     validate_part_number,
     validate_part_type,
     validate_polarization,

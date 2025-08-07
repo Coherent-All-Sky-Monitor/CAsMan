@@ -6,14 +6,14 @@ and provides analysis functions for understanding assembly relationships.
 """
 
 import logging
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from .data import get_assembly_connections
 
 logger = logging.getLogger(__name__)
 
 
-def build_connection_chains() -> Dict[str, List[str]]:
+def build_connection_chains(db_dir: Optional[str] = None) -> Dict[str, List[str]]:
     """
     Build a dictionary mapping each part to its connected parts.
 
@@ -29,7 +29,7 @@ def build_connection_chains() -> Dict[str, List[str]]:
     >>> print(chains.get('ANTP1-00001', []))
     ['LNA-P1-00001']
     """
-    connections = get_assembly_connections()
+    connections = get_assembly_connections(db_dir)
     chains: Dict[str, List[str]] = {}
 
     for part_number, connected_to, _, _, _ in connections:
@@ -41,9 +41,14 @@ def build_connection_chains() -> Dict[str, List[str]]:
     return chains
 
 
-def print_assembly_chains() -> None:
+def print_assembly_chains(db_dir: Optional[str] = None) -> None:
     """
     Print all assembly chains in a readable format.
+
+    Parameters
+    ----------
+    db_dir : str, optional
+        Custom database directory. If not provided, uses the project root's database directory.
 
     This function builds connection chains and prints them in a tree-like
     structure showing how parts are connected to each other.
@@ -56,7 +61,7 @@ def print_assembly_chains() -> None:
     ANTP1-00001 ---> LNA-P1-00001 ---> CX1-P1-00001
     ANTP1-00002 ---> LNA-P1-00002
     """
-    chains = build_connection_chains()
+    chains = build_connection_chains(db_dir)
 
     if not chains:
         print("No assembly connections found.")

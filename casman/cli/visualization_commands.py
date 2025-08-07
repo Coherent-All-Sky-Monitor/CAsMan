@@ -33,7 +33,7 @@ def cmd_visualize() -> None:
         epilog="""
 Examples:
   casman visualize chains              # Show ASCII chains with duplicate detection
-  casman visualize summary             # Show detailed summary statistics  
+  casman visualize summary             # Show detailed summary statistics
   casman visualize web                 # Launch web-based visualization interface
   casman visualize web --port 8080     # Launch web interface on specific port
         """,
@@ -44,7 +44,7 @@ Examples:
     # Enhanced chains command
     subparsers.add_parser("chains", help="Display ASCII visualization of assembly chains with duplicate detection")
 
-    # Enhanced summary command  
+    # Enhanced summary command
     subparsers.add_parser("summary", help="Show comprehensive assembly statistics and chain analysis")
 
     # Web visualization command
@@ -69,7 +69,7 @@ Examples:
         return
 
     try:
-        from casman.database import init_all_databases
+        from casman.database.initialization import init_all_databases
 
         init_all_databases()
 
@@ -93,7 +93,7 @@ Examples:
 def cmd_visualize_chains() -> None:
     """Show ASCII visualization chains."""
     try:
-        from casman.visualization import format_ascii_chains
+        from casman.visualization.core import format_ascii_chains
 
         print(format_ascii_chains())
     except ImportError:
@@ -103,7 +103,7 @@ def cmd_visualize_chains() -> None:
 def cmd_visualize_summary() -> None:
     """Show visualization summary."""
     try:
-        from casman.visualization import print_visualization_summary
+        from casman.visualization.core import print_visualization_summary
 
         print_visualization_summary()
     except ImportError:
@@ -113,35 +113,35 @@ def cmd_visualize_summary() -> None:
 def cmd_visualize_web(args) -> None:
     """Launch web-based visualization interface."""
     import os
-    
+
     try:
         # Import Flask to check if it's available
         import flask  # noqa: F401
-        
+
         print("🌐 Starting CAsMan web visualization interface...")
         print(f"🚀 Looking for available port starting from {args.port}")
         print("🛑 Press Ctrl+C to stop the server")
         print()
-        
+
         # Get the path to the web visualization script
         script_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
         web_script_path = os.path.join(script_dir, "scripts", "visualize_analog_chains_web.py")
-        
+
         if not os.path.exists(web_script_path):
             print(f"❌ Error: Web visualization script not found at {web_script_path}")
             sys.exit(1)
-        
+
         # Import and run the web application
         sys.path.insert(0, os.path.dirname(web_script_path))
-        
+
         # Import the necessary functions from the web script
         spec = __import__('importlib.util').util.spec_from_file_location("web_viz", web_script_path)
         web_module = __import__('importlib.util').util.module_from_spec(spec)
         spec.loader.exec_module(web_module)
-        
+
         # Set up the Flask app with custom port configuration
         web_module.run_flask_with_free_port(web_module.app, start_port=args.port, max_tries=args.max_tries)
-        
+
     except ImportError as e:
         if "flask" in str(e).lower():
             print("❌ Flask is required for web visualization")

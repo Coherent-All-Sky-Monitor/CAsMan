@@ -5,8 +5,8 @@ import sqlite3
 
 import pytest
 
-from casman.database import init_assembled_db
-from casman.visualization import (
+from casman.database.initialization import init_assembled_db
+from casman.visualization.core import (
     format_ascii_chains,
     get_chain_summary,
     get_visualization_data,
@@ -48,7 +48,7 @@ class TestVisualization:
         conn.close()
 
         # Test formatting chains
-        result = format_ascii_chains()
+        result = format_ascii_chains(temporary_directory)
 
         assert "CASM Assembly Connections:" in result
         assert "ANTP1-00001 ---> LNAP1-00001 ---> BACP1-00001" in result
@@ -89,7 +89,7 @@ class TestVisualization:
         conn.close()
 
         # Test getting visualization data
-        data = get_visualization_data()
+        data = get_visualization_data(temporary_directory)
 
         assert "nodes" in data
         assert "links" in data
@@ -164,7 +164,7 @@ class TestVisualization:
         conn.close()
 
         # Test getting summary
-        summary = get_chain_summary()
+        summary = get_chain_summary(temporary_directory)
 
         assert summary["total_parts"] == 4
         assert summary["total_connections"] == 4  # 4 connections
@@ -191,7 +191,7 @@ class TestVisualization:
         conn.close()
 
         # Test node structure
-        data = get_visualization_data()
+        data = get_visualization_data(temporary_directory)
 
         assert len(data["nodes"]) == 1
         node = data["nodes"][0]
@@ -226,7 +226,7 @@ class TestVisualization:
         conn.close()
 
         # Test link structure
-        data = get_visualization_data()
+        data = get_visualization_data(temporary_directory)
 
         assert len(data["links"]) == 1
         link = data["links"][0]

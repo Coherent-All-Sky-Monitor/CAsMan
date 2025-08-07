@@ -15,19 +15,18 @@ from unittest.mock import patch
 import pytest
 import yaml
 
-from casman.config import (
+from casman.config.core import (
     ConfigManager,
-    EnvironmentConfig,
-    ConfigSchema,
     get_config,
     get_config_manager,
     load_config,
-    merge_configs,
     reload_config,
-    resolve_config_path,
     set_config,
     validate_config,
 )
+from casman.config.environments import EnvironmentConfig
+from casman.config.schema import ConfigSchema
+from casman.config.utils import merge_configs, resolve_config_path
 
 
 class TestConfigManager:

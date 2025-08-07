@@ -1,0 +1,33 @@
+#!/bin/bash
+# Pre-commit hook to update documentation
+# Install: cp .github/hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+echo "🔍 Checking for changes requiring documentation updates..."
+
+# Check if any Python files in casman/ have changed
+if git diff --cached --name-only | grep -E "(casman/.*\.py|docs/generate_docs\.py)" > /dev/null; then
+    echo "📚 Python source files changed, updating documentation..."
+    
+    # Generate new documentation
+    cd docs && python generate_docs.py && cd ..
+    
+    # Update coverage info
+    echo "📊 Updating coverage statistics..."
+    python .github/scripts/update_coverage.py
+    
+    # Stage any updated documentation files
+    git add docs/
+    git add README.md
+    
+    # Check if documentation was actually updated
+    if git diff --cached --name-only | grep -E "(docs/.*\.md|README\.md)" > /dev/null; then
+        echo "✅ Documentation updated and staged for commit"
+    else
+        echo "ℹ️  No documentation changes needed"
+    fi
+else
+    echo "ℹ️  No Python source changes detected, skipping documentation update"
+fi
+
+# Continue with the commit
+exit 0

@@ -8,7 +8,7 @@ project root detection.
 import os
 from typing import Optional
 
-from casman.config import get_config
+from casman.config.core import get_config
 
 
 def find_project_root() -> str:

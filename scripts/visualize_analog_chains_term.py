@@ -14,7 +14,7 @@ Run this script directly to print all assembly connections:
 The output will display each unique connection chain found in the database.
 """
 
-from casman.assembly import print_assembly_chains
+from casman.assembly.chains import print_assembly_chains
 
 
 def print_assembled_connections() -> None:

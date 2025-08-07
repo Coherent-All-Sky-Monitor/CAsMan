@@ -13,7 +13,7 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from flask import Flask, render_template_string, request
 
-from casman.config import get_config
+from casman.config.core import get_config
 
 sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "casman"))

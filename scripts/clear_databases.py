@@ -11,8 +11,8 @@ Usage:
     python clear_databases.py --parts --assembled  # Clears both (explicit)
 """
 
-from casman.database import get_database_path
-from casman.config import get_config
+from casman.database.connection import get_database_path
+from casman.config.core import get_config
 import sys
 import sqlite3
 import os

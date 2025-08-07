@@ -21,11 +21,11 @@ logger = logging.getLogger(__name__)
 def main():
     """
     Main entry point for the casman-scan command.
-    
+
     Launches the interactive assembly scanner.
     """
     import sys
-    
+
     # Check for help flag
     if len(sys.argv) > 1 and sys.argv[1] in ['--help', '-h', 'help']:
         print("casman-scan: Interactive Assembly Scanner")
@@ -57,7 +57,7 @@ def main():
         print("  casman-scan           Start interactive scanner")
         print("  casman-scan --help    Show this help message")
         return
-    
+
     # Launch interactive scanner
     scan_and_assemble_interactive()
 

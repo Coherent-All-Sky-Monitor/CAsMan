@@ -10,8 +10,8 @@ The images are resized and placed in rows on each page, then saved as a multi-pa
 import argparse
 import os
 
-from casman.barcode_utils import arrange_barcodes_in_pdf
-from casman.config import get_config
+from casman.barcode.operations import arrange_barcodes_in_pdf
+from casman.config.core import get_config
 
 
 def main() -> None:

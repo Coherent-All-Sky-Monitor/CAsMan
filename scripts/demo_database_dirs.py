@@ -18,13 +18,10 @@ Usage Examples:
 import os
 import tempfile
 
-from casman.database import (
-    check_part_in_db,
-    find_project_root,
-    get_database_path,
-    init_all_databases,
-)
-from casman.parts import generate_part_numbers
+from casman.database.operations import check_part_in_db
+from casman.database.connection import find_project_root, get_database_path
+from casman.database.initialization import init_all_databases
+from casman.parts.generation import generate_part_numbers
 
 
 def demo_automatic_detection() -> None:
@@ -109,7 +106,7 @@ def demo_script_usage() -> None:
     print()
 
     print("3. Programmatic usage with custom database:")
-    print("   from casman.assembly import scan_part")
+    print("   from casman.assembly.scan import scan_part")
     print("   scan_part('ANTP1-00001', 'LNAP1-00001', db_dir='/custom/path')")
     print()
 
