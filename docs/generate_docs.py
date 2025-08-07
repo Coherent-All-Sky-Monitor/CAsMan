@@ -218,13 +218,15 @@ def generate_cli_docs() -> str:
         "scan": {
             "description": "Scan and manage parts using barcode scanning",
             "subcommands": {
-                "stats": "Show assembly statistics",
-                "interactive": "Interactive scanning mode (removed)",
+                "interactive": "Interactive scanning mode",
             },
         },
         "visualize": {
             "description": "Visualize assembly chains",
-            "subcommands": {"chains": "Display ASCII visualization of assembly chains"},
+            "subcommands": {
+                "chains": "Display ASCII visualization of assembly chains",
+                "summary": "Show assembly summary statistics",
+            },
         },
         "barcode": {
             "description": "Generate barcodes and printable pages",
@@ -267,7 +269,7 @@ CAsMan is a comprehensive Python package for managing Coherent All-Sky Monitor (
 
 - **Part Management**: Track and manage electronic parts with barcode identification
 - **Assembly Tracking**: Record connections between parts with timestamps
-- **Visualization**: ASCII and web-based visualization of assembly chains
+- **Visualization**: ASCII visualization of assembly chains
 - **Barcode Generation**: Create and print barcodes for part identification
 - **Database Management**: SQLite-based storage for parts and assembly data
 - **Command Line Interface**: Comprehensive CLI tools for all operations
@@ -315,7 +317,6 @@ CAsMan is a comprehensive Python package for managing Coherent All-Sky Monitor (
   - `parts.py`: Part management functions
   - `visualization.py`: ASCII chain visualization
 - `scripts/`: Standalone utility scripts
-  - `visualize_analog_chains_web.py`: Web-based chain visualization
 - `database/`: SQLite database files
 - `barcodes/`: Generated barcode images
 - `tests/`: Unit tests

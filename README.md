@@ -1,10 +1,8 @@
-[![CI](https://github.com/Coherent-All-Sky-Monitor/CAsMan/actions/workflows/ci.yml/badge.svg)](https://github.com/Coherent-All-Sky-Monitor/CAsMan/actions/workflows/ci.yml)
-[![code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![codecov](https://codecov.io/gh/Coherent-All-Sky-Monitor/CAsMan/branch/main/graph/badge.svg)](https://codecov.io/gh/Coherent-All-Sky-Monitor/CAsMan)
+
 
 # CAsMan - CASM Assembly Manager
 
-A toolkit for managing and visualizing CASM (Coherent All-Sky Monitor) assembly processes. CAsMan provides scripts and a web interface for part management, barcode generation, assembly tracking, and visualization.
+A toolkit for managing and visualizing CASM (Coherent All-Sky Monitor) assembly processes. CAsMan provides scripts for part management, barcode generation, assembly tracking, and visualization.
 
 
 ```mermaid
@@ -45,18 +43,6 @@ pip install -e ".[dev]"
 
 ## Quick Start
 
-### Web Interface
-
-Start the web application:
-
-```bash
-casman web
-# or
-casman-web
-```
-
-Then open your browser to `http://localhost:5000`
-
 ### Command Line Usage
 
 ```bash
@@ -69,7 +55,6 @@ casman parts add
 
 # Scanning and assembly
 casman scan interactive
-casman scan stats
 
 # Visualization
 casman visualize chains
@@ -97,43 +82,29 @@ casman-visualize
 casman-barcode ANTENNA 1 50
 ```
 
-## Web Interface
-
-The web interface provides:
-
-- **Dashboard**: Overview of parts, scans, and assembly chains
-- **Parts Management**: Browse, filter, and add new parts
-- **Scanning Interface**: Web-based barcode scanning for assembly
-- **Visualization**: Interactive graphs and ASCII chain display
-- **REST API**: JSON API for integration with other tools
-
-### API Endpoints
-
-- `GET /api/parts` - List parts with optional filtering
-- `POST /api/scan` - Scan a part for assembly
-- `GET /api/visualization-data` - Get data for interactive visualization
-- `GET /api/stats` - Get assembly and part statistics
-
 ## Package Structure
 
 ```
 casman/
 ├── __init__.py           # Package initialization
-├── cli.py               # Command-line interface
-├── web_app.py           # Flask web application
-├── database.py          # Database management
-├── parts.py             # Part management
-├── assembly.py          # Assembly and scanning
-├── visualization.py     # Visualization tools
-├── barcode_utils.py     # Barcode generation
-├── templates/           # HTML templates for web interface
-│   ├── base.html
-│   ├── dashboard.html
-│   ├── parts.html
-│   ├── add_parts.html
-│   ├── scan.html
-│   ├── visualization.html
-│   └── error.html
+├── cli.py               # Command-line interface entry point
+├── cli/                 # CLI command modules
+│   ├── main.py         # Main CLI logic
+│   ├── parts_commands.py
+│   ├── assembly_commands.py
+│   ├── barcode_commands.py
+│   └── visualization_commands.py
+├── assembly.py          # Assembly and scanning (legacy)
+├── assembly/            # Assembly modules
+├── parts/               # Part management modules
+├── database/            # Database operations
+├── visualization.py     # Visualization tools (legacy)
+├── visualization/       # Visualization modules
+│   ├── core.py         # Core visualization functions
+│   └── web.py          # Web visualization utilities
+├── barcode_utils.py     # Barcode generation (legacy)
+├── barcode/             # Barcode modules
+├── config/              # Configuration modules
 └── static/
     └── fonts/           # Fonts for barcode generation
 ```
@@ -180,19 +151,18 @@ flake8 casman/
 mypy casman/
 ```
 
-### Running the Web Application in Development
+### Running the CLI in Development
 
 ```bash
-# With debug mode enabled
-casman web --debug --host 0.0.0.0 --port 5000
+# Run commands directly from source
+python -m casman.cli --help
 ```
 
 ### Adding New Features
 
-1. **New CLI Commands**: Add to `cli.py` and create corresponding functions
-2. **Web Routes**: Add to `web_app.py` with appropriate templates
-3. **Database Changes**: Update `database.py` with new table schemas
-4. **New Part Types**: Update `PART_TYPES` in `parts.py`
+1. **New CLI Commands**: Add to `casman/cli/` modules and update main.py
+2. **Database Changes**: Update modules in `casman/database/`
+3. **New Part Types**: Update `PART_TYPES` in part type definitions
 
 ## Migration from Scripts
 
@@ -204,9 +174,7 @@ This package replaces the individual scripts in the `scripts/` directory:
 | `read_parts_db.py` | `casman parts list` | `casman.parts` |
 | `scan_and_assemble.py` | `casman scan interactive` | `casman.assembly` |
 | `visualize_analog_chains_term.py` | `casman visualize chains` | `casman.visualization` |
-| `visualize_analog_chains_web.py` | `casman web` | `casman.web_app` |
 | `gen_barcode_printpages.py` | `casman barcode printpages` | `casman.barcode_utils` |
-| `print_connections_database.py` | `casman visualize chains` | `casman.visualization` |
 
 ## Dependencies
 
@@ -251,13 +219,11 @@ For issues and questions:
 ### Version 1.0.0
 
 - Complete refactoring of script-based tools into installable package
-- New Flask web interface with modern Bootstrap UI
 - Comprehensive CLI with subcommands
 - Improved database management with proper schemas
-- Interactive visualization with vis.js
-- REST API for integration
+- Basic ASCII visualization functionality
 - Comprehensive documentation and type hints
-- Production-ready packaging with setuptools and pyproject.toml
+- Production-ready packaging with setup tools and project configuration
 
 ## Usage Examples
 
