@@ -4,19 +4,31 @@ Tests for the enhanced database package.
 These tests cover the new modular database functionality including
 connection management, operations, and migration utilities.
 """
+
 import tempfile
 from unittest.mock import patch
 
 import pytest
 
-from casman.database import (DatabaseMigrator, backup_database,
-                             check_database_integrity, get_table_info)
+from casman.database import (
+    DatabaseMigrator,
+    backup_database,
+    check_database_integrity,
+    get_table_info,
+)
 from casman.database.connection import find_project_root, get_database_path
-from casman.database.initialization import (init_all_databases,
-                                            init_assembled_db, init_parts_db)
-from casman.database.operations import (check_part_in_db, get_all_parts,
-                                        get_assembly_records, get_last_update,
-                                        get_parts_by_criteria)
+from casman.database.initialization import (
+    init_all_databases,
+    init_assembled_db,
+    init_parts_db,
+)
+from casman.database.operations import (
+    check_part_in_db,
+    get_all_parts,
+    get_assembly_records,
+    get_last_update,
+    get_parts_by_criteria,
+)
 
 
 class TestDatabaseConnection:
@@ -40,7 +52,7 @@ class TestDatabaseConnection:
             path = get_database_path("test.db", temp_dir)
             assert path == f"{temp_dir}/test.db"
 
-    @patch('casman.database.connection.get_config')
+    @patch("casman.database.connection.get_config")
     def test_get_database_path_config_override(self, mock_get_config):
         """Test database path resolution with config override."""
         mock_get_config.return_value = "/custom/path/parts.db"
@@ -107,8 +119,7 @@ class TestDatabaseOperations:
         """Test checking for non-existent part."""
         with tempfile.TemporaryDirectory() as temp_dir:
             init_parts_db(temp_dir)
-            exists, polarization = check_part_in_db(
-                "NONEXISTENT", "ANTENNA", temp_dir)
+            exists, polarization = check_part_in_db("NONEXISTENT", "ANTENNA", temp_dir)
             assert not exists
             assert polarization is None
 
@@ -179,10 +190,10 @@ class TestDatabaseMigrations:
 
             assert len(info) > 0
             # Check for expected columns
-            column_names = [col['name'] for col in info]
-            assert 'id' in column_names
-            assert 'part_number' in column_names
-            assert 'part_type' in column_names
+            column_names = [col["name"] for col in info]
+            assert "id" in column_names
+            assert "part_number" in column_names
+            assert "part_type" in column_names
 
     def test_backup_database(self):
         """Test database backup functionality."""
@@ -208,14 +219,22 @@ class TestDatabasePackageIntegration:
 
     def test_package_imports(self):
         """Test that all expected functions are available from package."""
-        from casman.database import (DatabaseMigrator, backup_database,
-                                     check_database_integrity,
-                                     check_part_in_db, find_project_root,
-                                     get_all_parts, get_assembly_records,
-                                     get_database_path, get_last_update,
-                                     get_parts_by_criteria, get_table_info,
-                                     init_all_databases, init_assembled_db,
-                                     init_parts_db)
+        from casman.database import (
+            DatabaseMigrator,
+            backup_database,
+            check_database_integrity,
+            check_part_in_db,
+            find_project_root,
+            get_all_parts,
+            get_assembly_records,
+            get_database_path,
+            get_last_update,
+            get_parts_by_criteria,
+            get_table_info,
+            init_all_databases,
+            init_assembled_db,
+            init_parts_db,
+        )
 
         # All imports should succeed
         assert callable(find_project_root)

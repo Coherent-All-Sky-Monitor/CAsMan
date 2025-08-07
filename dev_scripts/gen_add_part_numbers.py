@@ -176,7 +176,7 @@ def generate_new_parts(part_type: int, count: int, polarization: str) -> None:
         last_number = 0
 
     # Generate new part numbers
-    if polarization not in ['1', '2']:
+    if polarization not in ["1", "2"]:
         print("Invalid polarization. Please enter 1 or 2.")
         return
 
@@ -203,8 +203,7 @@ def main() -> None:
         print(f"{key}: {name}")
 
     try:
-        type_selection = int(
-            input("Enter the number corresponding to the part type: "))
+        type_selection = int(input("Enter the number corresponding to the part type: "))
         if type_selection not in part_types:
             print("Invalid selection. Please enter a valid number.")
             return

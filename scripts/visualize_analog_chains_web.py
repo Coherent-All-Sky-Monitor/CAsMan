@@ -1,11 +1,9 @@
-
 """
 visualize_analog_chains_web.py
 
 A Flask web application to visualize the analog chain from parts recorded in the
 assembled_casm.db database.
 """
-
 
 import os
 import sqlite3
@@ -17,22 +15,17 @@ from flask import Flask, render_template_string, request
 from casman.config import get_config
 
 sys.path.insert(
-    0,
-    os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__),
-            '..',
-            'casman')))
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "casman"))
+)
 app = Flask(__name__)
 
 
 def load_template() -> str:
     """Load the HTML template from file."""
     template_path = os.path.join(
-        os.path.dirname(__file__),
-        'templates',
-        'analog_chains.html')
-    with open(template_path, 'r', encoding='utf-8') as f:
+        os.path.dirname(__file__), "templates", "analog_chains.html"
+    )
+    with open(template_path, "r", encoding="utf-8") as f:
         return f.read()
 
 
@@ -47,8 +40,7 @@ def index() -> str:
         Rendered HTML page as a string.
     """
     # Get the selected part from the form (if POST), otherwise None
-    selected_part = request.form.get(
-        "part") if request.method == "POST" else None
+    selected_part = request.form.get("part") if request.method == "POST" else None
     # Fetch all unique parts
     parts = get_all_parts()
     # Fetch all chains and connection data
@@ -89,8 +81,10 @@ def get_all_parts() -> List[str]:
 
 
 def get_all_chains(
-        selected_part: Optional[str] = None
-) -> Tuple[List[List[str]], Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]]]:
+    selected_part: Optional[str] = None,
+) -> Tuple[
+    List[List[str]], Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]]
+]:
     """
     Fetch all connection chains from the assembled_casm.db database.
 
@@ -114,11 +108,9 @@ def get_all_chains(
         "FROM assembly"
     )
     records = c.fetchall()
-    connections: Dict[str, Tuple[Optional[str],
-                                 Optional[str], Optional[str]]] = {}
+    connections: Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]] = {}
     for part_number, connected_to, scan_time, connected_scan_time in records:
-        connections[part_number] = (
-            connected_to, scan_time, connected_scan_time)
+        connections[part_number] = (connected_to, scan_time, connected_scan_time)
     conn.close()
     all_chains: List[List[str]] = []
     visited: Set[str] = set()
@@ -192,14 +184,15 @@ def format_display_data(
 
     now_time: Optional[str] = None
     nxt_time: Optional[str] = None
-    part_row: Optional[Tuple[Optional[str], Optional[str],
-                             Optional[str]]] = connections.get(part)
+    part_row: Optional[Tuple[Optional[str], Optional[str], Optional[str]]] = (
+        connections.get(part)
+    )
     if part_row is not None:
         now_time = part_row[1]  # scan_time
         nxt_time = part_row[2]  # connected_scan_time
 
     # Use a fixed-width whitespace string for missing timestamps
-    ts_placeholder = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+    ts_placeholder = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
 
     def ts(val: Optional[str]) -> str:
         return val if val else ts_placeholder
@@ -238,9 +231,8 @@ def get_last_update() -> Optional[str]:
 
 
 def run_flask_with_free_port(
-        app: Flask,
-        start_port: int = 5000,
-        max_tries: int = 10) -> None:
+    app: Flask, start_port: int = 5000, max_tries: int = 10
+) -> None:
     """
     Run the Flask app, automatically finding a free port if the default is busy.
 
@@ -250,6 +242,7 @@ def run_flask_with_free_port(
         max_tries (int): Maximum number of ports to try.
     """
     import socket
+
     port = start_port
     for _ in range(max_tries):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -268,7 +261,8 @@ def run_flask_with_free_port(
                 raise
     else:
         print(
-            f"Could not find a free port in range {start_port}-{start_port+max_tries-1}")
+            f"Could not find a free port in range {start_port}-{start_port+max_tries-1}"
+        )
 
 
 if __name__ == "__main__":

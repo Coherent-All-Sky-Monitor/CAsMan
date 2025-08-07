@@ -18,8 +18,12 @@ Usage Examples:
 import os
 import tempfile
 
-from casman.database import (check_part_in_db, find_project_root,
-                             get_database_path, init_all_databases)
+from casman.database import (
+    check_part_in_db,
+    find_project_root,
+    get_database_path,
+    init_all_databases,
+)
 from casman.parts import generate_part_numbers
 
 
@@ -58,8 +62,7 @@ def demo_custom_database_directory() -> None:
 
         # Show the created database files
         parts_db_path = get_database_path("parts.db", custom_db_dir)
-        assembly_db_path = get_database_path(
-            "assembled_casm.db", custom_db_dir)
+        assembly_db_path = get_database_path("assembled_casm.db", custom_db_dir)
         print(f"Custom parts DB: {parts_db_path}")
         print(f"Custom assembly DB: {assembly_db_path}")
         print(f"Parts DB exists: {os.path.exists(parts_db_path)}")
@@ -69,16 +72,19 @@ def demo_custom_database_directory() -> None:
         print("\nGenerating sample parts in custom database...")
         try:
             sample_parts = generate_part_numbers(
-                "ANTENNA", 3, "1", db_dir=custom_db_dir)
+                "ANTENNA", 3, "1", db_dir=custom_db_dir
+            )
             print(f"Generated parts: {sample_parts}")
 
             # Check if a part exists in the custom database
             if sample_parts:
                 exists, polarization = check_part_in_db(
-                    sample_parts[0], "ANTENNA", db_dir=custom_db_dir)
+                    sample_parts[0], "ANTENNA", db_dir=custom_db_dir
+                )
                 print(
                     f"Part {sample_parts[0]} exists in custom DB: {exists}, \
-                        polarization: {polarization}")
+                        polarization: {polarization}"
+                )
 
         except (ValueError, OSError) as e:
             print(f"Error generating parts: {e}")

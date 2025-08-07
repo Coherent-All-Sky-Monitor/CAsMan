@@ -43,7 +43,8 @@ def print_stop_sign() -> None:
         "             █████████████████████████████████████████            \n"
         "               █████████████████████████████████████                \n"
         "                 █████████████████████████████████               \n"
-        "\x1b[0m")
+        "\x1b[0m"
+    )
     print(stop_sign)
 
 
@@ -57,14 +58,21 @@ def clear_parts_db(db_dir: str) -> None:
         return
     print_stop_sign()
     print(
-        f"WARNING: This will DELETE ALL records from the parts database at: {db_path}")
-    confirm1 = input(
-        "Are you sure you want to clear the parts database? (yes/no): ").strip().lower()
+        f"WARNING: This will DELETE ALL records from the parts database at: {db_path}"
+    )
+    confirm1 = (
+        input("Are you sure you want to clear the parts database? (yes/no): ")
+        .strip()
+        .lower()
+    )
     if confirm1 != "yes":
         print("Aborted.")
         return
-    confirm2 = input(
-        "This action is IRREVERSIBLE. Type 'yes' again to confirm: ").strip().lower()
+    confirm2 = (
+        input("This action is IRREVERSIBLE. Type 'yes' again to confirm: ")
+        .strip()
+        .lower()
+    )
     if confirm2 != "yes":
         print("Aborted.")
         return
@@ -90,14 +98,21 @@ def clear_assembled_db() -> None:
         sys.exit(1)
     print_stop_sign()
     print(
-        f"WARNING: This will DELETE ALL records from the assembled_casm database at: {db_path}")
-    confirm1 = input(
-        "Are you sure you want to clear the assembled_casm database? (yes/no): ").strip().lower()
+        f"WARNING: This will DELETE ALL records from the assembled_casm database at: {db_path}"
+    )
+    confirm1 = (
+        input("Are you sure you want to clear the assembled_casm database? (yes/no): ")
+        .strip()
+        .lower()
+    )
     if confirm1 != "yes":
         print("Aborted.")
         return
-    confirm2 = input(
-        "This action is IRREVERSIBLE. Type 'yes' again to confirm: ").strip().lower()
+    confirm2 = (
+        input("This action is IRREVERSIBLE. Type 'yes' again to confirm: ")
+        .strip()
+        .lower()
+    )
     if confirm2 != "yes":
         print("Aborted.")
         return
@@ -115,14 +130,10 @@ def clear_assembled_db() -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Clear CAsMan databases.")
+    parser.add_argument("--parts", action="store_true", help="Clear parts.db only")
     parser.add_argument(
-        '--parts',
-        action='store_true',
-        help='Clear parts.db only')
-    parser.add_argument(
-        '--assembled',
-        action='store_true',
-        help='Clear assembled_casm.db only')
+        "--assembled", action="store_true", help="Clear assembled_casm.db only"
+    )
     args = parser.parse_args()
 
     # Default: clear both if no argument is given

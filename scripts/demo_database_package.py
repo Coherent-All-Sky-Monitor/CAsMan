@@ -8,9 +8,13 @@ migrations, backups, and integrity checking.
 
 import tempfile
 
-from casman.database import (DatabaseMigrator, backup_database,
-                             check_database_integrity, get_table_info,
-                             init_all_databases)
+from casman.database import (
+    DatabaseMigrator,
+    backup_database,
+    check_database_integrity,
+    get_table_info,
+    init_all_databases,
+)
 
 
 def main():
@@ -31,15 +35,14 @@ def main():
         parts_ok = check_database_integrity("parts.db", temp_dir)
         assembly_ok = check_database_integrity("assembled_casm.db", temp_dir)
         print(f"   ✅ Parts DB integrity: {'OK' if parts_ok else 'FAILED'}")
-        print(
-            f"   ✅ Assembly DB integrity: {'OK' if assembly_ok else 'FAILED'}")
+        print(f"   ✅ Assembly DB integrity: {'OK' if assembly_ok else 'FAILED'}")
 
         # 3. Get table information
         print("\n3️⃣  Analyzing table structure...")
         parts_table_info = get_table_info("parts.db", "parts", temp_dir)
         print(f"   📊 Parts table has {len(parts_table_info)} columns:")
         for col in parts_table_info:
-            pk_indicator = " (PK)" if col['pk'] else ""
+            pk_indicator = " (PK)" if col["pk"] else ""
             print(f"      - {col['name']}: {col['type']}{pk_indicator}")
 
         # 4. Test migration system
@@ -50,9 +53,9 @@ def main():
 
         # Check if we need to run a migration
         table_info_before = get_table_info("parts.db", "parts", temp_dir)
-        column_names = [col['name'] for col in table_info_before]
+        column_names = [col["name"] for col in table_info_before]
 
-        if 'demo_field' not in column_names:
+        if "demo_field" not in column_names:
             # Add a test column via migration
             migration_sql = "ALTER TABLE parts ADD COLUMN demo_field TEXT"
             try:
@@ -61,10 +64,8 @@ def main():
                 print(f"   📈 Schema version after migration: {new_version}")
 
                 # Verify the new column was added
-                updated_table_info = get_table_info(
-                    "parts.db", "parts", temp_dir)
-                print(
-                    f"   📊 Parts table now has {len(updated_table_info)} columns")
+                updated_table_info = get_table_info("parts.db", "parts", temp_dir)
+                print(f"   📊 Parts table now has {len(updated_table_info)} columns")
                 print("   ✅ Successfully added 'demo_field' column via migration")
             except RuntimeError as e:
                 print(f"   ⚠️  Migration skipped: {e}")
@@ -78,7 +79,9 @@ def main():
 
         print("\n🎉 Database package demo completed successfully!")
         print("\nKey Features Demonstrated:")
-        print("  • Modular database structure (connection, initialization, operations, migrations)")
+        print(
+            "  • Modular database structure (connection, initialization, operations, migrations)"
+        )
         print("  • Database integrity checking")
         print("  • Table structure inspection")
         print("  • Schema migration system with versioning")

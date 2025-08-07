@@ -9,9 +9,13 @@ from .assembly_commands import cmd_assemble, cmd_scan
 from .barcode_commands import cmd_barcode
 from .main import main
 from .parts_commands import cmd_parts
-from .utils import (show_commands_list, show_completion_help,
-                    show_help_with_completion, show_unknown_command_error,
-                    show_version)
+from .utils import (
+    show_commands_list,
+    show_completion_help,
+    show_help_with_completion,
+    show_unknown_command_error,
+    show_version,
+)
 from .visualization_commands import cmd_visualize
 
 # Import functions that tests still expect to be available
@@ -45,21 +49,21 @@ except ImportError:
 
 
 __all__ = [
-    'main',
-    'cmd_parts',
-    'cmd_scan',
-    'cmd_assemble',
-    'cmd_barcode',
-    'cmd_visualize',
-    'show_completion_help',
-    'show_version',
-    'show_commands_list',
-    'show_help_with_completion',
-    'show_unknown_command_error',
+    "main",
+    "cmd_parts",
+    "cmd_scan",
+    "cmd_assemble",
+    "cmd_barcode",
+    "cmd_visualize",
+    "show_completion_help",
+    "show_version",
+    "show_commands_list",
+    "show_help_with_completion",
+    "show_unknown_command_error",
     # Functions that tests expect
-    'add_parts_interactive',
-    'get_parts_by_criteria',
-    'get_assembly_stats',
-    'format_ascii_chains',
-    'generate_barcode_printpages',
+    "add_parts_interactive",
+    "get_parts_by_criteria",
+    "get_assembly_stats",
+    "format_ascii_chains",
+    "generate_barcode_printpages",
 ]

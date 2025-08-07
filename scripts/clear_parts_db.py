@@ -47,6 +47,7 @@ def clear_database(db_dir: str) -> None:
 
     print("Database cleared successfully.")
 
+
 # Parse command-line arguments
 
 
@@ -72,16 +73,18 @@ def main() -> None:
     db_dir = args.db_dir  # Use the argument parser to get the database directory
     print(f"Defaulting to database directory: {os.path.abspath(db_dir)}")
 
-    print("WARNING: This action will delete all records in the database and cannot be undone.")
-    confirmation1 = input(
-        "Are you sure you want to proceed? (yes/no): ").strip().lower()
+    print(
+        "WARNING: This action will delete all records in the database and cannot be undone."
+    )
+    confirmation1 = (
+        input("Are you sure you want to proceed? (yes/no): ").strip().lower()
+    )
 
     if confirmation1 != "yes":
         print("Operation cancelled by the user.")
         return
 
-    confirmation2 = input(
-        "Please type 'DELETE' to confirm deletion: ").strip().upper()
+    confirmation2 = input("Please type 'DELETE' to confirm deletion: ").strip().upper()
 
     if confirmation2 != "DELETE":
         print("Operation cancelled. You did not type 'DELETE'.")

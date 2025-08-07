@@ -47,7 +47,8 @@ class DatabaseMigrator:
 
         try:
             c.execute(
-                "SELECT version FROM schema_version ORDER BY version DESC LIMIT 1")
+                "SELECT version FROM schema_version ORDER BY version DESC LIMIT 1"
+            )
             result = c.fetchone()
             version = result[0] if result else 0
         except sqlite3.OperationalError:
@@ -71,10 +72,12 @@ class DatabaseMigrator:
         c = conn.cursor()
 
         # Create schema_version table if it doesn't exist
-        c.execute("""CREATE TABLE IF NOT EXISTS schema_version (
+        c.execute(
+            """CREATE TABLE IF NOT EXISTS schema_version (
             version INTEGER PRIMARY KEY,
             applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )""")
+        )"""
+        )
 
         # Insert new version
         c.execute("INSERT INTO schema_version (version) VALUES (?)", (version,))
@@ -111,9 +114,8 @@ class DatabaseMigrator:
 
 
 def get_table_info(
-        db_name: str,
-        table_name: str,
-        db_dir: Optional[str] = None) -> List[Dict]:
+    db_name: str, table_name: str, db_dir: Optional[str] = None
+) -> List[Dict]:
     """
     Get information about table columns and structure.
 
@@ -141,20 +143,23 @@ def get_table_info(
     # Convert to dictionary format
     column_info = []
     for col in columns:
-        column_info.append({
-            'cid': col[0],
-            'name': col[1],
-            'type': col[2],
-            'notnull': bool(col[3]),
-            'default_value': col[4],
-            'pk': bool(col[5])
-        })
+        column_info.append(
+            {
+                "cid": col[0],
+                "name": col[1],
+                "type": col[2],
+                "notnull": bool(col[3]),
+                "default_value": col[4],
+                "pk": bool(col[5]),
+            }
+        )
 
     return column_info
 
 
-def backup_database(db_name: str, backup_suffix: str = "backup",
-                    db_dir: Optional[str] = None) -> str:
+def backup_database(
+    db_name: str, backup_suffix: str = "backup", db_dir: Optional[str] = None
+) -> str:
     """
     Create a backup of the database before migration.
 
@@ -184,8 +189,7 @@ def backup_database(db_name: str, backup_suffix: str = "backup",
     return backup_path
 
 
-def check_database_integrity(db_name: str,
-                             db_dir: Optional[str] = None) -> bool:
+def check_database_integrity(db_name: str, db_dir: Optional[str] = None) -> bool:
     """
     Check database integrity using SQLite's built-in integrity check.
 

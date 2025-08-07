@@ -38,17 +38,25 @@ def print_db_schema(db_path: str) -> None:
             # Use user-suggested abbreviations for the assembly table
             if table == "assembly":
                 abbr_names = [
-                    "id", "part_#", "Partype", "pol", "start scan",
-                    "connected", "Contype", "conn_pol", "Finish time"
+                    "id",
+                    "part_#",
+                    "Partype",
+                    "pol",
+                    "start scan",
+                    "connected",
+                    "Contype",
+                    "conn_pol",
+                    "Finish time",
                 ]
             else:
+
                 def abbr(s: str) -> str:
                     return s[:8]
+
                 abbr_names = [abbr(n) for n in col_names]
             col_widths = [
-                max(
-                    len(abbr_names[i]), *(len(str(row[i])) for row in rows)
-                ) for i in range(len(col_names))
+                max(len(abbr_names[i]), *(len(str(row[i])) for row in rows))
+                for i in range(len(col_names))
             ]
             table_width = sum(col_widths) + 3 * len(col_widths) + 1
             try:
@@ -59,19 +67,26 @@ def print_db_schema(db_path: str) -> None:
                 # Extended ASCII box drawing
                 def h(char: str, width: int) -> str:
                     return char * width
+
                 top = "  ┌" + "┬".join(h("─", w + 2) for w in col_widths) + "┐"
-                header = "  │ " + " │ ".join(f"{abbr_names[i]:<{col_widths[i]}}"
-                                             for i in range(len(col_names))) + " │"
+                header = (
+                    "  │ "
+                    + " │ ".join(
+                        f"{abbr_names[i]:<{col_widths[i]}}"
+                        for i in range(len(col_names))
+                    )
+                    + " │"
+                )
                 sep = "  ├" + "┼".join(h("─", w + 2) for w in col_widths) + "┤"
-                bottom = "  └" + "┴".join(h("─", w + 2)
-                                          for w in col_widths) + "┘"
+                bottom = "  └" + "┴".join(h("─", w + 2) for w in col_widths) + "┘"
                 print(top)
                 print(header)
                 print(sep)
                 for row in rows:
                     row_str = " │ ".join(
-                        f"{str(x) if x is not None else 'NULL':<{col_widths[i]}}" for i,
-                        x in enumerate(row))
+                        f"{str(x) if x is not None else 'NULL':<{col_widths[i]}}"
+                        for i, x in enumerate(row)
+                    )
                     print(f"  │ {row_str} │")
                 print(bottom)
             else:
@@ -81,7 +96,8 @@ def print_db_schema(db_path: str) -> None:
                     for i, val in enumerate(row):
                         print(
                             f"  {abbr_names[i]:<{max(8, len(abbr_names[i]))}} : \
-                                {val if val is not None else 'NULL'}")
+                                {val if val is not None else 'NULL'}"
+                        )
                     print(sep_line)
         else:
             print("  (No entries in this table)\n")
@@ -89,9 +105,7 @@ def print_db_schema(db_path: str) -> None:
 
 
 if __name__ == "__main__":
-    assembled_db_path = get_config(
-        "CASMAN_ASSEMBLED_DB",
-        "database/assembled_casm.db")
+    assembled_db_path = get_config("CASMAN_ASSEMBLED_DB", "database/assembled_casm.db")
     if assembled_db_path is None:
         raise RuntimeError("Could not determine path to assembled_casm.db")
     print_db_schema(str(assembled_db_path))

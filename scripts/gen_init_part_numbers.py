@@ -1,4 +1,3 @@
-
 """
 gen_init_part_numbers.py
 
@@ -7,7 +6,6 @@ Supports generating for a single part type or all types in one run.
 Prompts user for part type, count, and polarization, \
     and uses the casman module for all DB and barcode operations.
 """
-
 
 import argparse
 from typing import List, Optional
@@ -41,7 +39,8 @@ def main() -> None:
     """
 
     parser = argparse.ArgumentParser(
-        description="Generate initial part numbers and barcodes.")
+        description="Generate initial part numbers and barcodes."
+    )
     default_db_dir = get_config("CASMAN_DB_DIR", "database")
     parser.add_argument(
         "--db_dir",
@@ -61,8 +60,7 @@ def main() -> None:
             print(f"{key}: {name}")
     print("7: ALL (generate for all part types except SNAP)")
 
-    type_selection = prompt_int(
-        "Enter the number corresponding to the part type: ")
+    type_selection = prompt_int("Enter the number corresponding to the part type: ")
     if type_selection not in PART_TYPES and type_selection != 7:
         print("Invalid selection. Please enter a valid number.")
         return
@@ -87,20 +85,21 @@ def main() -> None:
                 )
                 if new_part_numbers:
                     all_generated_parts.extend(new_part_numbers)
-                    print(
-                        f"Generated {len(new_part_numbers)} {part_type_name} parts")
+                    print(f"Generated {len(new_part_numbers)} {part_type_name} parts")
             except (ValueError, OSError, RuntimeError) as e:
                 print(f"Error generating {part_type_name} parts: {e}")
         if all_generated_parts:
             print(
-                f"\nSuccessfully generated {len(all_generated_parts)} total part numbers:")
+                f"\nSuccessfully generated {len(all_generated_parts)} total part numbers:"
+            )
             for part_number in all_generated_parts:
                 print(f"  Generated {part_number}")
         else:
             print("No part numbers were generated.")
     else:
         count = prompt_int(
-            f"Enter number of parts for {PART_TYPES[type_selection][0]}: ")
+            f"Enter number of parts for {PART_TYPES[type_selection][0]}: "
+        )
         polarization = prompt_polarization()
         part_type_name, _ = PART_TYPES[type_selection]
         try:
@@ -109,7 +108,8 @@ def main() -> None:
             )
             if single_part_numbers:
                 print(
-                    f"\nSuccessfully generated {len(single_part_numbers)} part numbers:")
+                    f"\nSuccessfully generated {len(single_part_numbers)} part numbers:"
+                )
                 for part_number in single_part_numbers:
                     print(f"  Generated {part_number}")
             else:
@@ -121,6 +121,7 @@ def main() -> None:
 if __name__ == "__main__":
     main()
     import sys
+
     sys.exit(0)
 
 

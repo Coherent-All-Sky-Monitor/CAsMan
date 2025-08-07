@@ -4,15 +4,24 @@ Additional tests for enhanced parts functionality.
 These tests cover the new Part class, validation functions, and search capabilities
 added to the parts package.
 """
+
 import tempfile
 
 import pytest
 
 from casman.database import init_parts_db
-from casman.parts import (Part, create_part, find_part, get_part_info,
-                          get_part_statistics, normalize_part_number,
-                          search_parts, validate_part_number,
-                          validate_part_type, validate_polarization)
+from casman.parts import (
+    Part,
+    create_part,
+    find_part,
+    get_part_info,
+    get_part_statistics,
+    normalize_part_number,
+    search_parts,
+    validate_part_number,
+    validate_part_type,
+    validate_polarization,
+)
 
 
 class TestPartValidation:
@@ -54,11 +63,11 @@ class TestPartValidation:
         """Test part info extraction from valid part numbers."""
         info = get_part_info("ANT-P1-00001")
         assert info is not None
-        assert info['prefix'] == "ANT"
-        assert info['part_type'] == "ANTENNA"
-        assert info['polarization'] == "P1"
-        assert info['number'] == "00001"
-        assert info['full_number'] == "ANT-P1-00001"
+        assert info["prefix"] == "ANT"
+        assert info["part_type"] == "ANTENNA"
+        assert info["polarization"] == "P1"
+        assert info["number"] == "00001"
+        assert info["full_number"] == "ANT-P1-00001"
 
     def test_get_part_info_invalid(self):
         """Test part info extraction from invalid part numbers."""
@@ -130,41 +139,42 @@ class TestPartClass:
         part = Part("ANT-P1-00001")
         data = part.to_dict()
 
-        assert data['part_number'] == "ANT-P1-00001"
-        assert data['part_type'] == "ANTENNA"
-        assert data['polarization'] == "P1"
-        assert 'date_created' in data
-        assert 'date_modified' in data
+        assert data["part_number"] == "ANT-P1-00001"
+        assert data["part_type"] == "ANTENNA"
+        assert data["polarization"] == "P1"
+        assert "date_created" in data
+        assert "date_modified" in data
 
     def test_part_from_dict(self):
         """Test Part creation from dictionary."""
         data = {
-            'part_number': 'LNA-P2-00123',
-            'part_type': 'LNA',
-            'polarization': 'P2',
-            'date_created': '2024-01-01 10:00:00',
-            'date_modified': '2024-01-01 10:00:00'
+            "part_number": "LNA-P2-00123",
+            "part_type": "LNA",
+            "polarization": "P2",
+            "date_created": "2024-01-01 10:00:00",
+            "date_modified": "2024-01-01 10:00:00",
         }
         part = Part.from_dict(data)
 
-        assert part.part_number == 'LNA-P2-00123'
-        assert part.part_type == 'LNA'
-        assert part.date_created == '2024-01-01 10:00:00'
+        assert part.part_number == "LNA-P2-00123"
+        assert part.part_type == "LNA"
+        assert part.date_created == "2024-01-01 10:00:00"
 
     def test_part_from_database_row(self):
         """Test Part creation from database row."""
         row = (
             1,
-            'BAC-PV-00001',
-            'BACBOARD',
-            'PV',
-            '2024-01-01 10:00:00',
-            '2024-01-01 10:00:00')
+            "BAC-PV-00001",
+            "BACBOARD",
+            "PV",
+            "2024-01-01 10:00:00",
+            "2024-01-01 10:00:00",
+        )
         part = Part.from_database_row(row)
 
-        assert part.part_number == 'BAC-PV-00001'
-        assert part.part_type == 'BACBOARD'
-        assert part.polarization == 'PV'
+        assert part.part_number == "BAC-PV-00001"
+        assert part.part_type == "BACBOARD"
+        assert part.polarization == "PV"
 
     def test_part_barcode_filename(self):
         """Test barcode filename generation."""
@@ -196,8 +206,8 @@ class TestPartSearch:
     def test_get_part_statistics_empty_db(self, temp_db):
         """Test getting statistics from empty database."""
         stats = get_part_statistics(db_dir=temp_db)
-        assert stats['total_parts'] == 0
-        assert stats['latest_part']['part_number'] is None
+        assert stats["total_parts"] == 0
+        assert stats["latest_part"]["part_number"] is None
 
     def test_find_part_not_found(self, temp_db):
         """Test finding non-existent part."""

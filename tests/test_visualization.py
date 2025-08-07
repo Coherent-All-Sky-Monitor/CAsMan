@@ -6,8 +6,11 @@ import sqlite3
 import pytest
 
 from casman.database import init_assembled_db
-from casman.visualization import (format_ascii_chains, get_chain_summary,
-                                  get_visualization_data)
+from casman.visualization import (
+    format_ascii_chains,
+    get_chain_summary,
+    get_visualization_data,
+)
 
 
 class TestVisualization:
@@ -19,18 +22,14 @@ class TestVisualization:
         assert "No assembly connections found." in result
 
     def test_format_ascii_chains_with_data(
-            self,
-            temporary_directory: str,
-            monkeypatch: pytest.MonkeyPatch) -> None:
+        self, temporary_directory: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test formatting ASCII chains with sample data."""
         db_path = os.path.join(temporary_directory, "assembled_casm.db")
         monkeypatch.setenv("CASMAN_ASSEMBLED_DB", db_path)
         init_assembled_db(temporary_directory)
         # Insert test data
-        conn = sqlite3.connect(
-            os.path.join(
-                temporary_directory,
-                "assembled_casm.db"))
+        conn = sqlite3.connect(os.path.join(temporary_directory, "assembled_casm.db"))
         cursor = conn.cursor()
 
         test_connections = [
@@ -42,7 +41,8 @@ class TestVisualization:
         for connection in test_connections:
             cursor.execute(
                 "INSERT INTO assembly (part_number, connected_to, scan_time) VALUES (?, ?, ?)",
-                connection)
+                connection,
+            )
 
         conn.commit()
         conn.close()
@@ -63,18 +63,14 @@ class TestVisualization:
         assert not data["links"]
 
     def test_get_visualization_data_with_data(
-            self,
-            temporary_directory: str,
-            monkeypatch: pytest.MonkeyPatch) -> None:
+        self, temporary_directory: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test getting visualization data with sample data."""
         db_path = os.path.join(temporary_directory, "assembled_casm.db")
         monkeypatch.setenv("CASMAN_ASSEMBLED_DB", db_path)
         init_assembled_db(temporary_directory)
         # Insert test data
-        conn = sqlite3.connect(
-            os.path.join(
-                temporary_directory,
-                "assembled_casm.db"))
+        conn = sqlite3.connect(os.path.join(temporary_directory, "assembled_casm.db"))
         cursor = conn.cursor()
 
         test_connections = [
@@ -86,7 +82,8 @@ class TestVisualization:
         for connection in test_connections:
             cursor.execute(
                 "INSERT INTO assembly (part_number, connected_to, scan_time) VALUES (?, ?, ?)",
-                connection)
+                connection,
+            )
 
         conn.commit()
         conn.close()
@@ -113,8 +110,7 @@ class TestVisualization:
         assert len(data["links"]) == 2
 
         # Verify specific connections
-        link_pairs = [(link["source"], link["target"])
-                      for link in data["links"]]
+        link_pairs = [(link["source"], link["target"]) for link in data["links"]]
         assert ("LNAP1-00001", "ANTP1-00001") in link_pairs
         assert ("BACP1-00001", "LNAP1-00001") in link_pairs
 
@@ -127,7 +123,8 @@ class TestVisualization:
             "total_connections",
             "total_chains",
             "longest_chain",
-            "average_chain_length"]
+            "average_chain_length",
+        ]
         for key in expected_keys:
             assert key in summary
 
@@ -138,18 +135,14 @@ class TestVisualization:
         assert summary["average_chain_length"] == 0
 
     def test_get_chain_summary_with_data(
-            self,
-            temporary_directory: str,
-            monkeypatch: pytest.MonkeyPatch) -> None:
+        self, temporary_directory: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test getting chain summary with sample data."""
         db_path = os.path.join(temporary_directory, "assembled_casm.db")
         monkeypatch.setenv("CASMAN_ASSEMBLED_DB", db_path)
         init_assembled_db(temporary_directory)
         # Insert test data - create a longer chain
-        conn = sqlite3.connect(
-            os.path.join(
-                temporary_directory,
-                "assembled_casm.db"))
+        conn = sqlite3.connect(os.path.join(temporary_directory, "assembled_casm.db"))
         cursor = conn.cursor()
 
         test_connections = [
@@ -165,7 +158,8 @@ class TestVisualization:
         for connection in test_connections:
             cursor.execute(
                 "INSERT INTO assembly (part_number, connected_to, scan_time) VALUES (?, ?, ?)",
-                connection)
+                connection,
+            )
 
         conn.commit()
         conn.close()
@@ -181,22 +175,18 @@ class TestVisualization:
         assert summary["average_chain_length"] > 0
 
     def test_visualization_data_node_structure(
-            self,
-            temporary_directory: str,
-            monkeypatch: pytest.MonkeyPatch) -> None:
+        self, temporary_directory: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test that visualization data nodes have correct structure."""
         db_path = os.path.join(temporary_directory, "assembled_casm.db")
         monkeypatch.setenv("CASMAN_ASSEMBLED_DB", db_path)
         init_assembled_db(temporary_directory)
         # Insert minimal test data
-        conn = sqlite3.connect(
-            os.path.join(
-                temporary_directory,
-                "assembled_casm.db"))
+        conn = sqlite3.connect(os.path.join(temporary_directory, "assembled_casm.db"))
         cursor = conn.cursor()
         cursor.execute(
             "INSERT INTO assembly (part_number, connected_to, scan_time) VALUES (?, ?, ?)",
-            ("ANTP1-00001", None, "2024-01-01 10:00:00")
+            ("ANTP1-00001", None, "2024-01-01 10:00:00"),
         )
         conn.commit()
         conn.close()
@@ -212,18 +202,14 @@ class TestVisualization:
         assert node["label"] == "ANTP1-00001"
 
     def test_visualization_data_link_structure(
-            self,
-            temporary_directory: str,
-            monkeypatch: pytest.MonkeyPatch) -> None:
+        self, temporary_directory: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test that visualization data links have correct structure."""
         db_path = os.path.join(temporary_directory, "assembled_casm.db")
         monkeypatch.setenv("CASMAN_ASSEMBLED_DB", db_path)
         init_assembled_db(temporary_directory)
         # Insert test data with connection
-        conn = sqlite3.connect(
-            os.path.join(
-                temporary_directory,
-                "assembled_casm.db"))
+        conn = sqlite3.connect(os.path.join(temporary_directory, "assembled_casm.db"))
         cursor = conn.cursor()
 
         test_connections = [
@@ -234,7 +220,8 @@ class TestVisualization:
         for connection in test_connections:
             cursor.execute(
                 "INSERT INTO assembly (part_number, connected_to, scan_time) VALUES (?, ?, ?)",
-                connection)
+                connection,
+            )
 
         conn.commit()
         conn.close()

@@ -32,18 +32,18 @@ def main() -> None:
         try:
             choice = input("\nSelect option (1-4): ").strip()
 
-            if choice == '1':
+            if choice == "1":
                 scan_and_assemble_interactive()
-            elif choice == '2':
+            elif choice == "2":
                 print_assembly_chains()
-            elif choice == '3':
+            elif choice == "3":
                 stats = get_assembly_stats()
                 print("\nAssembly Statistics:")
                 print(f"Total scans: {stats['total_scans']}")
                 print(f"Unique parts: {stats['unique_parts']}")
                 print(f"Connected parts: {stats['connected_parts']}")
                 print(f"Latest scan: {stats['latest_scan'] or 'None'}")
-            elif choice == '4' or choice.lower() == 'quit':
+            elif choice == "4" or choice.lower() == "quit":
                 print("Goodbye!")
                 break
             else:

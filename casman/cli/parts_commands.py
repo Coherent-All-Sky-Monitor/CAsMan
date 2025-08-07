@@ -1,6 +1,7 @@
 """
 Parts-related CLI commands for CAsMan.
 """
+
 import argparse
 import sys
 
@@ -24,17 +25,16 @@ def cmd_parts() -> None:
     -------
     None
     """
-    parser = argparse.ArgumentParser(description='CAsMan Parts Management')
-    parser.add_argument('action', choices=['list', 'add'],
-                        help='Action to perform')
-    parser.add_argument('--type', help='Part type to filter by')
-    parser.add_argument('--polarization', help='Polarization to filter by')
+    parser = argparse.ArgumentParser(description="CAsMan Parts Management")
+    parser.add_argument("action", choices=["list", "add"], help="Action to perform")
+    parser.add_argument("--type", help="Part type to filter by")
+    parser.add_argument("--polarization", help="Polarization to filter by")
 
     args = parser.parse_args(sys.argv[2:])  # Skip 'casman parts'
 
     init_all_databases()
 
-    if args.action == 'list':
+    if args.action == "list":
         if args.type or args.polarization:
             parts = get_parts_by_criteria(args.type, args.polarization)
             if parts:
@@ -52,5 +52,5 @@ def cmd_parts() -> None:
                 print("No parts found matching the criteria.")
         else:
             display_parts_interactive()
-    elif args.action == 'add':
+    elif args.action == "add":
         add_parts_interactive()

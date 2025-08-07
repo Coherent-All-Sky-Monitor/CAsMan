@@ -30,8 +30,7 @@ def read_database() -> None:
 
     # Handle user selection for part type
     try:
-        type_selection = int(
-            input("Enter the number corresponding to the part type: "))
+        type_selection = int(input("Enter the number corresponding to the part type: "))
         if type_selection not in part_types:
             print("Invalid selection. Please enter a valid number.")
             return

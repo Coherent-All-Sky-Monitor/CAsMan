@@ -1,6 +1,5 @@
 """Tests for the assembly module."""
 
-
 # Standard library imports
 import os
 import sqlite3
@@ -10,8 +9,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Project imports
-from casman.assembly import (build_connection_chains, get_assembly_connections,
-                             get_assembly_stats)
+from casman.assembly import (
+    build_connection_chains,
+    get_assembly_connections,
+    get_assembly_stats,
+)
 from casman.database import init_assembled_db
 
 
@@ -28,9 +30,7 @@ class TestAssembly:
         assert connections == []
 
     def test_get_assembly_connections_with_data(
-        self,
-        temporary_directory: str,
-        monkeypatch: pytest.MonkeyPatch
+        self, temporary_directory: str, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """
         Test getting assembly connections with sample data.
@@ -39,38 +39,41 @@ class TestAssembly:
         db_path = os.path.join(temporary_directory, "assembled_casm.db")
         monkeypatch.setenv("CASMAN_ASSEMBLED_DB", db_path)
         init_assembled_db(temporary_directory)
-        conn = sqlite3.connect(
-            os.path.join(
-                temporary_directory,
-                "assembled_casm.db"))
+        conn = sqlite3.connect(os.path.join(temporary_directory, "assembled_casm.db"))
         cursor = conn.cursor()
 
         # Insert test data using full schema
         test_connections = [
-            ("ANT-P1-00001",
-             None,
-             "2024-01-01 10:00:00",
-             "ANTENNA",
-             "P1",
-             None,
-             None,
-             None),
-            ("LNA-P1-00001",
-             "ANT-P1-00001",
-             "2024-01-01 10:01:00",
-             "LNA",
-             "P1",
-             "ANTENNA",
-             "P1",
-             "2024-01-01 10:00:00"),
-            ("BAC-P1-00001",
-             "LNA-P1-00001",
-             "2024-01-01 10:02:00",
-             "BACBOARD",
-             "P1",
-             "LNA",
-             "P1",
-             "2024-01-01 10:01:00"),
+            (
+                "ANT-P1-00001",
+                None,
+                "2024-01-01 10:00:00",
+                "ANTENNA",
+                "P1",
+                None,
+                None,
+                None,
+            ),
+            (
+                "LNA-P1-00001",
+                "ANT-P1-00001",
+                "2024-01-01 10:01:00",
+                "LNA",
+                "P1",
+                "ANTENNA",
+                "P1",
+                "2024-01-01 10:00:00",
+            ),
+            (
+                "BAC-P1-00001",
+                "LNA-P1-00001",
+                "2024-01-01 10:02:00",
+                "BACBOARD",
+                "P1",
+                "LNA",
+                "P1",
+                "2024-01-01 10:01:00",
+            ),
         ]
 
         for connection in test_connections:
@@ -79,7 +82,7 @@ class TestAssembly:
                 scan_time, part_type, polarization, connected_to_type, \
                     connected_polarization, connected_scan_time) \
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                connection
+                connection,
             )
 
         conn.commit()
@@ -94,19 +97,22 @@ class TestAssembly:
             None,
             "2024-01-01 10:00:00",
             "ANTENNA",
-            "P1")
+            "P1",
+        )
         assert connections[1] == (
             "LNA-P1-00001",
             "ANT-P1-00001",
             "2024-01-01 10:01:00",
             "LNA",
-            "P1")
+            "P1",
+        )
         assert connections[2] == (
             "BAC-P1-00001",
             "LNA-P1-00001",
             "2024-01-01 10:02:00",
             "BACBOARD",
-            "P1")
+            "P1",
+        )
 
     def test_build_connection_chains_empty(self) -> None:
         """
@@ -117,9 +123,7 @@ class TestAssembly:
         assert not chains
 
     def test_build_connection_chains_with_data(
-        self,
-        temporary_directory: str,
-        monkeypatch: pytest.MonkeyPatch
+        self, temporary_directory: str, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """
         Test building chains with sample data.
@@ -129,10 +133,7 @@ class TestAssembly:
         monkeypatch.setenv("CASMAN_ASSEMBLED_DB", db_path)
         init_assembled_db(temporary_directory)
         # Insert test data
-        conn = sqlite3.connect(
-            os.path.join(
-                temporary_directory,
-                "assembled_casm.db"))
+        conn = sqlite3.connect(os.path.join(temporary_directory, "assembled_casm.db"))
         cursor = conn.cursor()
 
         test_connections = [
@@ -146,7 +147,8 @@ class TestAssembly:
             # Insert each connection into the assembly table
             cursor.execute(
                 "INSERT INTO assembly (part_number, connected_to, scan_time) VALUES (?, ?, ?)",
-                connection)
+                connection,
+            )
 
         conn.commit()
         conn.close()
@@ -172,26 +174,22 @@ class TestAssembly:
         """
         stats = get_assembly_stats()
         expected_stats = {
-            'total_scans': 0,
-            'unique_parts': 0,
-            'connected_parts': 0,
-            'latest_scan': None
+            "total_scans": 0,
+            "unique_parts": 0,
+            "connected_parts": 0,
+            "latest_scan": None,
         }
         assert stats == expected_stats
 
     def test_get_assembly_stats_with_data(
-            self,
-            temporary_directory: str,
-            monkeypatch: pytest.MonkeyPatch) -> None:
+        self, temporary_directory: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test getting stats with sample data."""
         db_path = os.path.join(temporary_directory, "assembled_casm.db")
         monkeypatch.setenv("CASMAN_ASSEMBLED_DB", db_path)
         init_assembled_db(temporary_directory)
         # Insert test data
-        conn = sqlite3.connect(
-            os.path.join(
-                temporary_directory,
-                "assembled_casm.db"))
+        conn = sqlite3.connect(os.path.join(temporary_directory, "assembled_casm.db"))
         cursor = conn.cursor()
 
         test_connections = [
@@ -205,7 +203,8 @@ class TestAssembly:
         for connection in test_connections:
             cursor.execute(
                 "INSERT INTO assembly (part_number, connected_to, scan_time) VALUES (?, ?, ?)",
-                connection)
+                connection,
+            )
 
         conn.commit()
         conn.close()
@@ -213,24 +212,26 @@ class TestAssembly:
         # Test getting stats
         stats = get_assembly_stats()
 
-        assert stats['total_scans'] == 4
+        assert stats["total_scans"] == 4
         # ANTP1-00001, LNAP1-00001, BACP1-00001
-        assert stats['unique_parts'] == 3
+        assert stats["unique_parts"] == 3
         # 3 scans have non-null connected_to
-        assert stats['connected_parts'] == 3
-        assert stats['latest_scan'] == "2024-01-01 10:03:00"
+        assert stats["connected_parts"] == 3
+        assert stats["latest_scan"] == "2024-01-01 10:03:00"
 
-    @patch('casman.assembly.data.logger')
-    def test_get_assembly_stats_database_error(
-            self, mock_logger: MagicMock) -> None:
+    @patch("casman.assembly.data.logger")
+    def test_get_assembly_stats_database_error(self, mock_logger: MagicMock) -> None:
         """Test handling database error when getting stats."""
-        with patch('casman.assembly.data.get_database_path', return_value="/nonexistent/path.db"):
+        with patch(
+            "casman.assembly.data.get_database_path",
+            return_value="/nonexistent/path.db",
+        ):
             stats = get_assembly_stats()
             expected_stats = {
-                'total_scans': 0,
-                'unique_parts': 0,
-                'connected_parts': 0,
-                'latest_scan': None
+                "total_scans": 0,
+                "unique_parts": 0,
+                "connected_parts": 0,
+                "latest_scan": None,
             }
             assert stats == expected_stats
             mock_logger.error.assert_called()

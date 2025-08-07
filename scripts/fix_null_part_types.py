@@ -2,6 +2,7 @@
 Script to retroactively fix NULL part_type values \
     in the assembly table by inferring from part_number prefix.
 """
+
 import sqlite3
 from typing import Optional
 
@@ -24,7 +25,7 @@ def infer_part_type(part_number: str) -> Optional[str]:
         The inferred part type name, or None if not found.
     """
     # Try to match prefix with PART_TYPES abbreviation
-    prefix = part_number.split('-')[0]
+    prefix = part_number.split("-")[0]
     for name, abbrev in PART_TYPES.values():
         if abbrev == prefix:
             return name
@@ -59,13 +60,16 @@ def fix_null_part_types(database_path: str) -> None:
         part_type = infer_part_type(part_number)
         if part_type:
             c.execute(
-                "UPDATE assembly SET part_type = ? WHERE id = ?", (part_type, row_id))
+                "UPDATE assembly SET part_type = ? WHERE id = ?", (part_type, row_id)
+            )
             fixed += 1
             print(
-                f"Updated id={row_id}: part_number={part_number} -> part_type={part_type}")
+                f"Updated id={row_id}: part_number={part_number} -> part_type={part_type}"
+            )
         else:
             print(
-                f"Could not infer part_type for id={row_id}, part_number={part_number}")
+                f"Could not infer part_type for id={row_id}, part_number={part_number}"
+            )
     conn.commit()
     conn.close()
     print(f"Fixed {fixed} rows with NULL part_type.")

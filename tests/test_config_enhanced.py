@@ -40,14 +40,11 @@ class TestConfigManager:
             config_file = temp_path / "test_config.yaml"
 
             test_config = {
-                "PART_TYPES": {
-                    "1": ["ANTENNA", "ANT"],
-                    "2": ["LNA", "LNA"]
-                },
-                "CASMAN_PARTS_DB": "test_parts.db"
+                "PART_TYPES": {"1": ["ANTENNA", "ANT"], "2": ["LNA", "LNA"]},
+                "CASMAN_PARTS_DB": "test_parts.db",
             }
 
-            with open(config_file, 'w') as f:
+            with open(config_file, "w") as f:
                 yaml.safe_dump(test_config, f)
 
             manager = ConfigManager([config_file])
@@ -67,15 +64,10 @@ class TestConfigManager:
             config_file = temp_path / "test_config.yaml"
 
             test_config = {
-                "database": {
-                    "backup_enabled": True,
-                    "settings": {
-                        "timeout": 30
-                    }
-                }
+                "database": {"backup_enabled": True, "settings": {"timeout": 30}}
             }
 
-            with open(config_file, 'w') as f:
+            with open(config_file, "w") as f:
                 yaml.safe_dump(test_config, f)
 
             manager = ConfigManager([config_file])
@@ -103,7 +95,7 @@ class TestConfigManager:
 
             test_config = {"TEST_VALUE": "config_value"}
 
-            with open(config_file, 'w') as f:
+            with open(config_file, "w") as f:
                 yaml.safe_dump(test_config, f)
 
             manager = ConfigManager([config_file])
@@ -117,13 +109,9 @@ class TestConfigManager:
             temp_path = Path(temp_dir)
             config_file = temp_path / "test_config.json"
 
-            test_config = {
-                "PART_TYPES": {
-                    "1": ["ANTENNA", "ANT"]
-                }
-            }
+            test_config = {"PART_TYPES": {"1": ["ANTENNA", "ANT"]}}
 
-            with open(config_file, 'w') as f:
+            with open(config_file, "w") as f:
                 json.dump(test_config, f)
 
             manager = ConfigManager([config_file])
@@ -183,12 +171,12 @@ class TestEnvironmentConfig:
 
             # Create base config
             base_config = temp_path / "config.yaml"
-            with open(base_config, 'w') as f:
+            with open(base_config, "w") as f:
                 yaml.safe_dump({"base": True}, f)
 
             # Create environment-specific config
             env_config_file = temp_path / "config.development.yaml"
-            with open(env_config_file, 'w') as f:
+            with open(env_config_file, "w") as f:
                 yaml.safe_dump({"env": "dev"}, f)
 
             with patch.dict(os.environ, {"CASMAN_ENV": "development"}):
@@ -202,11 +190,9 @@ class TestEnvironmentConfig:
         """Test environment-specific configuration templates."""
         env_config = EnvironmentConfig()
 
-        dev_template = env_config.get_environment_config_template(
-            "development")
+        dev_template = env_config.get_environment_config_template("development")
         test_template = env_config.get_environment_config_template("testing")
-        prod_template = env_config.get_environment_config_template(
-            "production")
+        prod_template = env_config.get_environment_config_template("production")
 
         assert dev_template["logging"]["level"] == "DEBUG"
         assert test_template["logging"]["level"] == "WARNING"
@@ -230,11 +216,8 @@ class TestConfigSchema:
     def test_config_validation_valid(self) -> None:
         """Test validation of valid configuration."""
         valid_config = {
-            "PART_TYPES": {
-                "1": ["ANTENNA", "ANT"],
-                "2": ["LNA", "LNA"]
-            },
-            "CASMAN_PARTS_DB": "database/parts.db"
+            "PART_TYPES": {"1": ["ANTENNA", "ANT"], "2": ["LNA", "LNA"]},
+            "CASMAN_PARTS_DB": "database/parts.db",
         }
 
         is_valid, error = ConfigSchema.validate_config(valid_config)
@@ -286,20 +269,11 @@ class TestConfigUtils:
 
     def test_merge_configs(self) -> None:
         """Test configuration merging."""
-        config1 = {
-            "database": {
-                "host": "localhost",
-                "port": 5432
-            },
-            "debug": True
-        }
+        config1 = {"database": {"host": "localhost", "port": 5432}, "debug": True}
 
         config2 = {
-            "database": {
-                "port": 3306,
-                "name": "casman"
-            },
-            "logging": {"level": "INFO"}
+            "database": {"port": 3306, "name": "casman"},
+            "logging": {"level": "INFO"},
         }
 
         merged = merge_configs(config1, config2)

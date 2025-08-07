@@ -82,18 +82,15 @@ def _deep_merge(target: Dict[str, Any], source: Dict[str, Any]) -> None:
         Source dictionary to merge from.
     """
     for key, value in source.items():
-        if key in target and isinstance(
-                target[key],
-                dict) and isinstance(
-                value,
-                dict):
+        if key in target and isinstance(target[key], dict) and isinstance(value, dict):
             _deep_merge(target[key], value)
         else:
             target[key] = value
 
 
-def flatten_config(config: Dict[str, Any], prefix: str = "",
-                   separator: str = ".") -> Dict[str, Any]:
+def flatten_config(
+    config: Dict[str, Any], prefix: str = "", separator: str = "."
+) -> Dict[str, Any]:
     """
     Flatten a nested configuration dictionary.
 
@@ -124,8 +121,7 @@ def flatten_config(config: Dict[str, Any], prefix: str = "",
     return flattened
 
 
-def unflatten_config(
-        flattened: Dict[str, Any], separator: str = ".") -> Dict[str, Any]:
+def unflatten_config(flattened: Dict[str, Any], separator: str = ".") -> Dict[str, Any]:
     """
     Unflatten a configuration dictionary.
 
@@ -157,8 +153,7 @@ def unflatten_config(
     return result
 
 
-def get_config_diff(config1: Dict[str, Any],
-                    config2: Dict[str, Any]) -> Dict[str, Any]:
+def get_config_diff(config1: Dict[str, Any], config2: Dict[str, Any]) -> Dict[str, Any]:
     """
     Get the difference between two configuration dictionaries.
 
@@ -179,11 +174,7 @@ def get_config_diff(config1: Dict[str, Any],
 
     all_keys = set(flat1.keys()) | set(flat2.keys())
 
-    diff: Dict[str, Dict[str, Any]] = {
-        "added": {},
-        "removed": {},
-        "changed": {}
-    }
+    diff: Dict[str, Dict[str, Any]] = {"added": {}, "removed": {}, "changed": {}}
 
     for key in all_keys:
         if key not in flat1:
@@ -191,10 +182,7 @@ def get_config_diff(config1: Dict[str, Any],
         elif key not in flat2:
             diff["removed"][key] = flat1[key]
         elif flat1[key] != flat2[key]:
-            diff["changed"][key] = {
-                "old": flat1[key],
-                "new": flat2[key]
-            }
+            diff["changed"][key] = {"old": flat1[key], "new": flat2[key]}
 
     return diff
 
@@ -217,7 +205,7 @@ def validate_config_paths(config: Dict[str, Any]) -> Dict[str, bool]:
         "CASMAN_PARTS_DB",
         "CASMAN_ASSEMBLED_DB",
         "logging.file_path",
-        "barcode.output_directory"
+        "barcode.output_directory",
     ]
 
     results = {}
@@ -259,10 +247,7 @@ def create_config_directories(config: Dict[str, Any]) -> None:
     config : Dict[str, Any]
         Configuration dictionary.
     """
-    path_keys = [
-        "logging.file_path",
-        "barcode.output_directory"
-    ]
+    path_keys = ["logging.file_path", "barcode.output_directory"]
 
     for key in path_keys:
         value: Any = None

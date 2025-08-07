@@ -6,7 +6,6 @@ assembled_casm.db database.
 
 """
 
-
 import os
 import sqlite3
 import sys
@@ -16,7 +15,9 @@ from flask import Flask, render_template_string, request
 
 from casman.config import get_config
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'casman')))
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "casman"))
+)
 app = Flask(__name__)
 
 
@@ -71,8 +72,10 @@ def get_all_parts() -> List[str]:
 
 
 def get_all_chains(
-        selected_part: Optional[str] = None
-        ) -> Tuple[List[List[str]], Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]]]:
+    selected_part: Optional[str] = None,
+) -> Tuple[
+    List[List[str]], Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]]
+]:
     """
     Fetch all connection chains from the assembled_casm.db database.
 
@@ -159,29 +162,39 @@ def format_display_data(
         str: HTML-formatted string for display in the web interface.
     """
     _, scan_time, connected_scan_time = connections.get(part, (None, None, None))
-    display_lines: List[str] = [
-        f"<span class='national-park'>{part}</span><br>"
-    ]
+    display_lines: List[str] = [f"<span class='national-park'>{part}</span><br>"]
     ant, lna, bac = "ANTENNA", "LNA", "BACBOARD"
     if "ANT" in part:
         display_lines.append(f"<span class='monospace'>{ant:8s} @ {scan_time}</span>")
-        display_lines.append(f"<span class='monospace'>{lna:8s} @ {connected_scan_time}</span>")
+        display_lines.append(
+            f"<span class='monospace'>{lna:8s} @ {connected_scan_time}</span>"
+        )
     elif "LNA" in part:
-        ant_entry = next((p for p, (c, _, cs) in connections.items() if c == part), None)
+        ant_entry = next(
+            (p for p, (c, _, cs) in connections.items() if c == part), None
+        )
         if ant_entry is not None:
             ant_scan_time = connections.get(ant_entry, (None, None, None))[2]
         else:
             ant_scan_time = None
-        display_lines.append(f"<span class='monospace'>{ant:8s} @ {ant_scan_time}</span>")
+        display_lines.append(
+            f"<span class='monospace'>{ant:8s} @ {ant_scan_time}</span>"
+        )
         display_lines.append(f"<span class='monospace'>{lna:8s} @ {scan_time}</span>")
-        display_lines.append(f"<span class='monospace'>{bac:8s} @ {connected_scan_time}</span>")
+        display_lines.append(
+            f"<span class='monospace'>{bac:8s} @ {connected_scan_time}</span>"
+        )
     elif "BAC" in part:
-        lna_entry = next((p for p, (c, _, cs) in connections.items() if c == part), None)
+        lna_entry = next(
+            (p for p, (c, _, cs) in connections.items() if c == part), None
+        )
         if lna_entry is not None:
             lna_scan_time = connections.get(lna_entry, (None, None, None))[2]
         else:
             lna_scan_time = None
-        display_lines.append(f"<span class='monospace'>{lna:3s} @ {lna_scan_time}</span>")
+        display_lines.append(
+            f"<span class='monospace'>{lna:3s} @ {lna_scan_time}</span>"
+        )
     return "\n".join(display_lines)
 
 

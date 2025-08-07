@@ -22,17 +22,17 @@
       font-weight: 900;
       font-style: normal;
     }
-    body.light-mode { 
-      font-family: 'National Park', sans-serif; 
-      margin: 0; 
-      background-color: #f0f0f5; 
-      color: #333; 
+    body.light-mode {
+      font-family: 'National Park', sans-serif;
+      margin: 0;
+      background-color: #f0f0f5;
+      color: #333;
     }
-    body.dark-mode { 
-      font-family: 'National Park', sans-serif; 
-      margin: 0; 
-      background-color: #333; 
-      color: #f0f0f5; 
+    body.dark-mode {
+      font-family: 'National Park', sans-serif;
+      margin: 0;
+      background-color: #333;
+      color: #f0f0f5;
     }
     .centered-container {
       max-width: 1200px;
@@ -42,23 +42,23 @@
       flex-direction: column;
       align-items: center;
     }
-    h1 { 
-      font-family: 'National Park ExtraBold', sans-serif; 
-      color: inherit; 
-      display: inline; 
-      font-weight: 900; 
+    h1 {
+      font-family: 'National Park ExtraBold', sans-serif;
+      color: inherit;
+      display: inline;
+      font-weight: 900;
     }
-    .toolbar { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       width: 100%;
     }
-    .diagram { 
-      display: flex; 
-      flex-direction: column; 
+    .diagram {
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      margin-top: 20px; 
+      margin-top: 20px;
       width: 100%;
     }
     .chain {
@@ -101,8 +101,8 @@
     }
     body.dark-mode .box { background-color: #222; }
     .box.selected { color: #FF4500; border-color: #FF4500; }
-    .box:hover { 
-      transform: translateY(-2px); 
+    .box:hover {
+      transform: translateY(-2px);
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
       z-index: 4;
     }
@@ -140,27 +140,27 @@
     body.dark-mode .moon { display: none; }
     .dark-mode-toggle span { transition: transform 0.3s ease; }
     .dark-mode-toggle:hover span { transform: rotate(45deg); }
-    .controls { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       width: 100%;
       margin-top: 10px;
     }
     @media (max-width: 1200px) {
       .centered-container { max-width: 99vw; }
-      .chain-container { 
+      .chain-container {
         gap: 30px;
       }
-      .box { 
-        min-height: 60px; 
-        font-size: 0.93em; 
+      .box {
+        min-height: 60px;
+        font-size: 0.93em;
         padding: 7px 10px;
       }
     }
     @media (max-width: 768px) {
       .centered-container { max-width: 100vw; padding: 15px 8px 0 8px; }
-      .chain-container { 
+      .chain-container {
         gap: 25px;
         justify-content: center;
       }
@@ -248,10 +248,10 @@
     function createCurvedPath(startX, startY, endX, endY, containerWidth, containerHeight, isWrappedConnection = false) {
       const dx = endX - startX;
       const dy = endY - startY;
-      
+
       // Determine if boxes are on different lines
       const onDifferentLines = Math.abs(dy) > 30;
-      
+
       if (isWrappedConnection) {
         // For wrapped connections, create a path from bottom of top box to top of bottom box
         // The path should curve down and then across
@@ -259,25 +259,25 @@
         const controlPoint1Y = startY + 40; // Go down from bottom of box
         const controlPoint2X = endX;
         const controlPoint2Y = endY - 40; // Come up to top of box
-        
+
         return `M ${startX} ${startY} C ${controlPoint1X} ${controlPoint1Y}, ${controlPoint2X} ${controlPoint2Y}, ${endX} ${endY}`;
       } else if (onDifferentLines) {
         // Create a path that goes around boxes for multi-line connections
         const midX = startX + dx / 2;
         const clearanceY = Math.min(startY, endY) - 40; // Go above both boxes
-        
+
         // Create a path that arcs above the boxes
         const controlPoint1X = startX + 60;
         const controlPoint1Y = clearanceY;
         const controlPoint2X = endX - 60;
         const controlPoint2Y = clearanceY;
-        
+
         return `M ${startX} ${startY} C ${controlPoint1X} ${controlPoint1Y}, ${controlPoint2X} ${controlPoint2Y}, ${endX} ${endY}`;
       } else {
         // Simple curved line for boxes on same line
         const controlPointX = startX + dx / 2;
         const controlPointY = startY - Math.min(Math.abs(dx) / 4, 20);
-        
+
         return `M ${startX} ${startY} Q ${controlPointX} ${controlPointY} ${endX} ${endY}`;
       }
     }
@@ -293,12 +293,12 @@
       marker.setAttribute('orient', 'auto-start-reverse');
       marker.setAttribute('markerUnits', 'strokeWidth');
       marker.setAttribute('viewBox', '0 0 5 3');
-      
+
       const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
       polygon.setAttribute('points', '0,1.5 5,0 5,3');
       polygon.setAttribute('class', 'connection-arrow');
       polygon.setAttribute('fill', 'currentColor');
-      
+
       marker.appendChild(polygon);
       defs.appendChild(marker);
     }
@@ -308,32 +308,32 @@
         const svg = chainElement.querySelector('.connection-svg');
         const container = chainElement.querySelector('.chain-container');
         const boxes = container.querySelectorAll('.box');
-        
+
         // Clear existing paths
         svg.innerHTML = '';
-        
+
         if (boxes.length < 2) return;
-        
+
         // Create arrow marker
         createArrowMarker(svg, `arrow-${chainIndex}`);
-        
+
         // Get container dimensions
         const containerRect = container.getBoundingClientRect();
         const chainRect = chainElement.getBoundingClientRect();
-        
+
         // Draw connections between consecutive boxes
         for (let i = 0; i < boxes.length - 1; i++) {
           const currentBox = boxes[i];
           const nextBox = boxes[i + 1];
-          
+
           const currentRect = currentBox.getBoundingClientRect();
           const nextRect = nextBox.getBoundingClientRect();
-          
+
           // Check if the next box is wrapped to a new line
           const isWrapped = nextRect.top > currentRect.bottom + 10;
-          
+
           let startX, startY, endX, endY;
-          
+
           if (isWrapped) {
             // Connection from bottom of current box to top of next box
             startX = currentRect.left + currentRect.width / 2 - chainRect.left;
@@ -347,16 +347,16 @@
             endX = nextRect.left - chainRect.left;
             endY = nextRect.top + nextRect.height / 2 - chainRect.top;
           }
-          
+
           // Create curved path
-          const pathData = createCurvedPath(startX, startY, endX, endY, 
+          const pathData = createCurvedPath(startX, startY, endX, endY,
             containerRect.width, containerRect.height, isWrapped);
-          
+
           const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
           path.setAttribute('d', pathData);
           path.setAttribute('class', 'connection-path');
           path.setAttribute('marker-end', `url(#arrow-${chainIndex})`);
-          
+
           svg.appendChild(path);
         }
       });
@@ -365,10 +365,10 @@
     document.addEventListener("DOMContentLoaded", function() {
       const savedTheme = localStorage.getItem('theme') || 'light';
       document.body.classList.add(savedTheme + '-mode');
-      
+
       // Initial draw
       setTimeout(drawConnections, 100);
-      
+
       // Redraw on window resize
       let resizeTimeout;
       window.addEventListener('resize', () => {

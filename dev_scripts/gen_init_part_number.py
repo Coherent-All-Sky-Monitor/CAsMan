@@ -123,7 +123,7 @@ def generate_parts(part_type: int, count: int) -> None:
         os.makedirs(part_dir)
 
     polarization = input("Enter polarization (1 or 2): ").strip()
-    if polarization not in ['1', '2']:
+    if polarization not in ["1", "2"]:
         print("Invalid polarization. Please enter 1 or 2.")
         return
 
@@ -170,8 +170,7 @@ def main() -> None:
         print(f"{key}: {name}")
 
     try:
-        type_selection = int(
-            input("Enter the number corresponding to the part type: "))
+        type_selection = int(input("Enter the number corresponding to the part type: "))
         if type_selection not in part_types:
             print("Invalid selection. Please enter a valid number.")
             return
@@ -181,8 +180,7 @@ def main() -> None:
 
     try:
         count = int(
-            input(
-                f"Enter number of parts for {part_types[type_selection][0]}: ")
+            input(f"Enter number of parts for {part_types[type_selection][0]}: ")
         )
     except ValueError:
         print("Invalid input. Please enter a valid integer for the number of parts.")

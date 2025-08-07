@@ -12,7 +12,7 @@ from casman.visualization.core import (
     get_chain_summary,
     get_visualization_data,
     print_visualization_summary,
-    main as core_main
+    main as core_main,
 )
 
 # Re-export functions at module level
@@ -21,7 +21,7 @@ __all__ = [
     "get_chain_summary",
     "get_visualization_data",
     "print_visualization_summary",
-    "main"
+    "main",
 ]
 
 

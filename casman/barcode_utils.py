@@ -84,17 +84,16 @@ def arrange_barcodes_in_pdf(directory: str, output_pdf: str) -> None:
 
     # Save all pages as a PDF
     if pages:
-        pages[0].save(output_pdf, save_all=True,
-                      append_images=pages[1:], format="PDF")
+        pages[0].save(output_pdf, save_all=True, append_images=pages[1:], format="PDF")
+
 
 # Override generate_barcode_printpages to maintain backward compatibility
 # with tests
 
 
 def generate_barcode_printpages(
-        part_type: str,
-        start_number: int,
-        end_number: int) -> None:
+    part_type: str, start_number: int, end_number: int
+) -> None:
     """
     Generate barcode printpages for a range of part numbers.
 
@@ -122,8 +121,7 @@ def generate_barcode_printpages(
     if not part_abbrev:
         raise ValueError(f"Unknown part type: {part_type}")
 
-    print(
-        f"Generating barcodes for {part_type} from {start_number} to {end_number}")
+    print(f"Generating barcodes for {part_type} from {start_number} to {end_number}")
 
     for i in range(start_number, end_number + 1):
         part_number = f"{part_abbrev}P1-{i:05d}"
@@ -135,13 +133,13 @@ def generate_barcode_printpages(
 
 # Export for backward compatibility
 __all__ = [
-    'arrange_barcodes_in_pdf',
-    'generate_barcode',
-    'get_available_barcode_directories',
-    'generate_barcode_printpages',
-    'main',
-    'os',
-    'barcode'
+    "arrange_barcodes_in_pdf",
+    "generate_barcode",
+    "get_available_barcode_directories",
+    "generate_barcode_printpages",
+    "main",
+    "os",
+    "barcode",
 ]
 
 
@@ -156,17 +154,17 @@ def main() -> None:
     import argparse
     from .barcode.generation import generate_barcode_range
 
-    parser = argparse.ArgumentParser(
-        description='Generate barcodes for CAsMan parts')
-    parser.add_argument('part_type', help='Part type (ANTENNA, LNA, BACBOARD)')
-    parser.add_argument('start_number', type=int, help='Starting part number')
-    parser.add_argument('end_number', type=int, help='Ending part number')
+    parser = argparse.ArgumentParser(description="Generate barcodes for CAsMan parts")
+    parser.add_argument("part_type", help="Part type (ANTENNA, LNA, BACBOARD)")
+    parser.add_argument("start_number", type=int, help="Starting part number")
+    parser.add_argument("end_number", type=int, help="Ending part number")
 
     args = parser.parse_args()
 
     try:
         results = generate_barcode_range(
-            args.part_type, args.start_number, args.end_number)
+            args.part_type, args.start_number, args.end_number
+        )
 
         # Count successful generations
         successful = sum(1 for path in results.values() if path)

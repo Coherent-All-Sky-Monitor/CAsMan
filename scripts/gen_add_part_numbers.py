@@ -24,7 +24,6 @@ Usage
 4. Enter the polarization for the new parts.
 """
 
-
 import argparse
 
 from casman.config import get_config
@@ -33,8 +32,7 @@ from casman.parts import PART_TYPES, generate_part_numbers
 
 # Parse command-line arguments
 
-parser = argparse.ArgumentParser(
-    description="Generate new part numbers and barcodes.")
+parser = argparse.ArgumentParser(description="Generate new part numbers and barcodes.")
 default_db_dir = get_config("CASMAN_DB_DIR", "database")
 parser.add_argument(
     "--db_dir",
@@ -63,8 +61,7 @@ def main() -> None:
     print("6: ALL (generate for all part types)")
 
     try:
-        type_selection = int(
-            input("Enter the number corresponding to the part type: "))
+        type_selection = int(input("Enter the number corresponding to the part type: "))
         if type_selection not in PART_TYPES and type_selection != 6:
             print("Invalid selection. Please enter a valid number.")
             return
@@ -77,11 +74,13 @@ def main() -> None:
         try:
             count = int(input("Enter number of parts for each part type: "))
         except ValueError:
-            print("Invalid input. Please enter a valid integer for the number of parts.")
+            print(
+                "Invalid input. Please enter a valid integer for the number of parts."
+            )
             return
 
         polarization = input("Enter polarization (1 or 2): ").strip()
-        if polarization not in ['1', '2']:
+        if polarization not in ["1", "2"]:
             print("Invalid polarization. Please enter 1 or 2.")
             return
 
@@ -94,14 +93,14 @@ def main() -> None:
                 )
                 if new_part_numbers:
                     all_generated_parts.extend(new_part_numbers)
-                    print(
-                        f"Generated {len(new_part_numbers)} {part_type_name} parts")
+                    print(f"Generated {len(new_part_numbers)} {part_type_name} parts")
             except (ValueError, OSError, RuntimeError) as e:
                 print(f"Error generating {part_type_name} parts: {e}")
 
         if all_generated_parts:
             print(
-                f"\nSuccessfully generated {len(all_generated_parts)} total part numbers:")
+                f"\nSuccessfully generated {len(all_generated_parts)} total part numbers:"
+            )
             for part_number in all_generated_parts:
                 print(f"  - {part_number}")
         else:
@@ -111,13 +110,16 @@ def main() -> None:
         # Handle single part type selection
         try:
             count = int(
-                input(f"Enter number of parts for {PART_TYPES[type_selection][0]}: "))
+                input(f"Enter number of parts for {PART_TYPES[type_selection][0]}: ")
+            )
         except ValueError:
-            print("Invalid input. Please enter a valid integer for the number of parts.")
+            print(
+                "Invalid input. Please enter a valid integer for the number of parts."
+            )
             return
 
         polarization = input("Enter polarization (1 or 2): ").strip()
-        if polarization not in ['1', '2']:
+        if polarization not in ["1", "2"]:
             print("Invalid polarization. Please enter 1 or 2.")
             return
 
@@ -131,8 +133,7 @@ def main() -> None:
             )
 
             if new_part_numbers:
-                print(
-                    f"\nSuccessfully generated {len(new_part_numbers)} part numbers:")
+                print(f"\nSuccessfully generated {len(new_part_numbers)} part numbers:")
                 for part_number in new_part_numbers:
                     print(f"  - {part_number}")
             else:

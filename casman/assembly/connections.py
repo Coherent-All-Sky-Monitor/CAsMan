@@ -23,7 +23,7 @@ def record_assembly_connection(
     connected_to_type: str,
     connected_polarization: str,
     connected_scan_time: str,
-    db_dir: Optional[str] = None
+    db_dir: Optional[str] = None,
 ) -> bool:
     """
     Record an assembly connection in the database with explicit timestamps and all fields.
@@ -70,40 +70,39 @@ def record_assembly_connection(
     """
     try:
         init_assembled_db(db_dir)
-        db_path = get_database_path('assembled_casm.db', db_dir)
+        db_path = get_database_path("assembled_casm.db", db_dir)
 
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
 
             # Insert the assembly connection record
             cursor.execute(
-                '''
+                """
                 INSERT INTO assembly
                 (part_number, part_type, polarization, scan_time,
                  connected_to, connected_to_type, connected_polarization, connected_scan_time)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''',
-                (part_number,
-                 part_type,
-                 polarization,
-                 scan_time,
-                 connected_to,
-                 connected_to_type,
-                 connected_polarization,
-                 connected_scan_time))
+            """,
+                (
+                    part_number,
+                    part_type,
+                    polarization,
+                    scan_time,
+                    connected_to,
+                    connected_to_type,
+                    connected_polarization,
+                    connected_scan_time,
+                ),
+            )
 
             conn.commit()
             logger.info(
-                "Recorded assembly connection: %s -> %s",
-                part_number,
-                connected_to)
+                "Recorded assembly connection: %s -> %s", part_number, connected_to
+            )
             return True
 
     except sqlite3.Error as e:
-        logger.error(
-            "Database error recording assembly %s: %s",
-            part_number,
-            e)
+        logger.error("Database error recording assembly %s: %s", part_number, e)
         return False
     except (ValueError, TypeError) as e:
         logger.error("Error recording assembly %s: %s", part_number, e)

@@ -6,26 +6,21 @@ Test script for scanning and assembly duplicate prevention.
 import subprocess
 import sys
 
+
 def test_duplicate_prevention():
     """Test that duplicate scanning prevention works."""
 
     print("Testing duplicate scanning prevention...")
 
     # First, try to use ANT-P1-00001 which is already used
-    cmd = [
-        sys.executable, "scripts/scan_and_assemble.py"
-    ]
+    cmd = [sys.executable, "scripts/scan_and_assemble.py"]
 
     # Input: Start with ANTENNA, manual entry, pol 1, part number 1
     input_data = "0\n2\n1\n1\nn\n"
 
     try:
         result = subprocess.run(
-            cmd,
-            input=input_data,
-            text=True,
-            capture_output=True,
-            timeout=10
+            cmd, input=input_data, text=True, capture_output=True, timeout=10
         )
 
         output = result.stdout
@@ -42,6 +37,7 @@ def test_duplicate_prevention():
     except Exception as e:
         print(f"❌ ERROR: {e}")
 
+
 def test_connection_with_fresh_parts():
     """Test connection with fresh parts."""
 
@@ -54,11 +50,7 @@ def test_connection_with_fresh_parts():
 
     try:
         result = subprocess.run(
-            cmd,
-            input=input_data,
-            text=True,
-            capture_output=True,
-            timeout=15
+            cmd, input=input_data, text=True, capture_output=True, timeout=15
         )
 
         output = result.stdout
@@ -78,6 +70,7 @@ def test_connection_with_fresh_parts():
         print("❌ TIMEOUT: Script took too long")
     except Exception as e:
         print(f"❌ ERROR: {e}")
+
 
 if __name__ == "__main__":
     test_duplicate_prevention()

@@ -45,30 +45,33 @@ def init_parts_db(db_dir: Optional[str] = None) -> None:
 
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
-    c.execute("""CREATE TABLE IF NOT EXISTS parts (
+    c.execute(
+        """CREATE TABLE IF NOT EXISTS parts (
         id INTEGER PRIMARY KEY,
         part_number TEXT UNIQUE,
         part_type TEXT,
         polarization TEXT,
         date_created TEXT,
         date_modified TEXT
-    )""")
+    )"""
+    )
 
     # Check if polarization column exists, add it if missing (for schema
     # migration)
     c.execute("PRAGMA table_info(parts)")
     columns = [row[1] for row in c.fetchall()]
-    if 'polarization' not in columns:
+    if "polarization" not in columns:
         c.execute("ALTER TABLE parts ADD COLUMN polarization TEXT")
 
     # Check if date_created column exists, update old created_at/modified_at
     # columns
-    if 'date_created' not in columns and 'created_at' in columns:
+    if "date_created" not in columns and "created_at" in columns:
         # Rename old columns to new names
         c.execute("ALTER TABLE parts ADD COLUMN date_created TEXT")
         c.execute("ALTER TABLE parts ADD COLUMN date_modified TEXT")
         c.execute(
-            "UPDATE parts SET date_created = created_at, date_modified = modified_at")
+            "UPDATE parts SET date_created = created_at, date_modified = modified_at"
+        )
 
     conn.commit()
     conn.close()
@@ -107,7 +110,8 @@ def init_assembled_db(db_dir: Optional[str] = None) -> None:
 
     with sqlite3.connect(db_path) as conn:
         c = conn.cursor()
-        c.execute("""CREATE TABLE IF NOT EXISTS assembly (
+        c.execute(
+            """CREATE TABLE IF NOT EXISTS assembly (
             id INTEGER PRIMARY KEY,
             part_number TEXT,
             part_type TEXT,
@@ -117,7 +121,8 @@ def init_assembled_db(db_dir: Optional[str] = None) -> None:
             connected_to_type TEXT,
             connected_polarization TEXT,
             connected_scan_time TEXT
-        )""")
+        )"""
+        )
         conn.commit()
 
 

@@ -7,7 +7,6 @@ for printing using the casman module.
 The images are resized and placed in rows on each page, then saved as a multi-page PDF.
 """
 
-
 import argparse
 import os
 
@@ -24,15 +23,15 @@ def main() -> None:
     None
     """
 
-    parser = argparse.ArgumentParser(
-        description="Arrange barcode images into a PDF.")
+    parser = argparse.ArgumentParser(description="Arrange barcode images into a PDF.")
     default_dir = get_config("CASMAN_BARCODE_DIR", "barcodes")
     parser.add_argument(
         "directory",
         type=str,
         nargs="?",
         default=default_dir,
-        help="Directory containing barcode images (default: from config.yaml or 'barcodes')")
+        help="Directory containing barcode images (default: from config.yaml or 'barcodes')",
+    )
     parser.add_argument("output_pdf", type=str, help="Output PDF file name")
 
     args = parser.parse_args()

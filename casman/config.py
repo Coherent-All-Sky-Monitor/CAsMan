@@ -12,10 +12,7 @@ from typing import Any, Dict, Optional
 
 import yaml
 
-_CONFIG_PATH = os.path.join(
-    os.path.dirname(
-        os.path.dirname(__file__)),
-    "config.yaml")
+_CONFIG_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.yaml")
 
 
 def load_config() -> Dict[str, Any]:

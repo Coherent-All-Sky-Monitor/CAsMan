@@ -44,7 +44,7 @@ def scan_and_assemble_interactive() -> None:
         try:
             # Get first part
             first_part = input("Scan first part: ").strip()
-            if first_part.lower() == 'quit':
+            if first_part.lower() == "quit":
                 print("Goodbye!")
                 break
 
@@ -54,7 +54,7 @@ def scan_and_assemble_interactive() -> None:
 
             # Get connected part
             connected_part = input("Scan connected part: ").strip()
-            if connected_part.lower() == 'quit':
+            if connected_part.lower() == "quit":
                 print("Goodbye!")
                 break
 

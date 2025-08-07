@@ -73,8 +73,7 @@ def print_assembly_chains() -> None:
     for connected_list in chains.values():
         all_connected_parts.update(connected_list)
 
-    starting_parts = [
-        part for part in chains.keys() if part not in all_connected_parts]
+    starting_parts = [part for part in chains.keys() if part not in all_connected_parts]
 
     # If no clear starting points, use all parts
     if not starting_parts:

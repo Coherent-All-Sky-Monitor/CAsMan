@@ -22,7 +22,7 @@ Welcome to the CAsMan (CASM Assembly Manager) documentation. This documentation 
 CAsMan now uses a modular architecture with focused packages:
 
 - [Assembly Package](assembly.md) - Assembly connection recording and management (modularized)
-- [CLI Package](cli.md) - Command-line interface (modularized) 
+- [CLI Package](cli.md) - Command-line interface (modularized)
 - [Parts Package](parts.md) - Part management and validation (modularized)
 
 ### Core Modules
@@ -40,7 +40,7 @@ CAsMan follows a **modular architecture** with clear separation of concerns:
 ```
 casman/
 ├── assembly/         # Assembly management (NEW: modularized package)
-├── cli/             # Command-line interface (NEW: modularized package)  
+├── cli/             # Command-line interface (NEW: modularized package)
 ├── parts/           # Parts management (NEW: modularized package)
 ├── barcode_utils.py # Barcode utilities
 ├── config.py        # Configuration
@@ -64,7 +64,7 @@ python -m pytest
 
 # Test specific packages
 python -m pytest tests/test_assembly.py -v  # Assembly package tests
-python -m pytest tests/test_cli.py -v      # CLI package tests  
+python -m pytest tests/test_cli.py -v      # CLI package tests
 python -m pytest tests/test_parts.py -v    # Parts package tests
 ```
 
@@ -87,7 +87,7 @@ python docs/generate_docs.py
 ```
 CAsMan/
 ├── casman/                 # Main Python package
-├── scripts/               # Standalone utility scripts  
+├── scripts/               # Standalone utility scripts
 ├── database/              # SQLite database files
 ├── barcodes/              # Generated barcode images
 ├── docs/                  # Documentation (this directory)

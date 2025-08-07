@@ -667,15 +667,19 @@ def api_export_data(format_type: str):
             "json": "application/json",
             "csv": "text/csv",
             "graphml": "application/xml",
-            "dot": "text/plain"
+            "dot": "text/plain",
         }
 
         content_type = content_types.get(format_type, "text/plain")
 
-        return export_data, 200, {
-            "Content-Type": content_type,
-            "Content-Disposition": f"attachment; filename=casman_export.{format_type}"
-        }
+        return (
+            export_data,
+            200,
+            {
+                "Content-Type": content_type,
+                "Content-Disposition": f"attachment; filename=casman_export.{format_type}",
+            },
+        )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

@@ -12,9 +12,8 @@ from .operations import arrange_barcodes_in_pdf
 
 
 def generate_barcode_printpages(
-        part_type: str,
-        start_number: int,
-        end_number: int) -> None:
+    part_type: str, start_number: int, end_number: int
+) -> None:
     """
     Generate barcode printpages for a range of part numbers.
 
@@ -32,8 +31,7 @@ def generate_barcode_printpages(
     ValueError
         If part_type is unknown or number range is invalid.
     """
-    print(
-        f"Generating barcodes for {part_type} from {start_number} to {end_number}")
+    print(f"Generating barcodes for {part_type} from {start_number} to {end_number}")
 
     # Generate all barcodes in the range
     results = generate_barcode_range(part_type, start_number, end_number)
@@ -49,8 +47,9 @@ def generate_barcode_printpages(
     print(f"Barcode generation complete. Files saved in barcodes/{part_type}/")
 
 
-def create_printable_pages(barcode_directory: str, output_pdf: str,
-                           page_layout: Tuple[int, int] = (3, 5)) -> None:
+def create_printable_pages(
+    barcode_directory: str, output_pdf: str, page_layout: Tuple[int, int] = (3, 5)
+) -> None:
     """
     Create printable pages from barcode images with custom layout.
 
@@ -80,8 +79,11 @@ def create_printable_pages(barcode_directory: str, output_pdf: str,
     arrange_barcodes_in_pdf(barcode_directory, output_pdf)
 
 
-def optimize_page_layout(num_barcodes: int, page_size: Tuple[int, int] = (
-        8.5, 11), barcode_size: Tuple[float, float] = (2.0, 0.7)) -> Tuple[int, int]:
+def optimize_page_layout(
+    num_barcodes: int,
+    page_size: Tuple[int, int] = (8.5, 11),
+    barcode_size: Tuple[float, float] = (2.0, 0.7),
+) -> Tuple[int, int]:
     """
     Calculate optimal page layout for given number of barcodes.
 
@@ -121,8 +123,7 @@ def optimize_page_layout(num_barcodes: int, page_size: Tuple[int, int] = (
     for cols in range(1, max_columns + 1):
         for rows in range(1, max_rows + 1):
             barcodes_per_page = cols * rows
-            pages_needed = (
-                num_barcodes + barcodes_per_page - 1) // barcodes_per_page
+            pages_needed = (num_barcodes + barcodes_per_page - 1) // barcodes_per_page
             total_slots = pages_needed * barcodes_per_page
             efficiency = num_barcodes / total_slots
 
@@ -133,9 +134,7 @@ def optimize_page_layout(num_barcodes: int, page_size: Tuple[int, int] = (
     return best_layout
 
 
-def calculate_printing_cost(
-        num_barcodes: int,
-        cost_per_page: float = 0.10) -> dict:
+def calculate_printing_cost(num_barcodes: int, cost_per_page: float = 0.10) -> dict:
     """
     Calculate estimated printing costs for barcode sheets.
 
@@ -159,20 +158,17 @@ def calculate_printing_cost(
     cost_per_barcode = total_cost / num_barcodes if num_barcodes > 0 else 0
 
     return {
-        'num_barcodes': num_barcodes,
-        'barcodes_per_page': barcodes_per_page,
-        'pages_needed': pages_needed,
-        'cost_per_page': cost_per_page,
-        'total_cost': total_cost,
-        'cost_per_barcode': cost_per_barcode,
-        'layout': layout
+        "num_barcodes": num_barcodes,
+        "barcodes_per_page": barcodes_per_page,
+        "pages_needed": pages_needed,
+        "cost_per_page": cost_per_page,
+        "total_cost": total_cost,
+        "cost_per_barcode": cost_per_barcode,
+        "layout": layout,
     }
 
 
-def generate_print_summary(
-        part_type: str,
-        start_number: int,
-        end_number: int) -> dict:
+def generate_print_summary(part_type: str, start_number: int, end_number: int) -> dict:
     """
     Generate a comprehensive summary for barcode printing job.
 
@@ -194,9 +190,9 @@ def generate_print_summary(
     cost_info = calculate_printing_cost(num_barcodes)
 
     return {
-        'part_type': part_type,
-        'number_range': (start_number, end_number),
-        'total_barcodes': num_barcodes,
-        'recommended_layout': cost_info['layout'],
-        'printing_info': cost_info
+        "part_type": part_type,
+        "number_range": (start_number, end_number),
+        "total_barcodes": num_barcodes,
+        "recommended_layout": cost_info["layout"],
+        "printing_info": cost_info,
     }

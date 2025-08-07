@@ -110,7 +110,8 @@ class EnvironmentConfig:
         return casman_vars
 
     def create_environment_config(
-            self, environment: str, config_data: Dict[str, Any]) -> Path:
+        self, environment: str, config_data: Dict[str, Any]
+    ) -> Path:
         """
         Create an environment-specific configuration file.
 
@@ -131,12 +132,8 @@ class EnvironmentConfig:
         config_filename = f"config.{environment}.yaml"
         config_path = self.base_config_dir / config_filename
 
-        with open(config_path, 'w', encoding='utf-8') as f:
-            yaml.safe_dump(
-                config_data,
-                f,
-                default_flow_style=False,
-                sort_keys=True)
+        with open(config_path, "w", encoding="utf-8") as f:
+            yaml.safe_dump(config_data, f, default_flow_style=False, sort_keys=True)
 
         return config_path
 
@@ -156,8 +153,7 @@ class EnvironmentConfig:
         self.current_environment = environment
         os.environ["CASMAN_ENV"] = environment
 
-    def get_environment_config_template(
-            self, environment: str) -> Dict[str, Any]:
+    def get_environment_config_template(self, environment: str) -> Dict[str, Any]:
         """
         Get a configuration template for a specific environment.
 
@@ -178,66 +174,78 @@ class EnvironmentConfig:
             },
             "logging": {
                 "level": "INFO",
-            }
+            },
         }
 
         if environment == "development":
             dev_config = base_template.copy()
             db_config = dev_config.get("database", {})
             if isinstance(db_config, dict):
-                db_config.update({
-                    "backup_interval_hours": 1,
-                    "max_backups": 3,
-                })
-            dev_config.update({
-                "logging": {
-                    "level": "DEBUG",
-                    "file_path": "logs/casman-dev.log",
-                },
-                "visualization": {
-                    "web_port": 8080,
-                    "auto_refresh": True,
+                db_config.update(
+                    {
+                        "backup_interval_hours": 1,
+                        "max_backups": 3,
+                    }
+                )
+            dev_config.update(
+                {
+                    "logging": {
+                        "level": "DEBUG",
+                        "file_path": "logs/casman-dev.log",
+                    },
+                    "visualization": {
+                        "web_port": 8080,
+                        "auto_refresh": True,
+                    },
                 }
-            })
+            )
             return dev_config
 
         elif environment == "testing":
             test_config = base_template.copy()
             db_config = test_config.get("database", {})
             if isinstance(db_config, dict):
-                db_config.update({
-                    "backup_enabled": False,
-                    "integrity_check_enabled": False,
-                })
-            test_config.update({
-                "logging": {
-                    "level": "WARNING",
-                    "file_path": "logs/casman-test.log",
-                },
-                "barcode": {
-                    "output_directory": "test_barcodes",
+                db_config.update(
+                    {
+                        "backup_enabled": False,
+                        "integrity_check_enabled": False,
+                    }
+                )
+            test_config.update(
+                {
+                    "logging": {
+                        "level": "WARNING",
+                        "file_path": "logs/casman-test.log",
+                    },
+                    "barcode": {
+                        "output_directory": "test_barcodes",
+                    },
                 }
-            })
+            )
             return test_config
 
         elif environment == "production":
             prod_config = base_template.copy()
             db_config = prod_config.get("database", {})
             if isinstance(db_config, dict):
-                db_config.update({
-                    "backup_interval_hours": 6,
-                    "max_backups": 14,
-                })
-            prod_config.update({
-                "logging": {
-                    "level": "INFO",
-                    "file_path": "/var/log/casman/casman.log",
-                },
-                "visualization": {
-                    "web_port": 80,
-                    "auto_refresh": False,
+                db_config.update(
+                    {
+                        "backup_interval_hours": 6,
+                        "max_backups": 14,
+                    }
+                )
+            prod_config.update(
+                {
+                    "logging": {
+                        "level": "INFO",
+                        "file_path": "/var/log/casman/casman.log",
+                    },
+                    "visualization": {
+                        "web_port": 80,
+                        "auto_refresh": False,
+                    },
                 }
-            })
+            )
             return prod_config
 
         return base_template

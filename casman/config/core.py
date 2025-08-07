@@ -20,8 +20,7 @@ class ConfigManager:
     schema validation, and runtime updates.
     """
 
-    def __init__(
-            self, config_paths: Optional[List[Union[str, Path]]] = None) -> None:
+    def __init__(self, config_paths: Optional[List[Union[str, Path]]] = None) -> None:
         """
         Initialize the configuration manager.
 
@@ -57,9 +56,13 @@ class ConfigManager:
                 try:
                     config_data = self._load_file(config_path)
                     self._merge_config(config_data)
-                except (FileNotFoundError, yaml.YAMLError, json.JSONDecodeError, ValueError) as e:
-                    print(
-                        f"Warning: Failed to load config from {config_path}: {e}")
+                except (
+                    FileNotFoundError,
+                    yaml.YAMLError,
+                    json.JSONDecodeError,
+                    ValueError,
+                ) as e:
+                    print(f"Warning: Failed to load config from {config_path}: {e}")
 
         # Apply environment variable overrides
         self._apply_env_overrides()
@@ -73,31 +76,31 @@ class ConfigManager:
 
     def _load_file(self, file_path: Path) -> Dict[str, Any]:
         """Load configuration from a file."""
-        with open(file_path, 'r', encoding='utf-8') as f:
-            if file_path.suffix.lower() in ['.yaml', '.yml']:
+        with open(file_path, "r", encoding="utf-8") as f:
+            if file_path.suffix.lower() in [".yaml", ".yml"]:
                 data = yaml.safe_load(f)
-            elif file_path.suffix.lower() == '.json':
+            elif file_path.suffix.lower() == ".json":
                 data = json.load(f)
             else:
-                raise ValueError(
-                    f"Unsupported config file format: {file_path.suffix}")
+                raise ValueError(f"Unsupported config file format: {file_path.suffix}")
 
         if not isinstance(data, dict):
             raise ValueError(
-                f"Config file must contain a top-level dictionary: {file_path}")
+                f"Config file must contain a top-level dictionary: {file_path}"
+            )
 
         return data
 
     def _merge_config(self, new_config: Dict[str, Any]) -> None:
         """Merge new configuration data into existing config."""
-        def merge_dicts(target: Dict[str, Any],
-                        source: Dict[str, Any]) -> None:
+
+        def merge_dicts(target: Dict[str, Any], source: Dict[str, Any]) -> None:
             for key, value in source.items():
-                if key in target and isinstance(
-                        target[key],
-                        dict) and isinstance(
-                        value,
-                        dict):
+                if (
+                    key in target
+                    and isinstance(target[key], dict)
+                    and isinstance(value, dict)
+                ):
                     merge_dicts(target[key], value)
                 else:
                     target[key] = value
@@ -113,7 +116,7 @@ class ConfigManager:
                 # Store both the full key and the key without prefix for
                 # flexibility
                 self._config[key] = value  # Full key (e.g., "CASMAN_PARTS_DB")
-                config_key = key[len(env_prefix):]
+                config_key = key[len(env_prefix) :]
                 # Key without prefix (e.g., "PARTS_DB")
                 self._config[config_key] = value
 
@@ -133,14 +136,14 @@ class ConfigManager:
         Any
             Configuration value or default.
         """
-        if '.' in key:
+        if "." in key:
             return self._get_nested(key, default)
 
         return self._config.get(key, default)
 
     def _get_nested(self, key: str, default: Any = None) -> Any:
         """Get a nested configuration value using dot notation."""
-        keys = key.split('.')
+        keys = key.split(".")
         value = self._config
 
         for k in keys:
@@ -162,14 +165,14 @@ class ConfigManager:
         value : Any
             Value to set.
         """
-        if '.' in key:
+        if "." in key:
             self._set_nested(key, value)
         else:
             self._config[key] = value
 
     def _set_nested(self, key: str, value: Any) -> None:
         """Set a nested configuration value using dot notation."""
-        keys = key.split('.')
+        keys = key.split(".")
         target = self._config
 
         for k in keys[:-1]:
@@ -196,8 +199,7 @@ class ConfigManager:
         """
         self._watchers.append(callback)
 
-    def remove_watcher(
-            self, callback: Callable[[Dict[str, Any]], None]) -> None:
+    def remove_watcher(self, callback: Callable[[Dict[str, Any]], None]) -> None:
         """Remove a configuration watcher."""
         if callback in self._watchers:
             self._watchers.remove(callback)
@@ -222,6 +224,7 @@ class ConfigManager:
         try:
             # Try importing jsonschema for validation
             import jsonschema  # type: ignore
+
             jsonschema.validate(self._config, schema)
             return True
         except ImportError:

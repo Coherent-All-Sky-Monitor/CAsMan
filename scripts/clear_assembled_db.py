@@ -5,6 +5,7 @@ Script to clear (delete all records from) the assembled_casm.db database.
 Asks the user for confirmation twice before proceeding.
 Uses the database path from config.yaml via casman.config.get_config.
 """
+
 import os
 import sqlite3
 import sys
@@ -12,12 +13,8 @@ import sys
 from casman.config import get_config
 
 sys.path.insert(
-    0,
-    os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__),
-            '..',
-            'casman')))
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "casman"))
+)
 
 
 def main() -> None:
@@ -31,15 +28,21 @@ def main() -> None:
         print("Error: Database path could not be determined from config.")
         sys.exit(1)
     print(
-        f"WARNING: This will DELETE ALL records from the assembled_casm database at: {db_path}")
-    confirm1 = input(
-        "Are you sure you want to clear the assembled_casm database? (yes/no): "
-    ).strip().lower()
+        f"WARNING: This will DELETE ALL records from the assembled_casm database at: {db_path}"
+    )
+    confirm1 = (
+        input("Are you sure you want to clear the assembled_casm database? (yes/no): ")
+        .strip()
+        .lower()
+    )
     if confirm1 != "yes":
         print("Aborted.")
         return
-    confirm2 = input(
-        "This action is IRREVERSIBLE. Type 'yes' again to confirm: ").strip().lower()
+    confirm2 = (
+        input("This action is IRREVERSIBLE. Type 'yes' again to confirm: ")
+        .strip()
+        .lower()
+    )
     if confirm2 != "yes":
         print("Aborted.")
         return

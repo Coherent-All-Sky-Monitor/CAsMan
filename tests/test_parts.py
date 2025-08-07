@@ -1,4 +1,3 @@
-
 """Tests for the parts module."""
 
 # Standard library imports
@@ -10,15 +9,20 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from casman.database import init_parts_db
+
 # Project imports
-from casman.parts import (PART_TYPES, generate_part_numbers,
-                          get_last_part_number, read_parts)
+from casman.parts import (
+    PART_TYPES,
+    generate_part_numbers,
+    get_last_part_number,
+    read_parts,
+)
 
 
 @pytest.fixture(autouse=True)
 def set_casman_parts_db_env(
-        temporary_directory: str,
-        monkeypatch: pytest.MonkeyPatch) -> None:
+    temporary_directory: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Fixture to set CASMAN_PARTS_DB environment variable to a temp DB for isolation."""
     db_path = os.path.join(temporary_directory, "parts.db")
     os.makedirs(temporary_directory, exist_ok=True)
@@ -41,8 +45,7 @@ class TestParts:
             assert len(name) > 0
             assert len(abbrev) > 0
 
-    def test_get_last_part_number_empty_db(
-            self, temporary_directory: str) -> None:
+    def test_get_last_part_number_empty_db(self, temporary_directory: str) -> None:
         """Test get_last_part_number returns None for empty DB."""
         init_parts_db(temporary_directory)
         conn = sqlite3.connect(os.path.join(temporary_directory, "parts.db"))
@@ -57,8 +60,7 @@ class TestParts:
         result = get_last_part_number("ANTENNA")
         assert result is None
 
-    def test_get_last_part_number_with_data(
-            self, temporary_directory: str) -> None:
+    def test_get_last_part_number_with_data(self, temporary_directory: str) -> None:
         """
         Test get_last_part_number returns correct values with data present.
         Ensures that the function returns the last part number for each type \
@@ -74,8 +76,20 @@ class TestParts:
             pass
         # Insert test data
         test_parts = [
-            ("ANTP1-00001", "ANTENNA", "X", "2024-01-01 10:00:00", "2024-01-01 10:00:00"),
-            ("ANTP1-00002", "ANTENNA", "Y", "2024-01-01 10:01:00", "2024-01-01 10:01:00"),
+            (
+                "ANTP1-00001",
+                "ANTENNA",
+                "X",
+                "2024-01-01 10:00:00",
+                "2024-01-01 10:00:00",
+            ),
+            (
+                "ANTP1-00002",
+                "ANTENNA",
+                "Y",
+                "2024-01-01 10:01:00",
+                "2024-01-01 10:01:00",
+            ),
             ("LNAP1-00001", "LNA", "X", "2024-01-01 10:02:00", "2024-01-01 10:02:00"),
         ]
         for part in test_parts:
@@ -83,7 +97,9 @@ class TestParts:
                 # Insert each test part into the database
                 "INSERT INTO parts (part_number, part_type, \
                     polarization, date_created, date_modified) "
-                "VALUES (?, ?, ?, ?, ?)", part)
+                "VALUES (?, ?, ?, ?, ?)",
+                part,
+            )
         conn.commit()
         conn.close()
         # Check last part numbers for each type
@@ -94,11 +110,10 @@ class TestParts:
         last_missing = get_last_part_number("NONEXISTENT")
         assert last_missing is None
 
-    @patch('casman.parts.generation.generate_barcode')
+    @patch("casman.parts.generation.generate_barcode")
     def test_generate_part_numbers_new_type(
-            self,
-            mock_generate_barcode: MagicMock,
-            temporary_directory: str) -> None:
+        self, mock_generate_barcode: MagicMock, temporary_directory: str
+    ) -> None:
         """
         Test generating part numbers for a new part type.
         Ensures that the correct number and format of part numbers
@@ -123,11 +138,10 @@ class TestParts:
         assert new_parts[2] == "ANT-P1-00003"
         assert mock_generate_barcode.call_count == 3
 
-    @patch('casman.parts.generation.generate_barcode')
+    @patch("casman.parts.generation.generate_barcode")
     def test_generate_part_numbers_existing_type(
-            self,
-            mock_generate_barcode: MagicMock,
-            temporary_directory: str) -> None:
+        self, mock_generate_barcode: MagicMock, temporary_directory: str
+    ) -> None:
         """Test generating part numbers for an existing part type."""
         init_parts_db(temporary_directory)
         mock_generate_barcode.return_value = None
@@ -141,7 +155,9 @@ class TestParts:
         # Insert an existing part
         cursor.execute(
             "INSERT INTO parts (part_number, part_type, polarization, date_created, date_modified) "
-            "VALUES (?, ?, ?, ?, ?)", ("LNA-P1-00005", "LNA", "1", "2024-01-01", "2024-01-01"))
+            "VALUES (?, ?, ?, ?, ?)",
+            ("LNA-P1-00005", "LNA", "1", "2024-01-01", "2024-01-01"),
+        )
         conn.commit()
         conn.close()
         new_parts = generate_part_numbers("LNA", 2, "1")
@@ -189,17 +205,15 @@ class TestParts:
             cursor.execute(
                 "INSERT INTO parts \
                     (part_number, part_type, polarization, date_created, date_modified) "
-                "VALUES (?, ?, ?, ?, ?)", part)
+                "VALUES (?, ?, ?, ?, ?)",
+                part,
+            )
         conn.commit()
         conn.close()
         parts = read_parts()
         assert len(parts) == 3
         for part in parts:
-            assert part[1] in [
-                "ANT-P1-00001",
-                "LNA-P1-00001",
-                "BAC-P1-00001"
-            ]
+            assert part[1] in ["ANT-P1-00001", "LNA-P1-00001", "BAC-P1-00001"]
             assert part[2] in ["ANTENNA", "LNA", "BACBOARD"]
             assert len(part) >= 6
 
@@ -213,9 +227,10 @@ class TestParts:
         result = generate_part_numbers("ANTENNA", -1, "1")
         assert not result
 
-    @patch('casman.parts.generation.generate_barcode')
+    @patch("casman.parts.generation.generate_barcode")
     def test_generate_part_numbers_database_persistence(
-            self, mock_generate_barcode: MagicMock, temporary_directory: str) -> None:
+        self, mock_generate_barcode: MagicMock, temporary_directory: str
+    ) -> None:
         """Test that generated part numbers are persisted in the database."""
         init_parts_db(temporary_directory)
         mock_generate_barcode.return_value = None
@@ -232,7 +247,8 @@ class TestParts:
         conn = sqlite3.connect(os.path.join(temporary_directory, "parts.db"))
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT part_number, part_type, polarization FROM parts ORDER BY id")
+            "SELECT part_number, part_type, polarization FROM parts ORDER BY id"
+        )
         saved_parts = cursor.fetchall()
         conn.close()
         assert len(saved_parts) == 2
@@ -253,13 +269,13 @@ class TestParts:
         conn.commit()
         conn.close()
         # Patch barcode generation for all types
-        with patch('casman.parts.generation.generate_barcode'):
+        with patch("casman.parts.generation.generate_barcode"):
             for _, (part_type, abbrev) in PART_TYPES.items():
                 new_parts = generate_part_numbers(part_type, 1, "1")
                 assert len(new_parts) == 1
                 part_number = new_parts[0]
                 expected_prefix = f"{abbrev}-P1-"
                 assert part_number.startswith(expected_prefix)
-                number_part = part_number[len(expected_prefix):]
+                number_part = part_number[len(expected_prefix) :]
                 assert len(number_part) == 5
                 assert number_part.isdigit()

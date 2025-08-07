@@ -24,22 +24,22 @@ def cmd_visualize() -> None:
     None
     """
     parser = argparse.ArgumentParser(
-        description='CAsMan Visualization Tools',
+        description="CAsMan Visualization Tools",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   casman visualize chains              # Show ASCII chains
   casman visualize summary             # Show summary statistics
-        """
+        """,
     )
 
-    subparsers = parser.add_subparsers(dest='action', help='Visualization actions')
+    subparsers = parser.add_subparsers(dest="action", help="Visualization actions")
 
     # Legacy chains command
-    subparsers.add_parser('chains', help='Show ASCII visualization chains')
+    subparsers.add_parser("chains", help="Show ASCII visualization chains")
 
     # Summary command
-    subparsers.add_parser('summary', help='Show visualization summary')
+    subparsers.add_parser("summary", help="Show visualization summary")
 
     # Parse arguments
     if len(sys.argv) < 3:
@@ -54,11 +54,12 @@ Examples:
 
     try:
         from casman.database import init_all_databases
+
         init_all_databases()
 
-        if args.action == 'chains':
+        if args.action == "chains":
             cmd_visualize_chains()
-        elif args.action == 'summary':
+        elif args.action == "summary":
             cmd_visualize_summary()
         else:
             parser.print_help()
@@ -75,6 +76,7 @@ def cmd_visualize_chains() -> None:
     """Show ASCII visualization chains."""
     try:
         from casman.visualization import format_ascii_chains
+
         print(format_ascii_chains())
     except ImportError:
         print("Visualization functionality not available")
@@ -84,6 +86,7 @@ def cmd_visualize_summary() -> None:
     """Show visualization summary."""
     try:
         from casman.visualization import print_visualization_summary
+
         print_visualization_summary()
     except ImportError:
         print("Visualization functionality not available")

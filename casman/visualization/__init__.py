@@ -14,7 +14,7 @@ from .core import (
     get_chain_summary,
     get_visualization_data,
     print_visualization_summary,
-    main as cli_main
+    main as cli_main,
 )
 
 __all__ = [
@@ -23,7 +23,7 @@ __all__ = [
     "get_chain_summary",
     "get_visualization_data",
     "print_visualization_summary",
-    "cli_main"
+    "cli_main",
 ]
 
 

@@ -50,22 +50,16 @@ def scan_barcode_directory(directory: str) -> Dict[str, List[str]]:
     if not os.path.exists(directory):
         return {}
 
-    file_types = {
-        'png': [],
-        'jpg': [],
-        'jpeg': [],
-        'bmp': [],
-        'other': []
-    }
+    file_types = {"png": [], "jpg": [], "jpeg": [], "bmp": [], "other": []}
 
     for file in os.listdir(directory):
         file_path = os.path.join(directory, file)
         if os.path.isfile(file_path):
-            extension = file.lower().split('.')[-1] if '.' in file else 'other'
+            extension = file.lower().split(".")[-1] if "." in file else "other"
             if extension in file_types:
                 file_types[extension].append(file_path)
             else:
-                file_types['other'].append(file_path)
+                file_types["other"].append(file_path)
 
     return file_types
 
@@ -130,12 +124,12 @@ def get_directory_statistics(directory: str) -> Dict[str, int]:
         Dictionary with statistics about the directory contents.
     """
     stats = {
-        'total_files': 0,
-        'valid_barcodes': 0,
-        'invalid_files': 0,
-        'png_files': 0,
-        'jpg_files': 0,
-        'other_files': 0
+        "total_files": 0,
+        "valid_barcodes": 0,
+        "invalid_files": 0,
+        "png_files": 0,
+        "jpg_files": 0,
+        "other_files": 0,
     }
 
     if not os.path.exists(directory):
@@ -144,30 +138,28 @@ def get_directory_statistics(directory: str) -> Dict[str, int]:
     for file in os.listdir(directory):
         file_path = os.path.join(directory, file)
         if os.path.isfile(file_path):
-            stats['total_files'] += 1
+            stats["total_files"] += 1
 
             # Count by extension
-            extension = file.lower().split('.')[-1] if '.' in file else 'other'
-            if extension == 'png':
-                stats['png_files'] += 1
-            elif extension in ['jpg', 'jpeg']:
-                stats['jpg_files'] += 1
+            extension = file.lower().split(".")[-1] if "." in file else "other"
+            if extension == "png":
+                stats["png_files"] += 1
+            elif extension in ["jpg", "jpeg"]:
+                stats["jpg_files"] += 1
             else:
-                stats['other_files'] += 1
+                stats["other_files"] += 1
 
             # Validate barcode
             is_valid, _ = validate_barcode_file(file_path)
             if is_valid:
-                stats['valid_barcodes'] += 1
+                stats["valid_barcodes"] += 1
             else:
-                stats['invalid_files'] += 1
+                stats["invalid_files"] += 1
 
     return stats
 
 
-def cleanup_invalid_barcodes(
-        directory: str,
-        dry_run: bool = True) -> List[str]:
+def cleanup_invalid_barcodes(directory: str, dry_run: bool = True) -> List[str]:
     """
     Remove invalid barcode files from a directory.
 
@@ -231,7 +223,7 @@ def arrange_barcodes_in_pdf(directory: str, output_pdf: str) -> None:
     # Get all valid barcode images from the directory
     image_files = []
     for f in os.listdir(directory):
-        if f.lower().endswith(('.png', '.jpg', '.jpeg')):
+        if f.lower().endswith((".png", ".jpg", ".jpeg")):
             file_path = os.path.join(directory, f)
             is_valid, _ = validate_barcode_file(file_path)
             if is_valid:

@@ -23,12 +23,13 @@ def find_project_root() -> str:
     current_dir = os.path.dirname(os.path.abspath(__file__))
 
     # Go up directories until we find the project root
-    while current_dir != os.path.dirname(
-            current_dir):  # Stop at filesystem root
+    while current_dir != os.path.dirname(current_dir):  # Stop at filesystem root
         # Check for project indicators
-        if (os.path.exists(os.path.join(current_dir, "pyproject.toml")) or
-            os.path.exists(os.path.join(current_dir, "casman")) and
-                os.path.exists(os.path.join(current_dir, "database"))):
+        if (
+            os.path.exists(os.path.join(current_dir, "pyproject.toml"))
+            or os.path.exists(os.path.join(current_dir, "casman"))
+            and os.path.exists(os.path.join(current_dir, "database"))
+        ):
             return current_dir
         current_dir = os.path.dirname(current_dir)
 

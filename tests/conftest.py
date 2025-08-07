@@ -1,4 +1,5 @@
 """Test configuration and fixtures for CAsMan tests."""
+
 import os
 import shutil
 import tempfile
@@ -12,9 +13,7 @@ from casman.database import init_assembled_db, init_parts_db
 
 
 @pytest.fixture(autouse=True)
-def set_casman_db_env_vars(
-        tmp_path: Path,
-        monkeypatch: pytest.MonkeyPatch) -> None:
+def set_casman_db_env_vars(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Robustly isolate both parts and assembled DBs for every test."""
     temp_dir = str(tmp_path)
     parts_db = os.path.join(temp_dir, "parts.db")
@@ -46,9 +45,11 @@ def mock_database_path(temporary_directory_fixture: str) -> Generator:
         return os.path.join(test_dir, db_name)
 
     # Patch all modules that import get_database_path
-    with patch('casman.database.get_database_path', side_effect=get_test_path) as mock_path:
-        with patch('casman.assembly.get_database_path', side_effect=get_test_path):
-            with patch('casman.parts.get_database_path', side_effect=get_test_path):
+    with patch(
+        "casman.database.get_database_path", side_effect=get_test_path
+    ) as mock_path:
+        with patch("casman.assembly.get_database_path", side_effect=get_test_path):
+            with patch("casman.parts.get_database_path", side_effect=get_test_path):
                 yield mock_path
 
 
@@ -56,13 +57,12 @@ def mock_database_path(temporary_directory_fixture: str) -> Generator:
 def mock_barcode_dir(barcode_temp_dir: str) -> Generator:
     """Mock the barcode directory to use temporary directory."""
     test_dir = barcode_temp_dir
-    with patch('casman.barcode_utils.BARCODE_BASE_DIR', test_dir):
+    with patch("casman.barcode_utils.BARCODE_BASE_DIR", test_dir):
         yield test_dir
 
 
 @pytest.fixture
-def init_test_databases(
-        _mock_database_path: Generator) -> Generator[None, None, None]:
+def init_test_databases(_mock_database_path: Generator) -> Generator[None, None, None]:
     """Initialize test databases."""
     # _mock_database_path is required as a fixture to ensure DBs are created
     # in temp dir
@@ -76,19 +76,19 @@ def sample_parts_data() -> list:
     """Sample parts data for testing."""
     return [
         {
-            'part_number': 'ANTP1-00001',
-            'part_type': 'ANTENNA',
-            'polarization': 'X',
+            "part_number": "ANTP1-00001",
+            "part_type": "ANTENNA",
+            "polarization": "X",
         },
         {
-            'part_number': 'LNAP1-00001',
-            'part_type': 'LNA',
-            'polarization': 'Y',
+            "part_number": "LNAP1-00001",
+            "part_type": "LNA",
+            "polarization": "Y",
         },
         {
-            'part_number': 'BACP1-00001',
-            'part_type': 'BACBOARD',
-            'polarization': 'H',
+            "part_number": "BACP1-00001",
+            "part_type": "BACBOARD",
+            "polarization": "H",
         },
     ]
 
@@ -98,15 +98,15 @@ def sample_assembly_data() -> list:
     """Sample assembly data for testing."""
     return [
         {
-            'part_number': 'ANTP1-00001',
-            'connected_to': None,
+            "part_number": "ANTP1-00001",
+            "connected_to": None,
         },
         {
-            'part_number': 'LNAP1-00001',
-            'connected_to': 'ANTP1-00001',
+            "part_number": "LNAP1-00001",
+            "connected_to": "ANTP1-00001",
         },
         {
-            'part_number': 'BACP1-00001',
-            'connected_to': 'LNAP1-00001',
+            "part_number": "BACP1-00001",
+            "connected_to": "LNAP1-00001",
         },
     ]

@@ -12,7 +12,7 @@ def test_debug_database_paths():
     print(f"CWD: {os.getcwd()}")
     print(f"Project root: {find_project_root()}")
 
-    db_path = get_database_path('parts.db', None)
+    db_path = get_database_path("parts.db", None)
     print(f"Database path: {db_path}")
     print(f"Database exists before init: {os.path.exists(db_path)}")
 

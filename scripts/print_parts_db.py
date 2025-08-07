@@ -23,8 +23,8 @@ from casman.parts import PART_TYPES
 
 # Configure logging
 logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(levelname)s - %(message)s')
+    level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description="Read parts from the database.")
@@ -48,16 +48,16 @@ def read_database() -> None:
     # Display part type options
     print("Select part type:")
     # Show part types in required order (by PART_TYPES key, excluding SNAP)
-    selectable_types = [(k, v) for k, v in sorted(
-        PART_TYPES.items()) if v[0].upper() != "SNAP"]
+    selectable_types = [
+        (k, v) for k, v in sorted(PART_TYPES.items()) if v[0].upper() != "SNAP"
+    ]
     for idx, (key, (name, _)) in enumerate(selectable_types, 1):
         print(f"{idx}: {name}")
     print(f"{len(selectable_types) + 1}: ALL")
 
     # Handle user selection for part type
     try:
-        type_selection = int(
-            input("Enter the number corresponding to the part type: "))
+        type_selection = int(input("Enter the number corresponding to the part type: "))
         if type_selection == len(selectable_types) + 1:
             # "ALL" option selected
             part_type = None
@@ -73,7 +73,8 @@ def read_database() -> None:
 
     # Prompt the user for polarization
     polarization = (
-        input("Enter polarization (or press Enter to include all): ").strip().upper())
+        input("Enter polarization (or press Enter to include all): ").strip().upper()
+    )
 
     # Print the full path of the database being read
     db_path = os.path.abspath(os.path.join(args.db_dir, "parts.db"))
@@ -87,10 +88,7 @@ def read_database() -> None:
         # if needed
         try:
             records = get_parts_by_criteria(part_type, None, args.db_dir)
-            logging.debug(
-                "Fetched records for part type %s: %s",
-                part_type,
-                records)
+            logging.debug("Fetched records for part type %s: %s", part_type, records)
         except sqlite3.OperationalError as op_err:
             logging.error("Operational error in database: %s", op_err)
             return
@@ -122,10 +120,13 @@ def read_database() -> None:
             "Part Type",
             "Polarization",
             "Date Created",
-            "Date Modified"]
+            "Date Modified",
+        ]
         # Prepare rows for table (include polarization)
-        table_rows = [[str(r[0]), str(r[1]), str(r[2]), str(
-            r[3]), str(r[4]), str(r[5])] for r in records]
+        table_rows = [
+            [str(r[0]), str(r[1]), str(r[2]), str(r[3]), str(r[4]), str(r[5])]
+            for r in records
+        ]
         # Calculate column widths
         col_widths = [
             max(len(str(row[i])) for row in table_rows + [headers])
@@ -135,11 +136,15 @@ def read_database() -> None:
 
         def h(char, width):
             return char * width
+
         # Top border
         top = "┌" + "┬".join(h("─", w + 2) for w in col_widths) + "┐"
         # Header row
-        header_row = "│ " + \
-            " │ ".join(f"{headers[i]:<{col_widths[i]}}" for i in range(len(headers))) + " │"
+        header_row = (
+            "│ "
+            + " │ ".join(f"{headers[i]:<{col_widths[i]}}" for i in range(len(headers)))
+            + " │"
+        )
         # Separator
         sep = "├" + "┼".join(h("─", w + 2) for w in col_widths) + "┤"
         # Bottom border
@@ -148,8 +153,11 @@ def read_database() -> None:
         print(header_row)
         print(sep)
         for row in table_rows:
-            row_str = "│ " + \
-                " │ ".join(f"{row[i]:<{col_widths[i]}}" for i in range(len(row))) + " │"
+            row_str = (
+                "│ "
+                + " │ ".join(f"{row[i]:<{col_widths[i]}}" for i in range(len(row)))
+                + " │"
+            )
             print(row_str)
         print(bottom)
 

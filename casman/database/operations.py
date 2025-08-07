@@ -66,7 +66,8 @@ def get_last_update(db_dir: Optional[str] = None) -> Optional[str]:
 
 
 def get_assembly_records(
-        db_dir: Optional[str] = None) -> List[Tuple[str, Optional[str], str, str]]:
+    db_dir: Optional[str] = None,
+) -> List[Tuple[str, Optional[str], str, str]]:
     """
     Get all assembly records from the database.
 
@@ -93,8 +94,9 @@ def get_assembly_records(
     return records
 
 
-def check_part_in_db(part_number: str, part_type: str,
-                     db_dir: Optional[str] = None) -> Tuple[bool, Optional[str]]:
+def check_part_in_db(
+    part_number: str, part_type: str, db_dir: Optional[str] = None
+) -> Tuple[bool, Optional[str]]:
     """
     Check if a part number exists in the parts database and get its polarization.
 
@@ -117,7 +119,7 @@ def check_part_in_db(part_number: str, part_type: str,
     c = conn.cursor()
     c.execute(
         "SELECT polarization FROM parts WHERE part_number = ? AND part_type = ?",
-        (part_number, part_type)
+        (part_number, part_type),
     )
     result = c.fetchone()
     conn.close()
@@ -127,14 +129,11 @@ def check_part_in_db(part_number: str, part_type: str,
     return False, None
 
 
-def get_parts_by_criteria(part_type: Optional[str] = None,
-                          polarization: Optional[str] = None,
-                          db_dir: Optional[str] = None) -> List[Tuple[int,
-                                                                      str,
-                                                                      str,
-                                                                      str,
-                                                                      str,
-                                                                      str]]:
+def get_parts_by_criteria(
+    part_type: Optional[str] = None,
+    polarization: Optional[str] = None,
+    db_dir: Optional[str] = None,
+) -> List[Tuple[int, str, str, str, str, str]]:
     """
     Get parts from the database based on criteria.
 

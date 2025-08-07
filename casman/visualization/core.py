@@ -87,15 +87,9 @@ def get_visualization_data() -> Dict[str, List[Dict[str, str]]]:
     links = []
     for part_number, connected_parts in chains.items():
         for connected_part in connected_parts:
-            links.append({
-                "source": part_number,
-                "target": connected_part
-            })
+            links.append({"source": part_number, "target": connected_part})
 
-    return {
-        "nodes": nodes,
-        "links": links
-    }
+    return {"nodes": nodes, "links": links}
 
 
 def get_chain_summary() -> Dict[str, float]:
@@ -116,12 +110,11 @@ def get_chain_summary() -> Dict[str, float]:
             "total_connections": 0,
             "total_chains": 0,
             "longest_chain": 0,
-            "average_chain_length": 0
+            "average_chain_length": 0,
         }
 
     total_parts = len(set(part for part, _, _, _, _ in connections))
-    total_connections = len(
-        [link for links in chains.values() for link in links])
+    total_connections = len([link for links in chains.values() for link in links])
 
     # Build forward direction map (what connects FROM each part)
     forward_chains: Dict[str, List[str]] = {}
@@ -169,8 +162,10 @@ def get_chain_summary() -> Dict[str, float]:
         "total_connections": total_connections,
         "total_chains": len(chain_lengths) if chain_lengths else len(root_parts),
         "longest_chain": max(chain_lengths) if chain_lengths else 0,
-        "average_chain_length": sum(chain_lengths) /
-        len(chain_lengths) if chain_lengths else 0}
+        "average_chain_length": (
+            sum(chain_lengths) / len(chain_lengths) if chain_lengths else 0
+        ),
+    }
 
 
 def print_visualization_summary() -> None:

@@ -9,9 +9,7 @@ import re
 from typing import List, Optional, Tuple
 
 
-def is_valid_barcode_format(
-        barcode_data: str,
-        format_type: str = "code128") -> bool:
+def is_valid_barcode_format(barcode_data: str, format_type: str = "code128") -> bool:
     """
     Validate if barcode data is compatible with the specified format.
 
@@ -55,8 +53,7 @@ def is_valid_barcode_format(
         return len(barcode_data) > 0
 
 
-def validate_part_number_format(
-        part_number: str) -> Tuple[bool, Optional[str]]:
+def validate_part_number_format(part_number: str) -> Tuple[bool, Optional[str]]:
     """
     Validate CAsMan part number format.
 
@@ -77,12 +74,14 @@ def validate_part_number_format(
     # Expected pattern: XXX-P1-NNNNN or XXXP1-NNNNN
     # Where XXX is 2-4 letter abbreviation, P1 is literal, NNNNN is 5-digit
     # number
-    pattern = r'^([A-Z]{2,4})-?(P1)-(\d{5})$'
+    pattern = r"^([A-Z]{2,4})-?(P1)-(\d{5})$"
 
     match = re.match(pattern, part_number.upper())
     if not match:
-        return False, ("Invalid part number format. Expected format: "
-                       "XXX-P1-NNNNN or XXXP1-NNNNN (e.g., ANT-P1-00001)")
+        return False, (
+            "Invalid part number format. Expected format: "
+            "XXX-P1-NNNNN or XXXP1-NNNNN (e.g., ANT-P1-00001)"
+        )
 
     prefix, pol, number = match.groups()
 
@@ -104,7 +103,8 @@ def validate_part_number_format(
 
 
 def validate_barcode_content(
-        content: str, part_type: Optional[str] = None) -> Tuple[bool, Optional[str]]:
+    content: str, part_type: Optional[str] = None
+) -> Tuple[bool, Optional[str]]:
     """
     Validate barcode content for CAsMan standards.
 
@@ -137,7 +137,7 @@ def validate_barcode_content(
             return False, "Barcode content cannot be only whitespace"
 
         # Check for potentially problematic characters
-        problematic_chars = set('\n\r\t\f\v')
+        problematic_chars = set("\n\r\t\f\v")
         if any(char in problematic_chars for char in content):
             return False, "Barcode content contains invalid control characters"
 
@@ -146,7 +146,7 @@ def validate_barcode_content(
     # If it's a valid part number, do additional part-type checking
     if part_type:
         # Extract prefix from part number
-        pattern = r'^([A-Z]{2,4})-?P1-\d{5}$'
+        pattern = r"^([A-Z]{2,4})-?P1-\d{5}$"
         match = re.match(pattern, content.upper())
 
         if match:
@@ -162,8 +162,10 @@ def validate_barcode_content(
                     break
 
             if expected_prefix and prefix != expected_prefix:
-                return False, (f"Part number prefix '{prefix}' doesn't match "
-                               f"expected prefix '{expected_prefix}' for part type '{part_type}'")
+                return False, (
+                    f"Part number prefix '{prefix}' doesn't match "
+                    f"expected prefix '{expected_prefix}' for part type '{part_type}'"
+                )
 
     return True, None
 
@@ -178,25 +180,25 @@ def get_barcode_validation_rules() -> dict:
         Dictionary containing validation rules and standards.
     """
     return {
-        'part_number_format': {
-            'pattern': 'XXX-P1-NNNNN or XXXP1-NNNNN',
-            'prefix_length': (2, 4),
-            'number_range': (1, 99999),
-            'examples': ['ANT-P1-00001', 'LNAP1-00123', 'BAC-P1-05678']
+        "part_number_format": {
+            "pattern": "XXX-P1-NNNNN or XXXP1-NNNNN",
+            "prefix_length": (2, 4),
+            "number_range": (1, 99999),
+            "examples": ["ANT-P1-00001", "LNAP1-00123", "BAC-P1-05678"],
         },
-        'content_constraints': {
-            'min_length': 3,
-            'max_length': 50,
-            'forbidden_chars': ['\n', '\r', '\t', '\f', '\v'],
-            'encoding': 'ASCII (0-127)'
+        "content_constraints": {
+            "min_length": 3,
+            "max_length": 50,
+            "forbidden_chars": ["\n", "\r", "\t", "\f", "\v"],
+            "encoding": "ASCII (0-127)",
         },
-        'barcode_formats': {
-            'recommended': 'code128',
-            'supported': ['code128', 'code39', 'ean8', 'ean13', 'upc', 'upca'],
-            'format_constraints': {
-                'code128': 'ASCII characters 0-127',
-                'code39': 'Alphanumeric + special chars',
-                'ean/upc': 'Numeric only'
-            }
-        }
+        "barcode_formats": {
+            "recommended": "code128",
+            "supported": ["code128", "code39", "ean8", "ean13", "upc", "upca"],
+            "format_constraints": {
+                "code128": "ASCII characters 0-127",
+                "code39": "Alphanumeric + special chars",
+                "ean/upc": "Numeric only",
+            },
+        },
     }

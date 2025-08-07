@@ -45,7 +45,7 @@ casman/
 │   ├── chains.py       # Connection chain analysis
 │   └── interactive.py  # Interactive assembly operations
 ├── cli/                  # Command-line interface (modularized package)
-│   ├── __init__.py      # CLI package exports  
+│   ├── __init__.py      # CLI package exports
 │   ├── main.py         # Main CLI entry point
 │   ├── parts_commands.py    # Parts management commands
 │   ├── assembly_commands.py # Assembly commands
@@ -154,7 +154,7 @@ CAsMan uses SQLite databases with the following structure:
 - **parts**: Core part information
 - **part_aliases**: Alternative part names
 
-#### Assembly Database (`assembled_casm.db`)  
+#### Assembly Database (`assembled_casm.db`)
 - **assembly**: Assembly connection records
 
 ### Working with Databases

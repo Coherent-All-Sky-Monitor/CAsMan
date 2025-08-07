@@ -12,9 +12,12 @@ import barcode
 from barcode.writer import ImageWriter
 
 
-def generate_barcode(part_number: str, part_type: str,
-                     output_dir: Optional[str] = None,
-                     barcode_format: str = "code128") -> str:
+def generate_barcode(
+    part_number: str,
+    part_type: str,
+    output_dir: Optional[str] = None,
+    barcode_format: str = "code128",
+) -> str:
     """
     Generate a barcode image for a part number.
 
@@ -44,11 +47,8 @@ def generate_barcode(part_number: str, part_type: str,
     # Determine output directory
     if output_dir is None:
         barcode_dir = os.path.join(
-            os.path.dirname(__file__),
-            '..',
-            '..',
-            'barcodes',
-            part_type)
+            os.path.dirname(__file__), "..", "..", "barcodes", part_type
+        )
     else:
         barcode_dir = os.path.join(output_dir, part_type)
 
@@ -59,7 +59,8 @@ def generate_barcode(part_number: str, part_type: str,
     try:
         # Generate the barcode
         barcode_generator = barcode.get(
-            barcode_format, part_number, writer=ImageWriter())
+            barcode_format, part_number, writer=ImageWriter()
+        )
         barcode_path = os.path.join(barcode_dir, f"{part_number}")
         barcode_generator.save(barcode_path)
 
@@ -69,11 +70,12 @@ def generate_barcode(part_number: str, part_type: str,
         raise ValueError(f"Failed to generate barcode for {part_number}: {e}")
 
 
-def generate_multiple_barcodes(part_numbers: List[str],
-                               part_type: str,
-                               output_dir: Optional[str] = None,
-                               barcode_format: str = "code128") -> Dict[str,
-                                                                        str]:
+def generate_multiple_barcodes(
+    part_numbers: List[str],
+    part_type: str,
+    output_dir: Optional[str] = None,
+    barcode_format: str = "code128",
+) -> Dict[str, str]:
     """
     Generate barcodes for multiple part numbers.
 
@@ -103,16 +105,19 @@ def generate_multiple_barcodes(part_numbers: List[str],
             )
             results[part_number] = barcode_path
         except (ValueError, OSError) as e:
-            print(
-                f"Warning: Failed to generate barcode for {part_number}: {e}")
+            print(f"Warning: Failed to generate barcode for {part_number}: {e}")
             results[part_number] = ""
 
     return results
 
 
-def generate_barcode_range(part_type: str, start_number: int, end_number: int,
-                           prefix: Optional[str] = None,
-                           output_dir: Optional[str] = None) -> Dict[str, str]:
+def generate_barcode_range(
+    part_type: str,
+    start_number: int,
+    end_number: int,
+    prefix: Optional[str] = None,
+    output_dir: Optional[str] = None,
+) -> Dict[str, str]:
     """
     Generate barcodes for a range of part numbers.
 
@@ -140,8 +145,7 @@ def generate_barcode_range(part_type: str, start_number: int, end_number: int,
         If start_number > end_number or if part_type is unknown.
     """
     if start_number > end_number:
-        raise ValueError(
-            "Start number must be less than or equal to end number")
+        raise ValueError("Start number must be less than or equal to end number")
 
     # Get prefix if not provided
     if prefix is None:
@@ -160,8 +164,7 @@ def generate_barcode_range(part_type: str, start_number: int, end_number: int,
         prefix = f"{part_abbrev}P1"
 
     # Generate part numbers
-    part_numbers = [
-        f"{prefix}-{i:05d}" for i in range(start_number, end_number + 1)]
+    part_numbers = [f"{prefix}-{i:05d}" for i in range(start_number, end_number + 1)]
 
     return generate_multiple_barcodes(part_numbers, part_type, output_dir)
 
@@ -175,8 +178,22 @@ def get_supported_barcode_formats() -> List[str]:
     List[str]
         List of supported barcode format names.
     """
-    return ['code128', 'code39', 'ean8', 'ean13', 'ean', 'gtin',
-            'isbn', 'isbn10', 'isbn13', 'issn', 'jan', 'pzn', 'upc', 'upca']
+    return [
+        "code128",
+        "code39",
+        "ean8",
+        "ean13",
+        "ean",
+        "gtin",
+        "isbn",
+        "isbn10",
+        "isbn13",
+        "issn",
+        "jan",
+        "pzn",
+        "upc",
+        "upca",
+    ]
 
 
 def validate_barcode_format(barcode_format: str) -> bool:

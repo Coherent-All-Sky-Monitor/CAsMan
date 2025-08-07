@@ -14,7 +14,7 @@ CAsMan is organized into focused, modular packages:
 | `casman.cli` | Command-line interface | Package |
 | `casman.parts` | Part management and validation | Package |
 
-### Core Modules  
+### Core Modules
 
 | Module | Purpose | Type |
 |--------|---------|------|
@@ -70,7 +70,7 @@ from casman.visualization import print_ascii_chains
 
 **Submodules**:
 - `connections`: Recording assembly connections
-- `data`: Data retrieval and statistics  
+- `data`: Data retrieval and statistics
 - `chains`: Connection chain analysis
 - `interactive`: Interactive assembly operations
 
@@ -90,7 +90,7 @@ from casman.visualization import print_ascii_chains
 - `main`: Main CLI entry point and argument parsing
 - `parts_commands`: Parts management commands
 - `assembly_commands`: Assembly operation commands
-- `barcode_commands`: Barcode generation commands  
+- `barcode_commands`: Barcode generation commands
 - `visualization_commands`: Visualization commands
 - `utils`: Common CLI utilities
 
@@ -161,12 +161,12 @@ from casman.assembly import record_assembly_connection
 # Record a connection between parts
 success = record_assembly_connection(
     part_number="ANT-P1-00001",
-    part_type="ANTENNA", 
+    part_type="ANTENNA",
     polarization="P1",
     scan_time="2024-01-01 10:00:00",
     connected_to="LNA-P1-00001",
     connected_to_type="LNA",
-    connected_polarization="P1", 
+    connected_polarization="P1",
     connected_scan_time="2024-01-01 09:59:00"
 )
 ```
@@ -220,7 +220,7 @@ python -m casman.cli assembly scan --interactive
 python -m casman.cli assembly stats
 python -m casman.cli assembly chains
 
-# Parts operations  
+# Parts operations
 python -m casman.cli parts add ANT-P1-00001 ANTENNA P1
 python -m casman.cli parts list
 python -m casman.cli parts search --type ANTENNA
@@ -273,7 +273,7 @@ def get_assembly_connections(db_dir: Optional[str] = None) -> List[Tuple[str, ..
     pass
 
 def get_assembly_stats(db_dir: Optional[str] = None) -> Dict[str, Any]:
-    """Get assembly statistics.""" 
+    """Get assembly statistics."""
     pass
 ```
 
