@@ -1,0 +1,4 @@
+# CAsMan Package
+
+# Flask is only used by the standalone scripts/visualize_analog_chains_web.py
+flask>=2.0.0

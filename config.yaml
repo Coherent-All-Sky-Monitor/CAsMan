@@ -1,0 +1,51 @@
+# CAsMan Enhanced Configuration File
+# 
+# This configuration file supports the enhanced configuration system with
+# environment-specific overrides, schema validation, and hot-reloading capabilities.
+
+# Part type definitions (required)
+PART_TYPES:
+  1: [ANTENNA, ANT]
+  2: [LNA, LNA]
+  3: [COAX1, CX1]
+  4: [COAX2, CX2]
+  5: [BACBOARD, BAC]
+  6: [SNAP, SNAP]
+
+# Database configuration (legacy keys maintained for compatibility)
+CASMAN_ASSEMBLED_DB: database/assembled_casm.db
+CASMAN_PARTS_DB: database/parts.db
+
+# Enhanced database settings
+database:
+  backup_enabled: true
+  backup_interval_hours: 24
+  max_backups: 7
+  integrity_check_enabled: true
+  connection_timeout: 30.0
+
+# Barcode generation settings
+barcode:
+  default_format: code128
+  output_directory: barcodes
+  image_format: png
+  pdf_page_size: letter
+  images_per_row: 3
+  margin_pixels: 100
+  max_barcode_width: 600
+  max_barcode_height: 200
+
+# Visualization settings
+visualization:
+  web_port: 8080
+  auto_refresh: true
+  theme: default
+  export_formats: [png, svg, pdf]
+
+# Logging configuration
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file_path: logs/casman.log
+  max_file_size_mb: 10
+  backup_count: 5
