@@ -12,6 +12,7 @@ import argcomplete
 
 from .assembly_commands import cmd_scan
 from .barcode_commands import cmd_barcode
+from .database_commands import cmd_database
 from .parts_commands import cmd_parts
 from .utils import (
     show_commands_list,
@@ -50,6 +51,10 @@ def main() -> None:
                    "  scan       - Interactive scanning and assembly with real-time validation\n"
                    "    └─ stats       Display assembly statistics and connection counts\n"
                    "    └─ connection  Start interactive connection scanning with validation\n"
+                   "    └─ connect     Interactive part scanning and assembly operations\n"
+                   "  database   - Database management operations (clear, print)\n"
+                   "    └─ clear       Safely clear database contents with confirmations\n"
+                   "    └─ print       Display formatted database tables and records\n"
                    "  visualize  - Visualize assembly chains and connection statistics\n"
                    "    └─ chains      Display ASCII visualization with duplicate detection\n"
                    "    └─ summary     Show comprehensive assembly statistics\n"
@@ -70,6 +75,7 @@ def main() -> None:
     commands = {
         "parts": "Manage parts in the database - list, add, search, and validate parts",
         "scan": "Interactive scanning and assembly with real-time validation",
+        "database": "Database management operations - clear and print databases",
         "visualize": "Visualize assembly chains and connection statistics with duplicate detection",
         "barcode": "Generate barcodes and printable pages for part identification",
         "completion": "Show shell completion setup instructions for enhanced CLI experience",
@@ -83,6 +89,8 @@ def main() -> None:
             cmd_parts()
         elif command == "scan":
             cmd_scan()
+        elif command == "database":
+            cmd_database()
         elif command == "visualize":
             cmd_visualize()
         elif command == "barcode":
@@ -104,6 +112,8 @@ def main() -> None:
             cmd_parts()
         elif command == "scan":
             cmd_scan()
+        elif command == "database":
+            cmd_database()
         elif command == "visualize":
             cmd_visualize()
         elif command == "barcode":
@@ -131,6 +141,8 @@ def main() -> None:
         cmd_parts()
     elif command == "scan":
         cmd_scan()
+    elif command == "database":
+        cmd_database()
     elif command == "visualize":
         cmd_visualize()
     elif command == "barcode":

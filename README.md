@@ -268,8 +268,15 @@ casman parts list                    # List all parts in database
 casman parts add                     # Interactive part addition (can add single type or all types)
 
 # Interactive scanning with connection validation
-casman scan connection               # Interactive assembly scanning
+casman scan connect                  # Full interactive scanning and assembly workflow
+casman scan connection               # Basic connection scanning
 casman scan stats                    # Assembly statistics
+
+# Database management
+casman database clear                # Clear database contents with safety confirmations
+casman database clear --parts        # Clear only parts database
+casman database clear --assembled    # Clear only assembly database
+casman database print               # Display formatted database contents
 
 # Visualization with duplicate detection
 casman visualize chains              # ASCII chain visualization  
@@ -279,6 +286,26 @@ casman visualize web --port 8080     # Launch web interface on custom port
 
 # Barcode generation
 casman barcode printpages --part-type ANTENNA --start-number 1 --end-number 50
+```
+
+### Enhanced Database Management
+
+The `casman database` commands provide safe and comprehensive database operations:
+
+```bash
+# Clear database contents with double confirmation and visual warnings
+casman database clear                # Clear both parts and assembly databases
+casman database clear --parts        # Clear only the parts database
+casman database clear --assembled    # Clear only the assembly database
+
+# Display formatted database contents
+casman database print               # Show assembly database in formatted tables
+
+# Example safety features:
+# - Visual stop sign warnings for destructive operations
+# - Double "yes" confirmation required for clearing
+# - Automatic database existence checks
+# - Graceful error handling and recovery
 ```
 
 ### Enhanced Part Management
@@ -303,7 +330,7 @@ casman parts add
 
 ### Enhanced Interactive Scanning
 
-The `casman scan connection` command provides an interactive scanning experience with comprehensive validation:
+The `casman scan connect` command provides the full interactive scanning experience with comprehensive validation:
 
 - ✅ **Real-time part validation** against parts database
 - ✅ **SNAP part validation** using snap_feng_map.yaml  
@@ -312,10 +339,13 @@ The `casman scan connection` command provides an interactive scanning experience
 - ✅ **Chain directionality** (ANTENNA=sources only, SNAP=targets only)
 
 ```bash
-# Start interactive scanning session
+# Start full interactive scanning and assembly workflow
+casman scan connect
+
+# Basic connection scanning (simplified workflow)
 casman scan connection
 
-# Example session:
+# Example session with casman scan connect:
 # Scan first part: ANT-P1-00001
 # ✅ Valid part: ANT-P1-00001 (ANTENNA, 1)
 # Scan connected part: LNA-P1-00001  
@@ -464,10 +494,12 @@ This package replaces the individual scripts in the `scripts/` directory:
 |------------|-------------|------------|
 | `gen_add_part_numbers.py` | `casman parts add` | `casman.parts` |
 | `read_parts_db.py` | `casman parts list` | `casman.parts` |
-| `scan_and_assemble.py` | `casman scan connection` | `casman.assembly` |
+| `scan_and_assemble.py` | `casman scan connect` | `casman.assembly` |
 | `visualize_analog_chains_term.py` | `casman visualize chains` | `casman.visualization` |
 | `visualize_analog_chains_web.py` | `casman visualize web` | `casman.cli.visualization_commands` |
 | `gen_barcode_printpages.py` | `casman barcode printpages` | `casman.barcode_utils` |
+| `clear_databases.py` | `casman database clear` | `casman.database` |
+| `print_assembled_db.py` | `casman database print` | `casman.database` |
 
 ## Dependencies
 
@@ -556,7 +588,7 @@ casman barcode printpages --part-type ANTENNA --start-number 1 --end-number 10
 
 ### Interactive assembly connection scanning
 ```sh
-casman scan connection             # Start interactive assembly scanning with validation
+casman scan connect                # Full interactive scanning and assembly workflow
 ```
 
 ### Visualize assembly chains in ASCII
