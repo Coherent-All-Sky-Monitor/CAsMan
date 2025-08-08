@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "casman"
-version = "0.1.0"
+version = "0.1.2"
 description = "CASM Assembly Manager - A collection of tools to manage and visualize CASM assembly"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -71,7 +71,7 @@ target-version = ['py38']
 include = '\.pyi?$'
 
 [tool.pytest.ini_options]
-minversion = "6.0"
+minversion = "0.1.2"
 addopts = "-ra -q --strict-markers"
 testpaths = ["tests"]
 python_files = "test_*.py"
@@ -79,7 +79,7 @@ python_classes = "Test*"
 python_functions = "test_*"
 
 [mypy]
-python_version = "3.9"
+python_version = "0.1.2"
 
 [mypy-argcomplete]
 ignore_missing_imports = true
