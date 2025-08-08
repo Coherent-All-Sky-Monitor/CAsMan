@@ -9,12 +9,28 @@ import sys
 import os
 
 def get_coverage():
-    """Extract coverage percentage from pytest output."""
+    """Extract coverage percentage from pytest-cov output."""
     try:
-        # Use a simpler approach - just return current value for now
-        return "53"  # We know this is the current coverage
+        # Run pytest with coverage and capture output
+        result = subprocess.run(
+            ["pytest", "--cov=.", "--cov-report=term-missing", "-q"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            encoding="utf-8",
+            check=False
+        )
+        output = result.stdout
+        # Look for a line like: "TOTAL      123     4    97%"
+        match = re.search(r"TOTAL\s+\d+\s+\d+\s+(\d+)%", output)
+        if match:
+            return match.group(1)
+        # Fallback: look for a line like: "coverage: 97.0% of statements"
+        match = re.search(r"coverage:\s+(\d+)\.\d+% of statements", output)
+        if match:
+            return match.group(1)
+        return "0"
     except Exception:
-        return "53"
+        return "0"
 
 def get_test_count():
     """Get total number of tests."""
