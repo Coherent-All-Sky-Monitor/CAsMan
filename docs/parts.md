@@ -10,13 +10,6 @@ This __init__.py exposes the main part management functions, classes, and types.
 
 ## Modules
 
-### db
-
-Database access utilities for CAsMan parts.
-
-**Functions:**
-- `read_parts()` - Read parts from the database with optional filtering
-
 ### generation
 
 Part number and barcode generation utilities for CAsMan.
@@ -24,13 +17,6 @@ Part number and barcode generation utilities for CAsMan.
 **Functions:**
 - `get_last_part_number()` - Get the last part number for a given part type
 - `generate_part_numbers()` - Generate new part numbers for a given part type
-
-### types
-
-Part type configuration utilities for CAsMan.
-
-**Functions:**
-- `load_part_types()` - Load part types from config
 
 ### interactive
 
@@ -41,6 +27,13 @@ Interactive CLI utilities for CAsMan parts management.
 - `add_parts_interactive()` - Interactive function to add new parts
 - `main()` - Main function for command-line usage
 - `h()` - No docstring available
+
+### db
+
+Database access utilities for CAsMan parts.
+
+**Functions:**
+- `read_parts()` - Read parts from the database with optional filtering
 
 ### search
 
@@ -90,17 +83,12 @@ and other part-related data integrity checks.
 - `get_part_info()` - Extract part information from a valid part number
 - `normalize_part_number()` - Normalize a part number to standard format
 
-## Db Module Details
+### types
 
-## Functions
+Part type configuration utilities for CAsMan.
 
-### read_parts
-
-**Signature:** `read_parts(part_type: Optional[str], polarization: Optional[str], db_dir: Optional[str]) -> List[Tuple]`
-
-Read parts from the database with optional filtering.
-
----
+**Functions:**
+- `load_part_types()` - Load part types from config
 
 ## Generation Module Details
 
@@ -119,23 +107,6 @@ Get the last part number for a given part type.
 **Signature:** `generate_part_numbers(part_type: str, count: int, polarization: str, db_dir: Optional[str]) -> List[str]`
 
 Generate new part numbers for a given part type.
-
----
-
-## Types Module Details
-
-## Functions
-
-### load_part_types
-
-**Signature:** `load_part_types() -> Dict[int, Tuple[str, str]]`
-
-Load part types from config.yaml, parsing keys as int and values as tuple.
-
-**Returns:**
-
-Dict[int, Tuple[str, str]]
-Mapping from integer key to (full_name, abbreviation).
 
 ---
 
@@ -172,6 +143,18 @@ Main function for command-line usage.
 **Signature:** `h(char: str, width: int) -> str`
 
 No docstring available.
+
+---
+
+## Db Module Details
+
+## Functions
+
+### read_parts
+
+**Signature:** `read_parts(part_type: Optional[str], polarization: Optional[str], db_dir: Optional[str]) -> List[Tuple]`
+
+Read parts from the database with optional filtering.
 
 ---
 
@@ -666,5 +649,22 @@ The part number to normalize
 
 Optional[str]
 Normalized part number or None if invalid
+
+---
+
+## Types Module Details
+
+## Functions
+
+### load_part_types
+
+**Signature:** `load_part_types() -> Dict[int, Tuple[str, str]]`
+
+Load part types from config.yaml, parsing keys as int and values as tuple.
+
+**Returns:**
+
+Dict[int, Tuple[str, str]]
+Mapping from integer key to (full_name, abbreviation).
 
 ---

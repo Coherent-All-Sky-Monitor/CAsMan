@@ -11,27 +11,6 @@ building connection chains, and interactive assembly scanning.
 
 ## Modules
 
-### chains
-
-Assembly chain building and analysis functionality.
-
-This module handles building connection chains from assembly data
-and provides analysis functions for understanding assembly relationships.
-
-**Functions:**
-- `build_connection_chains()` - Build a dictionary mapping each part to its connected parts
-- `print_assembly_chains()` - Print all assembly chains in a readable format
-
-### connections
-
-Assembly connection recording functionality.
-
-This module handles the recording of assembly connections between parts
-in the assembled database.
-
-**Functions:**
-- `record_assembly_connection()` - Record an assembly connection in the database with explicit timestamps and all fields
-
 ### interactive
 
 Interactive assembly operations for CAsMan.
@@ -60,6 +39,27 @@ statistics from the assembled database.
 - `get_assembly_connections()` - Get all assembly connections from the database
 - `get_assembly_stats()` - Get assembly statistics from the database
 
+### connections
+
+Assembly connection recording functionality.
+
+This module handles the recording of assembly connections between parts
+in the assembled database.
+
+**Functions:**
+- `record_assembly_connection()` - Record an assembly connection in the database with explicit timestamps and all fields
+
+### chains
+
+Assembly chain building and analysis functionality.
+
+This module handles building connection chains from assembly data
+and provides analysis functions for understanding assembly relationships.
+
+**Functions:**
+- `build_connection_chains()` - Build a dictionary mapping each part to its connected parts
+- `print_assembly_chains()` - Print all assembly chains in a readable format
+
 ## __Init__ Module Details
 
 This module provides functionality for recording and retrieving assembly connections,
@@ -72,112 +72,6 @@ building connection chains, and interactive assembly scanning.
 **Signature:** `main()`
 
 Main entry point for the casman-scan command. Launches the interactive assembly scanner.
-
----
-
-## Chains Module Details
-
-This module handles building connection chains from assembly data
-and provides analysis functions for understanding assembly relationships.
-
-## Functions
-
-### build_connection_chains
-
-**Signature:** `build_connection_chains(db_dir: Optional[str]) -> Dict[str, List[str]]`
-
-Build a dictionary mapping each part to its connected parts.
-
-**Returns:**
-
-Dict[str, List[str]]
-Dictionary where keys are part numbers and values are lists
-of connected part numbers.
-
-**Examples:**
-
-```python
->>> chains = build_connection_chains()
->>> print(chains.get('ANTP1-00001', []))
-['LNA-P1-00001']
-```
-
----
-
-### print_assembly_chains
-
-**Signature:** `print_assembly_chains(db_dir: Optional[str]) -> None`
-
-Print all assembly chains in a readable format.
-
-**Parameters:**
-
-db_dir : str, optional
-Custom database directory. If not provided, uses the project root's database directory.
-This function builds connection chains and prints them in a tree-like
-structure showing how parts are connected to each other.
-
-**Examples:**
-
-```python
->>> print_assembly_chains()
-Assembly Chains:
-================
-ANTP1-00001 ---> LNA-P1-00001 ---> CX1-P1-00001
-ANTP1-00002 ---> LNA-P1-00002
-```
-
----
-
-## Connections Module Details
-
-This module handles the recording of assembly connections between parts
-in the assembled database.
-
-## Functions
-
-### record_assembly_connection
-
-**Signature:** `record_assembly_connection(part_number: str, part_type: str, polarization: str, scan_time: str, connected_to: str, connected_to_type: str, connected_polarization: str, connected_scan_time: str, db_dir: Optional[str]) -> bool`
-
-Record an assembly connection in the database with explicit timestamps and all fields.
-
-**Parameters:**
-
-part_number : str
-The part number being scanned.
-part_type : str
-The type of the part being scanned.
-polarization : str
-The polarization of the part being scanned.
-scan_time : str
-The timestamp when the part was scanned (YYYY-MM-DD HH:MM:SS).
-connected_to : str
-The part number this part is connected to.
-connected_to_type : str
-The type of the connected part.
-connected_polarization : str
-The polarization of the connected part.
-connected_scan_time : str
-The timestamp when the connection was made (YYYY-MM-DD HH:MM:SS).
-db_dir : Optional[str]
-Custom database directory. If not provided, uses the project root's database directory.
-
-**Returns:**
-
-bool
-True if the connection was recorded successfully, False otherwise.
-
-**Examples:**
-
-```python
->>> success = record_assembly_connection(
-...     "ANTP1-00001", "ANTENNA", "X", "2024-01-01 10:00:00",
-...     "LNA-P1-00001", "LNA", "X", "2024-01-01 10:05:00"
-... )
->>> print(success)
-True
-```
 
 ---
 
@@ -356,6 +250,112 @@ Dictionary containing assembly statistics with keys:
 >>> print(f"Latest scan: {stats['latest_scan']}")
 Total scans: 42
 Latest scan: 2024-01-01 15:30:00
+```
+
+---
+
+## Connections Module Details
+
+This module handles the recording of assembly connections between parts
+in the assembled database.
+
+## Functions
+
+### record_assembly_connection
+
+**Signature:** `record_assembly_connection(part_number: str, part_type: str, polarization: str, scan_time: str, connected_to: str, connected_to_type: str, connected_polarization: str, connected_scan_time: str, db_dir: Optional[str]) -> bool`
+
+Record an assembly connection in the database with explicit timestamps and all fields.
+
+**Parameters:**
+
+part_number : str
+The part number being scanned.
+part_type : str
+The type of the part being scanned.
+polarization : str
+The polarization of the part being scanned.
+scan_time : str
+The timestamp when the part was scanned (YYYY-MM-DD HH:MM:SS).
+connected_to : str
+The part number this part is connected to.
+connected_to_type : str
+The type of the connected part.
+connected_polarization : str
+The polarization of the connected part.
+connected_scan_time : str
+The timestamp when the connection was made (YYYY-MM-DD HH:MM:SS).
+db_dir : Optional[str]
+Custom database directory. If not provided, uses the project root's database directory.
+
+**Returns:**
+
+bool
+True if the connection was recorded successfully, False otherwise.
+
+**Examples:**
+
+```python
+>>> success = record_assembly_connection(
+...     "ANTP1-00001", "ANTENNA", "X", "2024-01-01 10:00:00",
+...     "LNA-P1-00001", "LNA", "X", "2024-01-01 10:05:00"
+... )
+>>> print(success)
+True
+```
+
+---
+
+## Chains Module Details
+
+This module handles building connection chains from assembly data
+and provides analysis functions for understanding assembly relationships.
+
+## Functions
+
+### build_connection_chains
+
+**Signature:** `build_connection_chains(db_dir: Optional[str]) -> Dict[str, List[str]]`
+
+Build a dictionary mapping each part to its connected parts.
+
+**Returns:**
+
+Dict[str, List[str]]
+Dictionary where keys are part numbers and values are lists
+of connected part numbers.
+
+**Examples:**
+
+```python
+>>> chains = build_connection_chains()
+>>> print(chains.get('ANTP1-00001', []))
+['LNA-P1-00001']
+```
+
+---
+
+### print_assembly_chains
+
+**Signature:** `print_assembly_chains(db_dir: Optional[str]) -> None`
+
+Print all assembly chains in a readable format.
+
+**Parameters:**
+
+db_dir : str, optional
+Custom database directory. If not provided, uses the project root's database directory.
+This function builds connection chains and prints them in a tree-like
+structure showing how parts are connected to each other.
+
+**Examples:**
+
+```python
+>>> print_assembly_chains()
+Assembly Chains:
+================
+ANTP1-00001 ---> LNA-P1-00001 ---> CX1-P1-00001
+ANTP1-00002 ---> LNA-P1-00002
 ```
 
 ---
