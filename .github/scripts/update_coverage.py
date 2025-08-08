@@ -34,8 +34,20 @@ def get_coverage():
 
 def get_test_count():
     """Get total number of tests."""
-    # We know from our recent test run that we have 141 tests
-    return "141"
+    try:
+        # Run pytest in collect-only mode to count tests
+        result = subprocess.run(
+            ["pytest", "--collect-only", "-q"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf-8",
+            check=True
+        )
+        # Each collected test is printed on its own line; count lines
+        test_lines = [line for line in result.stdout.splitlines() if line.strip()]
+        return str(len(test_lines))
+    except Exception:
+        return "0"
 
 def update_readme(coverage, test_count):
     """Update README.md with new coverage and test count."""

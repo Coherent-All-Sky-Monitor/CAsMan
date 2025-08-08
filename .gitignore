@@ -71,6 +71,10 @@ instance/
 # Sphinx documentation
 docs/_build/
 
+# Auto-generated documentation (currently included in repo)
+# Uncomment the next line if you want to exclude auto-generated docs:
+# docs/auto-generated/
+
 # PyBuilder
 .pybuilder/
 target/

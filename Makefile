@@ -37,7 +37,7 @@ docs:
 
 update-docs: docs
 	python .github/scripts/update_coverage.py
-	@echo "✅ Documentation and coverage info updated"
+	@echo "✅ Auto-generated documentation and coverage info updated"
 
 # Development workflow
 check: lint test coverage

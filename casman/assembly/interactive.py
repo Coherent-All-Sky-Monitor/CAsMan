@@ -8,9 +8,7 @@ and assembling parts.
 import logging
 import sqlite3
 
-from casman.barcode import generate_barcode
 from casman.config.core import get_config
-from casman.database.connection import get_database_path
 
 logger = logging.getLogger(__name__)
 
