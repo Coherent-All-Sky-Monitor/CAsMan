@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CASM Assembly Connections</title>
+  <style>
+    @font-face {
+      font-family: 'National Park';
+      src: url('/static/fonts/NationalPark-Regular.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'National Park Bold';
+      src: url('/static/fonts/NationalPark-Bold.woff') format('woff');
+      font-weight: bold;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'National Park ExtraBold';
+      src: url('/static/fonts/NationalPark-ExtraBold.woff') format('woff');
+      font-weight: 900;
+      font-style: normal;
+    }
+    body.light-mode {
+      font-family: 'National Park', sans-serif;
+      margin: 0;
+      background-color: #f0f0f5;
+      color: #333;
+    }
+    body.dark-mode {
+      font-family: 'National Park', sans-serif;
+      margin: 0;
+      background-color: #333;
+      color: #f0f0f5;
+    }
+    .centered-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px 12px 0 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      font-family: 'National Park ExtraBold', sans-serif;
+      color: inherit;
+      display: inline;
+      font-weight: 900;
+    }
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+    .diagram {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+      width: 100%;
+    }
+    .chain {
+      margin: 20px 0;
+      position: relative;
+      width: 100%;
+      max-width: 100%;
+      padding: 10px 0;
+    }
+    .chain-container {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 40px;
+      position: relative;
+      width: 100%;
+    }
+    .box {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 8px 12px;
+      border: 2px solid currentColor;
+      border-radius: 12px;
+      background-color: #ffffff;
+      position: relative;
+      color: currentColor;
+      text-align: center;
+      white-space: pre-wrap;
+      font-weight: normal;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      width: auto;
+      min-width: fit-content;
+      min-height: 65px;
+      font-size: 0.98em;
+      z-index: 2;
+    }
+    body.dark-mode .box { background-color: #222; }
+    .box.selected { color: #FF4500; border-color: #FF4500; }
+    .box:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      z-index: 4;
+    }
+    .connection-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 3;
+    }
+    .connection-path {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 3;
+      stroke-linecap: round;
+      opacity: 0.9;
+    }
+    .connection-arrow {
+      fill: currentColor;
+      opacity: 0.9;
+    }
+    .national-park-bold {
+      font-family: 'National Park Bold', 'National Park', sans-serif;
+      font-weight: bold;
+      font-size: 1.2em;
+      letter-spacing: 0.04em;
+    }
+    .monospace { font-family: 'Courier New', monospace; }
+    .dark-mode-toggle { margin-left: 20px; cursor: pointer; font-size: 24px; }
+    .sun { display: none; }
+    .moon { display: inline; }
+    body.dark-mode .sun { display: inline; }
+    body.dark-mode .moon { display: none; }
+    .dark-mode-toggle span { transition: transform 0.3s ease; }
+    .dark-mode-toggle:hover span { transform: rotate(45deg); }
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-top: 10px;
+    }
+    @media (max-width: 1200px) {
+      .centered-container { max-width: 99vw; }
+      .chain-container {
+        gap: 30px;
+      }
+      .box {
+        min-height: 60px;
+        font-size: 0.93em;
+        padding: 7px 10px;
+      }
+    }
+    @media (max-width: 768px) {
+      .centered-container { max-width: 100vw; padding: 15px 8px 0 8px; }
+      .chain-container {
+        gap: 25px;
+        justify-content: center;
+      }
+      .box {
+        padding: 6px 8px;
+        width: auto;
+        max-width: 90vw;
+        font-size: 0.9em;
+      }
+    }
+    
+    /* Duplicates Section Styling */
+    .duplicates-section {
+      margin-top: 40px;
+      padding: 20px;
+      border-top: 3px solid #e74c3c;
+      background-color: rgba(231, 76, 60, 0.1);
+      border-radius: 8px;
+      width: 100%;
+      max-width: 1200px;
+    }
+    
+    .duplicates-section h2 {
+      color: #e74c3c;
+      font-family: 'National Park ExtraBold', sans-serif;
+      font-weight: 900;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    
+    .duplicates-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .duplicate-part {
+      background-color: rgba(255, 255, 255, 0.7);
+      padding: 15px;
+      border-radius: 6px;
+      border-left: 4px solid #e74c3c;
+    }
+    
+    .duplicate-part h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-family: 'National Park Bold', sans-serif;
+    }
+    
+    .duplicate-part ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    
+    .duplicate-part li {
+      margin-bottom: 5px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+    
+    body.dark-mode .duplicate-part {
+      background-color: rgba(0, 0, 0, 0.3);
+      color: #f0f0f5;
+    }
+    
+    body.dark-mode .duplicates-section {
+      background-color: rgba(231, 76, 60, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="centered-container">
+    <div class="toolbar">
+      <h1>CASM Analog Chains</h1>
+      <div class="dark-mode-toggle" onclick="toggleDarkMode()">
+        <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+        </svg>
+        <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+      </div>
+    </div>
+    <div class="controls">
+      <form method="post" style="display: inline;">
+        <label for="part">Select Part:</label>
+        <select name="part" id="part">
+          <option value="">--Show all assembled Analog Chains--</option>
+          {% for part in parts %}
+            <option value="{{ part }}" {% if part == selected_part %}selected{% endif %}>
+              {{ part }}</option>
+          {% endfor %}
+        </select>
+        <input type="submit" value="Show Connections">
+      </form>
+      <button onclick="refreshData()">Refresh Data</button>
+    </div>
+    <div class="diagram">
+      {% if chains %}
+        {% for chain in chains %}
+          <div class="chain" data-chain-index="{{ loop.index0 }}">
+            <svg class="connection-svg"></svg>
+            <div class="chain-container">
+              {% for part in chain %}
+                <div class="box {% if part == selected_part %}selected{% endif %}" data-part-index="{{ loop.index0 }}">
+                  {{ format_display_data(part, connections) | safe }}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>No records found in the assembled database.</p>
+      {% endif %}
+    </div>
+    
+    <!-- Duplicate Connections Section -->
+    {% if duplicates %}
+    <div class="duplicates-section">
+      <h2>DUPLICATE CONNECTIONS DETECTED</h2>
+      <div class="duplicates-container">
+        {% for part, entries in duplicates.items() %}
+        <div class="duplicate-part">
+          <h3 style="color: red; font-weight: bold;">Part {{ part }} has {{ entries|length }} database entries:</h3>
+          <ul>
+            {% for entry in entries %}
+            <li class="monospace">
+              {{ loop.index }}. FRM: {{ entry[1] }}, NXT: {{ entry[2] }}, connects to: {{ entry[0] }}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    
+    <p id="last-update">Last Part scanned on {{ last_update or '' }}</p>
+  </div> <!-- centered-container -->
+  <script>
+    function toggleDarkMode() {
+      const body = document.body;
+      body.classList.toggle('dark-mode');
+      body.classList.toggle('light-mode');
+      localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light');
+    }
+
+    function refreshData() {
+      document.getElementById('last-update').textContent = 'Fetching database...';
+      setTimeout(() => location.reload(), 1000);
+    }
+
+    function createCurvedPath(startX, startY, endX, endY, containerWidth, containerHeight, isWrappedConnection = false) {
+      const dx = endX - startX;
+      const dy = endY - startY;
+
+      // Determine if boxes are on different lines
+      const onDifferentLines = Math.abs(dy) > 30;
+
+      if (isWrappedConnection) {
+        // For wrapped connections, create a path from bottom of top box to top of bottom box
+        // The path should curve down and then across
+        const controlPoint1X = startX;
+        const controlPoint1Y = startY + 40; // Go down from bottom of box
+        const controlPoint2X = endX;
+        const controlPoint2Y = endY - 40; // Come up to top of box
+
+        return `M ${startX} ${startY} C ${controlPoint1X} ${controlPoint1Y}, ${controlPoint2X} ${controlPoint2Y}, ${endX} ${endY}`;
+      } else if (onDifferentLines) {
+        // Create a path that goes around boxes for multi-line connections
+        const midX = startX + dx / 2;
+        const clearanceY = Math.min(startY, endY) - 40; // Go above both boxes
+
+        // Create a path that arcs above the boxes
+        const controlPoint1X = startX + 60;
+        const controlPoint1Y = clearanceY;
+        const controlPoint2X = endX - 60;
+        const controlPoint2Y = clearanceY;
+
+        return `M ${startX} ${startY} C ${controlPoint1X} ${controlPoint1Y}, ${controlPoint2X} ${controlPoint2Y}, ${endX} ${endY}`;
+      } else {
+        // Simple curved line for boxes on same line
+        const controlPointX = startX + dx / 2;
+        const controlPointY = startY - Math.min(Math.abs(dx) / 4, 20);
+
+        return `M ${startX} ${startY} Q ${controlPointX} ${controlPointY} ${endX} ${endY}`;
+      }
+    }
+
+    function createArrowMarker(svg, id) {
+      const defs = svg.querySelector('defs') || svg.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'defs'));
+      const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+      marker.setAttribute('id', id);
+      marker.setAttribute('markerWidth', '5');
+      marker.setAttribute('markerHeight', '5');
+      marker.setAttribute('refX', '4');
+      marker.setAttribute('refY', '1.5');
+      marker.setAttribute('orient', 'auto-start-reverse');
+      marker.setAttribute('markerUnits', 'strokeWidth');
+      marker.setAttribute('viewBox', '0 0 5 3');
+
+      const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      polygon.setAttribute('points', '0,1.5 5,0 5,3');
+      polygon.setAttribute('class', 'connection-arrow');
+      polygon.setAttribute('fill', 'currentColor');
+
+      marker.appendChild(polygon);
+      defs.appendChild(marker);
+    }
+
+    function drawConnections() {
+      document.querySelectorAll('.chain').forEach((chainElement, chainIndex) => {
+        const svg = chainElement.querySelector('.connection-svg');
+        const container = chainElement.querySelector('.chain-container');
+        const boxes = container.querySelectorAll('.box');
+
+        // Clear existing paths
+        svg.innerHTML = '';
+
+        if (boxes.length < 2) return;
+
+        // Create arrow marker
+        createArrowMarker(svg, `arrow-${chainIndex}`);
+
+        // Get container dimensions
+        const containerRect = container.getBoundingClientRect();
+        const chainRect = chainElement.getBoundingClientRect();
+
+        // Draw connections between consecutive boxes
+        for (let i = 0; i < boxes.length - 1; i++) {
+          const currentBox = boxes[i];
+          const nextBox = boxes[i + 1];
+
+          const currentRect = currentBox.getBoundingClientRect();
+          const nextRect = nextBox.getBoundingClientRect();
+
+          // Check if the next box is wrapped to a new line
+          const isWrapped = nextRect.top > currentRect.bottom + 10;
+
+          let startX, startY, endX, endY;
+
+          if (isWrapped) {
+            // Connection from bottom of current box to top of next box
+            startX = currentRect.left + currentRect.width / 2 - chainRect.left;
+            startY = currentRect.bottom - chainRect.top;
+            endX = nextRect.left + nextRect.width / 2 - chainRect.left;
+            endY = nextRect.top - chainRect.top;
+          } else {
+            // Normal connection from right side to left side
+            startX = currentRect.right - chainRect.left;
+            startY = currentRect.top + currentRect.height / 2 - chainRect.top;
+            endX = nextRect.left - chainRect.left;
+            endY = nextRect.top + nextRect.height / 2 - chainRect.top;
+          }
+
+          // Create curved path
+          const pathData = createCurvedPath(startX, startY, endX, endY,
+            containerRect.width, containerRect.height, isWrapped);
+
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('d', pathData);
+          path.setAttribute('class', 'connection-path');
+          path.setAttribute('marker-end', `url(#arrow-${chainIndex})`);
+
+          svg.appendChild(path);
+        }
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.body.classList.add(savedTheme + '-mode');
+
+      // Initial draw
+      setTimeout(drawConnections, 100);
+
+      // Redraw on window resize
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(drawConnections, 150);
+      });
+    });
+  </script>
+</body>
+</html>
