@@ -4,40 +4,9 @@
 
 A comprehensive toolkit for managing and visualizing CASM (Coherent All-Sky Monitor) assembly processes. CAsMan provides CLI tools for part management, barcode generation, assembly tracking with connection validation, and interactive visualization.
 
-## 🚨 Breaking Changes in v2.0+
-
-**Important**: CAsMan v2.0+ introduces breaking changes to the import structure for better modularity:
-
-### Old Import Style (Deprecated)
-```python
-# ❌ No longer works
-from casman import parts, assembly, visualization
-from casman.parts import add_parts_interactive
-```
-
-### New Import Style (Required)
-```python
-# ✅ New modular imports
-from casman.parts.interactive import add_parts_interactive
-from casman.assembly.chains import print_assembly_chains
-from casman.visualization.core import format_ascii_chains
-from casman.database.operations import get_parts_by_criteria
-```
-
-All top-level compatibility modules have been removed. See [Migration Guide](#migration-guide) for detailed update instructions.
-
-## Key Features
-
-- **🔧 Part Management**: Database-driven part tracking with validation
-- **📊 Interactive Scanning**: Barcode scanning with real-time connection validation  
-- **🔗 Connection Validation**: Enforces strict assembly chain rules and prevents invalid connections
-- **📈 Visualization**: ASCII and web-based chain visualization with duplicate detection
-- **🏷️ Barcode Generation**: Automated barcode creation for parts and printing pages
-- **📋 Assembly Tracking**: Complete assembly history with timestamps
-
 ## Testing & Coverage
 
-![Tests](https://img.shields.io/badge/tests-141%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-53.0%25-red)
+![Tests](https://img.shields.io/badge/tests-11%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-64.0%25-red)
 
 CAsMan maintains comprehensive test coverage across all modules with 141 passing tests:
 

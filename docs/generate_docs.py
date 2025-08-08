@@ -406,12 +406,12 @@ class DocumentationGenerator:
     def __init__(self, project_root: Path):
         self.project_root = project_root
         self.casman_path = project_root / "casman"
-        self.docs_path = project_root / "docs"
+        self.docs_path = project_root / "docs" / "auto-generated"
         self.analyzer = ModuleAnalyzer()
         self.markdown_generator = MarkdownGenerator()
         
-        # Ensure docs directory exists
-        self.docs_path.mkdir(exist_ok=True)
+        # Ensure auto-generated docs directory exists
+        self.docs_path.mkdir(parents=True, exist_ok=True)
     
     def generate_all_docs(self) -> None:
         """Generate documentation for all modules."""
@@ -681,9 +681,9 @@ def main() -> None:
         generator = DocumentationGenerator(PROJECT_ROOT)
         generator.generate_all_docs()
         
-        print("\nDocumentation generated in", PROJECT_ROOT / "docs")
+        print("\nAuto-generated documentation created in", PROJECT_ROOT / "docs" / "auto-generated")
         print("Files created:")
-        docs_path = PROJECT_ROOT / "docs"
+        docs_path = PROJECT_ROOT / "docs" / "auto-generated"
         for md_file in sorted(docs_path.glob("*.md")):
             print(f"  - {md_file.name}")
             

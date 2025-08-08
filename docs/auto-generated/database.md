@@ -4,63 +4,10 @@ Documentation for the `casman.database` package.
 
 ## Overview
 
-Database package for CAsMan providing modular database functionality including connection management, schema operations, data access utilities, database migrations, and CLI management commands.
+Database package for CAsMan.
 
-## CLI Commands
-
-The database package provides command-line interface for safe database management operations.
-
-### casman database clear
-
-Safely clear database contents with visual warnings and double confirmation.
-
-**Usage:**
-```bash
-casman database clear                # Clear both databases
-casman database clear --parts        # Clear only parts database  
-casman database clear --assembled    # Clear only assembly database
-```
-
-**Safety Features:**
-- Visual stop sign warning with red text on white background
-- Double "yes" confirmation required
-- Database existence verification before clearing
-- Graceful error handling with informative messages
-
-**Examples:**
-```bash
-# Clear both databases (requires double confirmation)
-casman database clear
-
-# Clear only the parts database
-casman database clear --parts
-
-# Clear only the assembly database  
-casman database clear --assembled
-```
-
-### casman database print
-
-Display database contents in formatted tables with automatic width adjustment.
-
-**Usage:**
-```bash
-casman database print               # Display assembly database contents
-```
-
-**Features:**
-- ASCII box drawing for table borders
-- Automatic column width calculation
-- Terminal width detection and adaptation
-- Vertical layout for narrow terminals
-- Abbreviated column names for clarity
-- NULL value handling
-
-**Output Format:**
-- Shows all records from assembled_casm.db
-- Displays connection chains and timestamps
-- Provides empty table notifications
-- Adapts to terminal width for optimal display
+This package provides modular database functionality including connection management,
+schema operations, data access utilities, and database migrations.
 
 ## Modules
 
@@ -90,6 +37,17 @@ from the CAsMan databases.
 - `check_part_in_db()` - Check if a part number exists in the parts database and get its polarization
 - `get_parts_by_criteria()` - Get parts from the database based on criteria
 
+### connection
+
+Database connection utilities for CAsMan.
+
+This module provides utilities for database path resolution and
+project root detection.
+
+**Functions:**
+- `find_project_root()` - Find the project root directory by looking for casman package or pyproject
+- `get_database_path()` - Get the full path to a database file
+
 ### migrations
 
 Database migration utilities for CAsMan.
@@ -107,17 +65,6 @@ schema updates and data migrations safely.
 
 **Classes:**
 - `DatabaseMigrator` - Database migration manager for CAsMan databases
-
-### connection
-
-Database connection utilities for CAsMan.
-
-This module provides utilities for database path resolution and
-project root detection.
-
-**Functions:**
-- `find_project_root()` - Find the project root directory by looking for casman package or pyproject
-- `get_database_path()` - Get the full path to a database file
 
 ## Initialization Module Details
 
@@ -282,6 +229,46 @@ Custom database directory. If not provided, uses the project root's database dir
 
 List[Tuple[int, str, str, str, str, str]]
 List of part records as tuples of             (id, part_number, part_type, polarization, date_created, date_modified).
+
+---
+
+## Connection Module Details
+
+This module provides utilities for database path resolution and
+project root detection.
+
+## Functions
+
+### find_project_root
+
+**Signature:** `find_project_root() -> str`
+
+Find the project root directory by looking for casman package or pyproject.toml.
+
+**Returns:**
+
+str
+Absolute path to the project root directory.
+
+---
+
+### get_database_path
+
+**Signature:** `get_database_path(db_name: str, db_dir: Optional[str]) -> str`
+
+Get the full path to a database file.
+
+**Parameters:**
+
+db_name : str
+Name of the database file.
+db_dir : str, optional
+Custom database directory. If not provided, uses the project root's database directory.
+
+**Returns:**
+
+str
+Full path to the database file.
 
 ---
 
@@ -464,45 +451,5 @@ version : int
 Version number to set after successful migration.
 
 ---
-
----
-
-## Connection Module Details
-
-This module provides utilities for database path resolution and
-project root detection.
-
-## Functions
-
-### find_project_root
-
-**Signature:** `find_project_root() -> str`
-
-Find the project root directory by looking for casman package or pyproject.toml.
-
-**Returns:**
-
-str
-Absolute path to the project root directory.
-
----
-
-### get_database_path
-
-**Signature:** `get_database_path(db_name: str, db_dir: Optional[str]) -> str`
-
-Get the full path to a database file.
-
-**Parameters:**
-
-db_name : str
-Name of the database file.
-db_dir : str, optional
-Custom database directory. If not provided, uses the project root's database directory.
-
-**Returns:**
-
-str
-Full path to the database file.
 
 ---
