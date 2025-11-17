@@ -15,20 +15,29 @@ The database package provides command-line interface for safe database managemen
 Safely clear database contents with visual warnings and double confirmation.
 
 **Usage:**
+
 ```bash
+
 casman database clear                # Clear both databases
 casman database clear --parts        # Clear only parts database  
 casman database clear --assembled    # Clear only assembly database
-```
+
+```python
 
 **Safety Features:**
+
 - Visual stop sign warning with red text on white background
+
 - Double "yes" confirmation required
+
 - Database existence verification before clearing
+
 - Graceful error handling with informative messages
 
 **Examples:**
+
 ```bash
+
 # Clear both databases (requires double confirmation)
 casman database clear
 
@@ -37,29 +46,43 @@ casman database clear --parts
 
 # Clear only the assembly database  
 casman database clear --assembled
-```
+
+```python
 
 ### casman database print
 
 Display database contents in formatted tables with automatic width adjustment.
 
 **Usage:**
+
 ```bash
+
 casman database print               # Display assembly database contents
-```
+
+```python
 
 **Features:**
+
 - ASCII box drawing for table borders
+
 - Automatic column width calculation
+
 - Terminal width detection and adaptation
+
 - Vertical layout for narrow terminals
+
 - Abbreviated column names for clarity
+
 - NULL value handling
 
 **Output Format:**
+
 - Shows all records from assembled_casm.db
+
 - Displays connection chains and timestamps
+
 - Provides empty table notifications
+
 - Adapts to terminal width for optimal display
 
 ## Modules
@@ -72,8 +95,11 @@ This module provides functions to initialize and set up database tables
 for both parts and assembly tracking.
 
 **Functions:**
+
 - `init_parts_db()` - Initialize the parts
+
 - `init_assembled_db()` - Initialize the assembled_casm
+
 - `init_all_databases()` - Initialize all databases
 
 ### operations
@@ -84,10 +110,15 @@ This module provides functions for querying and retrieving data
 from the CAsMan databases.
 
 **Functions:**
+
 - `get_all_parts()` - Fetch all unique part numbers from the assembled_casm
+
 - `get_last_update()` - Get the latest timestamp from the scan_time and connected_scan_time columns
+
 - `get_assembly_records()` - Get all assembly records from the database
+
 - `check_part_in_db()` - Check if a part number exists in the parts database and get its polarization
+
 - `get_parts_by_criteria()` - Get parts from the database based on criteria
 
 ### migrations
@@ -98,14 +129,21 @@ This module provides database migration functionality to handle
 schema updates and data migrations safely.
 
 **Functions:**
+
 - `get_table_info()` - Get information about table columns and structure
+
 - `backup_database()` - Create a backup of the database before migration
+
 - `check_database_integrity()` - Check database integrity using SQLite's built-in integrity check
+
 - `get_schema_version()` - Get the current schema version of the database
+
 - `set_schema_version()` - Set the schema version in the database
+
 - `execute_migration()` - Execute a migration SQL statement and update version
 
 **Classes:**
+
 - `DatabaseMigrator` - Database migration manager for CAsMan databases
 
 ### connection
@@ -116,7 +154,9 @@ This module provides utilities for database path resolution and
 project root detection.
 
 **Functions:**
+
 - `find_project_root()` - Find the project root directory by looking for casman package or pyproject
+
 - `get_database_path()` - Get the full path to a database file
 
 ## Initialization Module Details

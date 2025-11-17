@@ -6,7 +6,7 @@ A comprehensive toolkit for managing and visualizing CASM (Coherent All-Sky Moni
 
 ## Testing & Coverage
 
-![Tests](https://img.shields.io/badge/tests-11%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-64.0%25-red)
+![Tests](https://img.shields.io/badge/tests-5%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-22.0%25-red)
 
 CAsMan maintains comprehensive test coverage across all modules with 141 passing tests:
 
@@ -56,6 +56,7 @@ CAsMan maintains comprehensive test coverage across all modules with 141 passing
 ### Running Tests
 
 ```bash
+
 # Run all tests
 pytest
 
@@ -69,6 +70,7 @@ pytest tests/test_cli.py -v
 
 # Quick coverage check script
 ./coverage_check.sh
+
 ```
 
 ### Automated Coverage Tracking
@@ -76,14 +78,20 @@ pytest tests/test_cli.py -v
 A coverage check script is provided for development workflow:
 
 ```bash
+
 # Run coverage analysis and check threshold
 ./coverage_check.sh
 
 # The script will:
+
 # 1. Run all tests with coverage
+
 # 2. Display detailed coverage report
+
 # 3. Check against minimum threshold (50%)
+
 # 4. Provide feedback on coverage status
+
 ```
 
 The git pre-commit hook can optionally run coverage checks to ensure code quality before commits.
@@ -93,6 +101,7 @@ The git pre-commit hook can optionally run coverage checks to ensure code qualit
 CAsMan enforces strict assembly chain rules to ensure proper CASM assembly:
 
 ```mermaid
+
 graph TD
     A["ANTENNA (ANT)"]
     B["LNA (LNA)"]
@@ -109,13 +118,17 @@ graph TD
     
     style A fill:#e1f5fe
     style F fill:#f3e5f5
+
 ```
 
 ### Connection Rules
 
 - **🔒 Sequence Enforcement**: Parts must connect in order: `ANT → LNA → COAXSHORT → COAXLONG → BACBOARD → SNAP`
+
 - **🔒 Directionality**: ANTENNA parts can only be sources, SNAP parts can only be targets
+
 - **🔒 No Duplicates**: Each part can have only one outgoing and one incoming connection
+
 - **🔒 Part Validation**: All parts validated against database and SNAP mapping files
 
 ## Installation
@@ -123,6 +136,7 @@ graph TD
 ### From Source with Virtual Environment (Recommended)
 
 ```bash
+
 # Clone the repository
 git clone https://github.com/Coherent-All-Sky-Monitor/CAsMan.git
 cd CAsMan
@@ -134,6 +148,7 @@ python -m venv .venv
 source .venv/bin/activate
 
 # On Windows:
+
 # .venv\Scripts\activate
 
 # Install in development mode
@@ -141,20 +156,25 @@ pip install -e .
 
 # Or install normally
 pip install .
+
 ```
 
 ### With Development Dependencies
 
 ```bash
+
 # After activating your virtual environment
 pip install -e ".[dev]"
+
 ```
 
 ### Alternative: Direct Installation
 
 ```bash
+
 # If you prefer not to use a virtual environment
 pip install git+https://github.com/Coherent-All-Sky-Monitor/CAsMan.git
+
 ```
 
 ## Migration Guide
@@ -164,57 +184,74 @@ If you're upgrading from CAsMan v0.1.x to v0.2.x, you'll need to update your imp
 ### Common Migration Patterns
 
 #### Parts Management
+
 ```python
+
 # Old (v0.1.x) - Legacy files (now removed)
 from casman.parts import add_parts_interactive, get_last_part_number
 
 # New (v0.2.x) - Modular structure
 from casman.parts.interactive import add_parts_interactive
 from casman.parts.generation import get_last_part_number
+
 ```
 
 #### Assembly Operations
+
 ```python
+
 # Old (v0.1x) - Legacy files (now removed)
 from casman.assembly import build_connection_chains, print_assembly_chains
 
 # New (v0.2x) - Modular structure
 from casman.assembly.chains import build_connection_chains, print_assembly_chains
+
 ```
 
 #### Database Operations
+
 ```python
+
 # Old (v0.1x) - Legacy files (now removed)
 from casman.database import get_parts_by_criteria, init_parts_db
 
 # New (v0.2x) - Modular structure
 from casman.database.operations import get_parts_by_criteria
 from casman.database.initialization import init_parts_db
+
 ```
 
 #### Visualization
+
 ```python
+
 # Old (v0.1x) - Legacy files (now removed)
 from casman.visualization import format_ascii_chains, get_chain_summary
 
 # New (v0.2x) - Modular structure
 from casman.visualization.core import format_ascii_chains, get_chain_summary
+
 ```
 
 ## Quick Start
 
 **Note**: If you installed using a virtual environment, make sure to activate it before using CAsMan:
+
 ```bash
+
 # On macOS/Linux:
 source .venv/bin/activate
 
 # On Windows:
+
 # .venv\Scripts\activate
+
 ```
 
 ### Command Line Usage
 
 ```bash
+
 # Main CLI interface with comprehensive help
 casman --help
 
@@ -228,7 +265,8 @@ casman parts add                     # Interactive part addition (can add single
 # Interactive scanning with connection validation
 casman scan connect                  # Full interactive scanning and assembly workflow
 casman scan connection               # Basic connection scanning
-casman scan stats                    # Assembly statistics
+casman scan disconnect               # Full interactive disconnection workflow
+casman scan disconnection            # Basic disconnection scanning
 
 # Database management
 casman database clear                # Clear database contents with safety confirmations
@@ -237,13 +275,19 @@ casman database clear --assembled    # Clear only assembly database
 casman database print               # Display formatted database contents
 
 # Visualization with duplicate detection
-casman visualize chains              # ASCII chain visualization  
-casman visualize summary             # Summary statistics
-casman visualize web                 # Launch web-based visualization interface
-casman visualize web --port 8080     # Launch web interface on custom port
+casman visualize chains              # ASCII chain visualization
+casman visualize web                 # Standalone web visualization interface
+
+# Web interfaces
+casman web                           # Launch unified web app (scanner + visualization)
+casman web --mode prod               # Launch production server with Gunicorn
+casman web --scanner-only            # Launch scanner interface only
+casman web --visualize-only          # Launch visualization interface only
+casman scan web                      # Quick access to scanner interface
 
 # Barcode generation
 casman barcode printpages --part-type ANTENNA --start-number 1 --end-number 50
+
 ```
 
 ### Database Management
@@ -251,6 +295,7 @@ casman barcode printpages --part-type ANTENNA --start-number 1 --end-number 50
 The `casman database` commands provide database operations:
 
 ```bash
+
 # Clear database contents with double confirmation and visual warnings
 casman database clear                # Clear both parts and assembly databases
 casman database clear --parts        # Clear only the parts database
@@ -260,10 +305,15 @@ casman database clear --assembled    # Clear only the assembly database
 casman database print               # Show assembly database in formatted tables
 
 # Example safety features:
+
 # - Visual stop sign warnings for destructive operations
+
 # - Double "yes" confirmation required for clearing
+
 # - Automatic database existence checks
+
 # - Graceful error handling and recovery
+
 ```
 
 ### Part Management
@@ -271,19 +321,28 @@ casman database print               # Show assembly database in formatted tables
 The `casman parts add` command provides flexible part creation options:
 
 ```bash
+
 # Interactive part addition with type selection
 casman parts add
 
 # Example session options:
+
 # 1: ANTENNA (alias: ANT)    - Add antenna parts
+
 # 2: LNA (alias: LNA)        - Add LNA parts  
+
 # 3: COAXSHORT (alias: CXS)      - Add COAXSHORT parts
+
 # 4: COAXLONG (alias: CXL)      - Add COAXLONG parts
+
 # 5: BACBOARD (alias: BAC)   - Add backboard parts
+
 # 0: ALL (add parts for all types) - Add parts for all types at once
 
 # Enter number of parts to create and polarization (1 or 2)
+
 # Parts are automatically numbered and barcodes generated
+
 ```
 
 ### Enhanced Interactive Scanning
@@ -291,12 +350,17 @@ casman parts add
 The `casman scan connect` command provides the full interactive scanning experience with comprehensive validation:
 
 - ✅ **Real-time part validation** against parts database
+
 - ✅ **SNAP part validation** using snap_feng_map.yaml  
+
 - ✅ **Connection sequence validation** (enforces ANT→LNA→COAXSHORT→COAXLONG→BACBOARD→SNAP)
+
 - ✅ **Duplicate prevention** (blocks multiple connections)
+
 - ✅ **Chain directionality** (ANTENNA=sources only, SNAP=targets only)
 
-```bash
+```sh
+
 # Start full interactive scanning and assembly workflow
 casman scan connect
 
@@ -304,11 +368,17 @@ casman scan connect
 casman scan connection
 
 # Example session with casman scan connect:
+
 # Scan first part: ANT-P1-00001
+
 # ✅ Valid part: ANT-P1-00001 (ANTENNA, 1)
+
 # Scan connected part: LNA-P1-00001  
+
 # ✅ Valid part: LNA-P1-00001 (LNA, 1)
+
 # ✅ Connection recorded: ANT-P1-00001 --> LNA-P1-00001
+
 ```
 
 ### Individual Tools
@@ -316,6 +386,7 @@ casman scan connection
 Each module can also be run independently:
 
 ```bash
+
 # Part management
 casman-parts
 
@@ -327,11 +398,13 @@ casman-visualize
 
 # Barcode generation
 casman-barcode ANTENNA 1 50
+
 ```
 
 ## Package Structure
 
-```
+```text
+
 casman/
 ├── __init__.py           # Package initialization
 ├── cli.py               # Command-line interface entry point
@@ -384,6 +457,7 @@ casman/
     ├── environments.py # Environment management
     ├── schema.py       # Configuration schema
     └── utils.py        # Configuration utilities
+
 ```
 
 ## Configuration
@@ -391,6 +465,7 @@ casman/
 CAsMan uses SQLite databases stored in the `database/` directory:
 
 - `parts.db` - Part information and metadata
+
 - `assembled_casm.db` - Assembly connections and scan history
 
 Barcodes are generated in the `barcodes/` directory, organized by part type.
@@ -406,13 +481,14 @@ CAsMan supports multiple part types:
 5. **BACBOARD** (BAC) - Backboard components
 6. **SNAP** (SNAP) - SNAP components
 
-Part numbers follow the format: `[ABBREVIATION]-P[POLARIZATION]-[NUMBER]` (e.g., `ANT-P1-00001`)
+Part numbers follow the format: `[ABBREVIATION][NUMBER]P[POLARIZATION]` (e.g., `ANT00001P1`)
 
 ## Development
 
 ### Setting up Development Environment
 
 ```bash
+
 # Clone and install in development mode
 git clone https://github.com/Coherent-All-Sky-Monitor/CAsMan.git
 cd CAsMan
@@ -429,13 +505,16 @@ flake8 casman/
 
 # Type checking
 mypy casman/
+
 ```
 
 ### Running the CLI in Development
 
 ```bash
+
 # Run commands directly from source
 python -m casman.cli --help
+
 ```
 
 ### Adding New Features
@@ -454,7 +533,8 @@ This package replaces the individual scripts in the `scripts/` directory:
 | `read_parts_db.py` | `casman parts list` | `casman.parts` |
 | `scan_and_assemble.py` | `casman scan connect` | `casman.assembly` |
 | `visualize_analog_chains_term.py` | `casman visualize chains` | `casman.visualization` |
-| `visualize_analog_chains_web.py` | `casman visualize web` | `casman.cli.visualization_commands` |
+| `visualize_analog_chains_web.py` | `casman visualize web` or `casman web --visualize-only` | `scripts/web_app.py` |
+| `web_scanner.py` | `casman web --scanner-only` or `casman scan web` | `scripts/web_app.py` |
 | `gen_barcode_printpages.py` | `casman barcode printpages` | `casman.barcode_utils` |
 | `clear_databases.py` | `casman database clear` | `casman.database` |
 | `print_assembled_db.py` | `casman database print` | `casman.database` |
@@ -464,6 +544,7 @@ This package replaces the individual scripts in the `scripts/` directory:
 ### Core Dependencies
 
 - **Pillow** - Image processing for barcode generation
+
 - **python-barcode** - Barcode generation library
 
 ### Optional Dependencies
@@ -473,9 +554,13 @@ This package replaces the individual scripts in the `scripts/` directory:
 ### Development Dependencies
 
 - **pytest** - Testing framework
+
 - **coverage** - Code coverage analysis  
+
 - **black** - Code formatter
+
 - **flake8** - Linting
+
 - **mypy** - Type checking
 
 ### Code Quality Tools
@@ -483,6 +568,7 @@ This package replaces the individual scripts in the `scripts/` directory:
 CAsMan includes automated tools for maintaining code quality:
 
 ```bash
+
 # Quick coverage check with threshold validation
 ./coverage_check.sh
 
@@ -491,6 +577,7 @@ python3 update_coverage.py
 
 # Git pre-commit hook (optional) - validates coverage before commits
 bash .git/hooks/pre-commit
+
 ```
 
 ## License
@@ -513,7 +600,8 @@ MIT License - see LICENSE file for details.
 
 For issues and questions:
 
-- Create an issue on GitHub: https://github.com/Coherent-All-Sky-Monitor/CAsMan/issues
+- Create an issue on [GitHub Issues](https://github.com/Coherent-All-Sky-Monitor/CAsMan/issues)
+
 - Check the documentation in the repository
 
 ## Changelog
@@ -521,41 +609,139 @@ For issues and questions:
 ### Version 0.2.0
 
 - Complete refactoring of script-based tools into installable package
+
 - Comprehensive CLI with subcommands
+
 - Improved database management with proper schemas
+
 - Basic ASCII visualization functionality
+
 - Comprehensive documentation and type hints
+
 - Production-ready packaging with setup tools and project configuration
+
+## Web Application
+
+CAsMan provides a unified web interface with two main components:
+
+### Scanner Interface
+
+- 🔍 **Connect/Disconnect Parts**: Interactive workflows for commissioning and repairs
+
+- 📷 **Multiple Input Methods**: Barcode scanner, camera scanning, or manual entry
+
+- ✅ **Real-time Validation**: Immediate feedback on part validity and connection rules
+
+- 📊 **Connection History**: Track all connection/disconnection operations
+
+- 🎨 **Dark/Light Modes**: Comfortable viewing in any environment
+
+### Visualization Interface
+
+- 📊 **Assembly Chains**: View complete signal paths from ANTENNA to SNAP
+
+- 🔍 **SNAP Selection**: Filter by specific SNAP boards
+
+- ⚠️ **Duplicate Detection**: Highlights parts with multiple connections
+
+- 🎨 **Interactive Display**: Hover for connection details, timestamps
+
+- 🌓 **Theme Support**: Dark/light mode with persistent preferences
+
+### Running the Web Application
+
+
+```bash
+
+# Development Mode (Flask debug server)
+casman web                           # Both interfaces on port 5000
+casman web --scanner-only            # Scanner only
+casman web --visualize-only          # Visualization only
+casman web --port 8080               # Custom port
+
+# Production Mode (Gunicorn WSGI server)
+casman web --mode prod               # Production server on port 8000
+casman web --mode prod --workers 8   # Custom worker count
+
+# Quick Access Commands
+casman scan web                      # Scanner interface on port 5001
+
+```
+
+### Web App Configuration
+
+The web application can be configured in `config.yaml`:
+
+```yaml
+
+web_app:
+  enable_scanner: true              # Enable/disable scanner interface
+  enable_visualization: true        # Enable/disable visualization interface
+  dev:
+    port: 5000                      # Development mode port
+    host: "0.0.0.0"                # Listen on all interfaces
+  production:
+    port: 8000                      # Production mode port
+    host: "0.0.0.0"
+    workers: 4                      # Gunicorn worker processes
+    worker_class: "sync"            # Worker type
+
+```
 
 ## Usage Examples
 
 ### List all parts
+
 ```sh
+
 casman parts list
+
 ```
 
 ### Add new parts interactively
+
 ```sh
+
 casman parts add                     # Choose specific part type or ALL types
+
 ```
 
 ### Generate barcodes for a part type
+
 ```sh
+
 casman barcode printpages --part-type ANTENNA --start-number 1 --end-number 10
+
 ```
 
 ### Interactive assembly connection scanning
+
 ```sh
+
 casman scan connect                # Full interactive scanning and assembly workflow
+
 ```
 
 ### Visualize assembly chains in ASCII
+
 ```sh
+
 casman visualize chains
+
 ```
 
-### Launch web-based visualization interface
+### Launch web interfaces
+
 ```sh
-casman visualize web                 # Launch on default port (5000)
-casman visualize web --port 8080     # Launch on custom port
+
+# Unified web application
+casman web                           # Both scanner and visualization (dev mode, port 5000)
+casman web --mode prod               # Production mode with Gunicorn (port 8000)
+casman web --scanner-only            # Scanner interface only
+casman web --visualize-only          # Visualization interface only
+casman web --port 8080               # Custom port
+
+# Quick scanner access
+casman scan web                      # Launch scanner on port 5001
+
 ```

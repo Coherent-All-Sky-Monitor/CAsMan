@@ -22,59 +22,71 @@ CAsMan is organized into focused, modular packages:
 ### Assembly Package
 
 ```python
+
 # Import specific functions
 from casman.assembly import function_name
 
 # Import entire package
 from casman import assembly
-```
+
+```python
 
 ### Cli Package
 
 ```python
+
 # Import specific functions
 from casman.cli import function_name
 
 # Import entire package
 from casman import cli
-```
+
+```python
 
 ### Config Package
 
 ```python
+
 # Import specific functions
 from casman.config import function_name
 
 # Import entire package
 from casman import config
-```
+
+```python
 
 ### Database Package
 
 ```python
+
 # Import specific functions
 from casman.database import function_name
 
 # Import entire package
 from casman import database
-```
+
+```python
 
 ### Parts Package
 
 ```python
+
 # Import specific functions
 from casman.parts import function_name
 
 # Import entire package
 from casman import parts
-```
+
+```python
 
 ### Visualization Package
 
 ```python
+
 # Import specific functions
 from casman.visualization import function_name
 
 # Import entire package
 from casman import visualization
-```
+
+```python

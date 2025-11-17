@@ -54,6 +54,7 @@ and configuration merging.
 - `unflatten_config()` - Unflatten a configuration dictionary
 - `get_config_diff()` - Get the difference between two configuration dictionaries
 - `validate_config_paths()` - Validate that file paths in configuration exist
+- `setup_logging()` - Setup logging configuration from config
 - `create_config_directories()` - Create directories for paths specified in configuration
 
 ### environments
@@ -98,18 +99,6 @@ This package provides comprehensive configuration management with support for:
 - Environment-specific settings
 
 ## Functions
-
-### load_config
-
-**Signature:** `load_config() -> Dict[str, Any]`
-
-Load configuration from config.yaml (legacy function).
-
-**Returns:**
-
-dict: The configuration dictionary loaded from YAML.
-
----
 
 ### get_config
 
@@ -547,6 +536,19 @@ Configuration dictionary.
 
 Dict[str, bool]
 Dictionary mapping path keys to existence status.
+
+---
+
+### setup_logging
+
+**Signature:** `setup_logging(config: Optional[Dict[str, Any]]) -> None`
+
+Setup logging configuration from config.
+
+**Parameters:**
+
+config : Dict[str, Any], optional
+Configuration dictionary. If not provided, loads from default config.
 
 ---
 

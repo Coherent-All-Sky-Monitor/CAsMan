@@ -15,7 +15,9 @@ This __init__.py exposes the main part management functions, classes, and types.
 Part number and barcode generation utilities for CAsMan.
 
 **Functions:**
+
 - `get_last_part_number()` - Get the last part number for a given part type
+
 - `generate_part_numbers()` - Generate new part numbers for a given part type
 
 ### interactive
@@ -23,9 +25,13 @@ Part number and barcode generation utilities for CAsMan.
 Interactive CLI utilities for CAsMan parts management.
 
 **Functions:**
+
 - `display_parts_interactive()` - Interactive function to display parts with user input
+
 - `add_parts_interactive()` - Interactive function to add new parts
+
 - `main()` - Main function for command-line usage
+
 - `h()` - No docstring available
 
 ### db
@@ -33,6 +39,7 @@ Interactive CLI utilities for CAsMan parts management.
 Database access utilities for CAsMan parts.
 
 **Functions:**
+
 - `read_parts()` - Read parts from the database with optional filtering
 
 ### search
@@ -43,11 +50,17 @@ This module provides enhanced search capabilities for finding parts
 based on various criteria and patterns.
 
 **Functions:**
+
 - `search_parts()` - Advanced search for parts with multiple criteria
+
 - `get_all_parts()` - Get all parts from the database
+
 - `search_by_prefix()` - Search for parts by prefix (e
+
 - `get_part_statistics()` - Get statistics about parts in the database
+
 - `find_part()` - Find a specific part by part number
+
 - `get_recent_parts()` - Get the most recently created parts
 
 ### part
@@ -58,15 +71,23 @@ This module provides the main Part class for representing individual parts
 and their properties, along with related utility functions.
 
 **Functions:**
+
 - `create_part()` - Convenience function to create a Part instance
+
 - `to_dict()` - Convert part to dictionary representation
+
 - `from_dict()` - Create Part instance from dictionary
+
 - `from_database_row()` - Create Part instance from database row
+
 - `is_valid()` - Check if the part is valid
+
 - `get_barcode_filename()` - Get the expected barcode filename for this part
+
 - `update_modified_time()` - Update the modified timestamp to current time
 
 **Classes:**
+
 - `Part` - Represents a CAsMan part with validation and utility methods
 
 ### validation
@@ -77,10 +98,15 @@ This module provides validation functions for part numbers, part types,
 and other part-related data integrity checks.
 
 **Functions:**
+
 - `validate_part_number()` - Validate a part number format
+
 - `validate_part_type()` - Validate if a part type is supported
+
 - `validate_polarization()` - Validate polarization format
+
 - `get_part_info()` - Extract part information from a valid part number
+
 - `normalize_part_number()` - Normalize a part number to standard format
 
 ### types
@@ -88,6 +114,7 @@ and other part-related data integrity checks.
 Part type configuration utilities for CAsMan.
 
 **Functions:**
+
 - `load_part_types()` - Load part types from config
 
 ## Generation Module Details
@@ -427,7 +454,7 @@ Initialize a Part instance.
 **Parameters:**
 
 part_number : str
-The part number (e.g., "ANT-P1-00001")
+The part number (e.g., "ANT00001P1")
 part_type : Optional[str]
 The part type (e.g., "ANTENNA"). If None, extracted from part_number
 polarization : Optional[str]
@@ -576,7 +603,7 @@ True if the part number is valid, False otherwise
 
 ```python
 
-```
+```python
 
 ---
 

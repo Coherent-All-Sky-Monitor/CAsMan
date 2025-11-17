@@ -9,8 +9,11 @@ CAsMan includes comprehensive safety features to prevent accidental data loss an
 CAsMan provides prominent visual warnings for destructive operations:
 
 **Stop Sign Warning:**
+
 - Red text on white background stop sign
+
 - Displayed before any destructive database operation
+
 - Cannot be bypassed or disabled
 
 ### Double Confirmation System
@@ -22,7 +25,9 @@ All destructive database operations require double confirmation:
 3. **Immediate Abort**: Any other input immediately cancels the operation
 
 **Example Workflow:**
+
 ```bash
+
 $ casman database clear --parts
 
 🛑 STOP SIGN WARNING DISPLAYED
@@ -31,15 +36,19 @@ WARNING: This will DELETE ALL records from the parts database at: /path/to/parts
 Are you sure you want to clear the parts database? (yes/no): yes
 This action is IRREVERSIBLE. Type 'yes' again to confirm: yes
 All records deleted from parts database.
-```
+
+```python
 
 ### Database Integrity Checks
 
 Before performing operations, CAsMan verifies:
 
 - **Database Existence**: Checks if database files exist before operations
+
 - **Database Connectivity**: Verifies connection can be established
+
 - **Schema Validation**: Ensures database schema is correct
+
 - **Backup Creation**: Creates backups before destructive operations (when possible)
 
 ### Error Handling
@@ -47,8 +56,11 @@ Before performing operations, CAsMan verifies:
 Comprehensive error handling provides:
 
 - **Graceful Degradation**: Operations fail safely without corruption
+
 - **Informative Messages**: Clear error descriptions for troubleshooting
+
 - **Recovery Guidance**: Suggestions for resolving issues
+
 - **Exit Code Management**: Proper exit codes for scripting
 
 ## Assembly Chain Validation
@@ -58,18 +70,27 @@ Comprehensive error handling provides:
 CAsMan enforces strict assembly chain rules:
 
 **Sequence Validation:**
-- Parts must connect in order: `ANT → LNA → COAX1 → COAX2 → BACBOARD → SNAP`
+
+- Parts must connect in order: `ANT → LNA → COAXSHORT → COAXLONG → BACBOARD → SNAP`
+
 - Invalid sequences are immediately rejected
+
 - Real-time validation during scanning
 
 **Directionality Enforcement:**
+
 - ANTENNA parts can only be sources (no incoming connections)
+
 - SNAP parts can only be targets (no outgoing connections)
+
 - Intermediate parts can have one incoming and one outgoing connection
 
 **Duplicate Prevention:**
+
 - Each part can have only one outgoing connection
+
 - Each part can have only one incoming connection
+
 - Branching and loops are prevented
 
 ### Real-time Validation
@@ -77,8 +98,11 @@ CAsMan enforces strict assembly chain rules:
 During interactive scanning:
 
 - **Part Database Validation**: All parts validated against parts database
+
 - **SNAP Mapping Validation**: SNAP parts validated against snap_feng_map.yaml
+
 - **Connection Validation**: Each connection validated against chain rules
+
 - **Immediate Feedback**: Invalid operations rejected with clear explanations
 
 ## User Interface Safety
@@ -88,8 +112,11 @@ During interactive scanning:
 All potentially destructive actions require explicit confirmation:
 
 - Database clearing operations
+
 - Bulk part deletion (if implemented)
+
 - Configuration changes affecting data
+
 - Irreversible migrations
 
 ### Help and Documentation
@@ -97,8 +124,11 @@ All potentially destructive actions require explicit confirmation:
 Safety through information:
 
 - **Comprehensive Help**: Every command has detailed help (`--help`)
+
 - **Example Usage**: Examples provided for all operations
+
 - **Warning Messages**: Clear warnings for destructive operations
+
 - **Error Messages**: Informative error messages with resolution guidance
 
 ### Terminal Adaptation
@@ -106,8 +136,11 @@ Safety through information:
 Safe display across environments:
 
 - **Terminal Width Detection**: Adapts output to prevent truncation
+
 - **Color Support Detection**: Gracefully handles terminals without color
+
 - **Unicode Fallback**: ASCII alternatives for unicode characters
+
 - **Screen Reader Compatibility**: Text-based warnings work with accessibility tools
 
 ## Data Protection
@@ -117,7 +150,9 @@ Safe display across environments:
 When possible, CAsMan creates backups:
 
 - **Database Backups**: Automatic backups before migrations
+
 - **Configuration Backups**: Backup config files before changes
+
 - **Timestamp Preservation**: Original timestamps maintained in backups
 
 ### Transaction Safety
@@ -125,7 +160,9 @@ When possible, CAsMan creates backups:
 Database operations use transactions:
 
 - **Atomic Operations**: All-or-nothing operation completion
+
 - **Rollback Capability**: Failed operations don't leave partial changes
+
 - **Consistency Checks**: Post-operation validation ensures data integrity
 
 ### Input Validation
@@ -133,8 +170,11 @@ Database operations use transactions:
 All user input is validated:
 
 - **Part Number Format**: Validates part number patterns
+
 - **Type Checking**: Ensures proper data types
+
 - **Range Checking**: Validates numeric ranges
+
 - **Sanitization**: Prevents injection attacks
 
 ## Recovery Features
@@ -144,8 +184,11 @@ All user input is validated:
 When errors occur:
 
 - **Clear Error Messages**: Detailed description of what went wrong
+
 - **Recovery Suggestions**: Specific steps to resolve issues
+
 - **State Preservation**: System state preserved when possible
+
 - **Safe Exit**: Clean shutdown even after errors
 
 ### Database Recovery
@@ -153,8 +196,11 @@ When errors occur:
 For database issues:
 
 - **Integrity Checking**: Built-in database integrity verification
+
 - **Backup Restoration**: Guidance for restoring from backups
+
 - **Schema Repair**: Tools for fixing schema issues
+
 - **Migration Recovery**: Rollback capabilities for failed migrations
 
 ## Best Practices
@@ -174,8 +220,11 @@ Safe operation practices:
 For developers:
 
 - **Test Coverage**: Comprehensive test suite for safety features
+
 - **Code Review**: All safety-critical code requires review
+
 - **Error Simulation**: Tests include error condition simulation
+
 - **Documentation**: All safety features documented and tested
 
 ## Emergency Procedures
@@ -206,8 +255,11 @@ For system-level problems:
 Available safety configurations:
 
 - **Confirmation Timeouts**: Set timeouts for confirmation prompts
+
 - **Backup Retention**: Configure how long backups are kept
+
 - **Validation Levels**: Adjust strictness of validation checks
+
 - **Error Reporting**: Configure error reporting and logging
 
 ### Environment Variables
@@ -215,6 +267,9 @@ Available safety configurations:
 Safety-related environment variables:
 
 - `CASMAN_SKIP_CONFIRMATIONS`: **NOT RECOMMENDED** - Skips confirmations
+
 - `CASMAN_BACKUP_DIR`: Custom backup directory location
+
 - `CASMAN_VALIDATION_STRICT`: Enable strict validation mode
+
 - `CASMAN_SAFE_MODE`: Enable maximum safety checks

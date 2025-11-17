@@ -19,13 +19,21 @@ This module provides interactive command-line interfaces for scanning
 and assembling parts.
 
 **Functions:**
+
 - `validate_connection_rules()` - Validate that the connection follows the defined chain rules
+
 - `validate_chain_directionality()` - Validate that parts follow proper chain directionality rules
+
 - `check_existing_connections()` - Check if a part already has existing connections to prevent duplicates/branches
+
 - `check_target_connections()` - Check if the target part can accept a new connection
+
 - `validate_part_in_database()` - Validate if a part exists in the parts database or SNAP mapping
+
 - `validate_snap_part()` - Validate a SNAP part against the snap_feng_map
+
 - `scan_and_assemble_interactive()` - Interactive scanning and assembly function
+
 - `main()` - Main entry point for assembly scanning CLI
 
 ### data
@@ -36,8 +44,8 @@ This module handles querying assembly connection data and generating
 statistics from the assembled database.
 
 **Functions:**
+
 - `get_assembly_connections()` - Get all assembly connections from the database
-- `get_assembly_stats()` - Get assembly statistics from the database
 
 ### connections
 
@@ -47,6 +55,7 @@ This module handles the recording of assembly connections between parts
 in the assembled database.
 
 **Functions:**
+
 - `record_assembly_connection()` - Record an assembly connection in the database with explicit timestamps and all fields
 
 ### chains
@@ -57,7 +66,9 @@ This module handles building connection chains from assembly data
 and provides analysis functions for understanding assembly relationships.
 
 **Functions:**
+
 - `build_connection_chains()` - Build a dictionary mapping each part to its connected parts
+
 - `print_assembly_chains()` - Print all assembly chains in a readable format
 
 ## __Init__ Module Details
@@ -167,6 +178,7 @@ None
 **Examples:**
 
 ```python
+
 >>> scan_and_assemble_interactive()  # doctest: +SKIP
 Interactive Assembly Scanner
 ============================
@@ -176,7 +188,8 @@ Scan connected part: LNA-P1-00001
 Connection recorded: ANTP1-00001 -> LNA-P1-00001
 Scan first part: quit
 Goodbye!
-```
+
+```python
 
 ---
 
@@ -214,43 +227,13 @@ List of (part_number, connected_to, scan_time, part_type, polarization) tuples.
 **Examples:**
 
 ```python
+
 >>> connections = get_assembly_connections()
 >>> for part, connected, time, ptype, pol in connections:
 ...     print(f"{part} -> {connected} at {time}")
 ANTP1-00001 -> LNA-P1-00001 at 2024-01-01 10:00:00
-```
-
----
-
-### get_assembly_stats
-
-**Signature:** `get_assembly_stats(db_dir: Optional[str]) -> Dict[str, Any]`
-
-Get assembly statistics from the database.
-
-**Parameters:**
-
-db_dir : Optional[str]
-Custom database directory. If not provided, uses the project root's database directory.
-
-**Returns:**
-
-Dict[str, Any]
-Dictionary containing assembly statistics with keys:
-- total_scans: Total number of assembly scans
-- unique_parts: Number of unique parts in assemblies
-- connected_parts: Number of parts with connections
-- latest_scan: Timestamp of the most recent scan
-
-**Examples:**
 
 ```python
->>> stats = get_assembly_stats()
->>> print(f"Total scans: {stats['total_scans']}")
->>> print(f"Latest scan: {stats['latest_scan']}")
-Total scans: 42
-Latest scan: 2024-01-01 15:30:00
-```
 
 ---
 
@@ -296,13 +279,15 @@ True if the connection was recorded successfully, False otherwise.
 **Examples:**
 
 ```python
+
 >>> success = record_assembly_connection(
 ...     "ANTP1-00001", "ANTENNA", "X", "2024-01-01 10:00:00",
 ...     "LNA-P1-00001", "LNA", "X", "2024-01-01 10:05:00"
 ... )
 >>> print(success)
 True
-```
+
+```python
 
 ---
 
@@ -328,10 +313,12 @@ of connected part numbers.
 **Examples:**
 
 ```python
+
 >>> chains = build_connection_chains()
 >>> print(chains.get('ANTP1-00001', []))
 ['LNA-P1-00001']
-```
+
+```python
 
 ---
 
@@ -351,11 +338,13 @@ structure showing how parts are connected to each other.
 **Examples:**
 
 ```python
+
 >>> print_assembly_chains()
 Assembly Chains:
 ================
 ANTP1-00001 ---> LNA-P1-00001 ---> CX1-P1-00001
 ANTP1-00002 ---> LNA-P1-00002
-```
+
+```python
 
 ---

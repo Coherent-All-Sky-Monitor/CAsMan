@@ -410,7 +410,7 @@ Get the expected barcode filename for this part.
 **Returns:**
 
 str
-Barcode filename (e.g., "ANT-P1-00001.png")
+Barcode filename (e.g., "ANT00001P1.png")
 
 ---
 
@@ -444,7 +444,7 @@ Initialize a Part instance.
 **Parameters:**
 
 part_number : str
-The part number (e.g., "ANT-P1-00001")
+The part number (e.g., "ANT00001P1")
 part_type : Optional[str]
 The part type (e.g., "ANTENNA"). If None, extracted from part_number
 polarization : Optional[str]
@@ -552,7 +552,7 @@ Get the expected barcode filename for this part.
 **Returns:**
 
 str
-Barcode filename (e.g., "ANT-P1-00001.png")
+Barcode filename (e.g., "ANT00001P1.png")
 
 ---
 
@@ -577,7 +577,7 @@ and other part-related data integrity checks.
 
 **Signature:** `validate_part_number(part_number: str) -> bool`
 
-Validate a part number format. Expected format: {PREFIX}-P{POLARIZATION}-{NUMBER}
+Validate a part number format. Expected format: {PREFIX}{NUMBER}P{POLARIZATION}
 
 **Parameters:**
 

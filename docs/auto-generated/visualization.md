@@ -24,10 +24,7 @@ in the main visualization.py module.
 **Functions:**
 - `format_ascii_chains()` - Format assembly chains as ASCII text
 - `get_duplicate_connections()` - Get information about duplicate connections in the database
-- `get_visualization_data()` - Get data formatted for web visualization
 - `get_chain_summary()` - Get summary statistics about assembly chains
-- `format_chain_summary()` - Format chain summary statistics as text
-- `print_visualization_summary()` - Print a summary of the visualization data
 - `main()` - Main function for command-line usage
 
 ## __Init__ Module Details
@@ -87,24 +84,6 @@ for parts that appear multiple times in the database.
 
 ---
 
-### get_visualization_data
-
-**Signature:** `get_visualization_data(db_dir: Optional[str]) -> Dict[str, List[Dict[str, str]]]`
-
-Get data formatted for web visualization.
-
-**Parameters:**
-
-db_dir : str, optional
-Custom database directory. If not provided, uses the project root's database directory.
-
-**Returns:**
-
-Dict[str, List[Dict[str, str]]]
-Dictionary containing nodes and links for visualization.
-
----
-
 ### get_chain_summary
 
 **Signature:** `get_chain_summary(db_dir: Optional[str]) -> Dict[str, float]`
@@ -120,27 +99,6 @@ Custom database directory. If not provided, uses the project root's database dir
 
 Dict[str, float]
 Dictionary containing chain statistics.
-
----
-
-### format_chain_summary
-
-**Signature:** `format_chain_summary() -> str`
-
-Format chain summary statistics as text.
-
-**Returns:**
-
-str
-Formatted summary statistics
-
----
-
-### print_visualization_summary
-
-**Signature:** `print_visualization_summary() -> None`
-
-Print a summary of the visualization data.
 
 ---
 

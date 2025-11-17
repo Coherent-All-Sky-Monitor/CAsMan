@@ -7,10 +7,15 @@ Documentation for the `casman.config` package.
 Configuration system for CAsMan.
 
 This package provides comprehensive configuration management with support for:
+
 - YAML and JSON configuration files
+
 - Environment variable overrides
+
 - Schema validation
+
 - Runtime configuration updates
+
 - Environment-specific settings
 
 ## Modules
@@ -23,12 +28,19 @@ Provides utility functions for configuration management, path resolution,
 and configuration merging.
 
 **Functions:**
+
 - `resolve_config_path()` - Resolve a configuration file path, handling relative paths and environment variables
+
 - `merge_configs()` - Merge multiple configuration dictionaries
+
 - `flatten_config()` - Flatten a nested configuration dictionary
+
 - `unflatten_config()` - Unflatten a configuration dictionary
+
 - `get_config_diff()` - Get the difference between two configuration dictionaries
+
 - `validate_config_paths()` - Validate that file paths in configuration exist
+
 - `create_config_directories()` - Create directories for paths specified in configuration
 
 ### schema
@@ -38,11 +50,15 @@ Configuration schema definitions for CAsMan.
 Provides JSON schema validation for configuration files.
 
 **Functions:**
+
 - `get_default_schema()` - Get the default CAsMan configuration schema
+
 - `validate_config()` - Validate configuration against schema
+
 - `get_config_template()` - Get a configuration template with default values
 
 **Classes:**
+
 - `ConfigSchema` - Configuration schema management class
 
 ### environments
@@ -53,14 +69,21 @@ Provides utilities for managing configuration across different environments
 (development, testing, production).
 
 **Functions:**
+
 - `get_config_files()` - Get list of configuration files for current environment
+
 - `get_environment_variables()` - Get environment variables relevant to CAsMan configuration
+
 - `create_environment_config()` - Create an environment-specific configuration file
+
 - `get_current_environment()` - Get the current environment name
+
 - `set_environment()` - Set the current environment
+
 - `get_environment_config_template()` - Get a configuration template for a specific environment
 
 **Classes:**
+
 - `EnvironmentConfig` - Environment-specific configuration manager
 
 ### core
@@ -70,31 +93,51 @@ Core configuration management functionality for CAsMan.
 Provides the main ConfigManager class and primary configuration functions.
 
 **Functions:**
+
 - `get_config_manager()` - Get the global configuration manager instance
+
 - `get_config()` - Get a configuration value from the global config manager
+
 - `set_config()` - Set a configuration value in the global config manager
+
 - `load_config()` - Load and return all configuration data
+
 - `reload_config()` - Reload configuration from files
+
 - `validate_config()` - Validate current configuration
+
 - `reload()` - Reload configuration from all configured files
+
 - `get()` - Get a configuration value
+
 - `set()` - Set a configuration value
+
 - `get_all()` - Get all configuration data
+
 - `add_watcher()` - Add a callback to be notified when configuration changes
+
 - `remove_watcher()` - Remove a configuration watcher
+
 - `validate()` - Validate current configuration against a schema
+
 - `merge_dicts()` - No docstring available
 
 **Classes:**
+
 - `ConfigManager` - Central configuration manager for CAsMan
 
 ## __Init__ Module Details
 
 This package provides comprehensive configuration management with support for:
+
 - YAML and JSON configuration files
+
 - Environment variable overrides
+
 - Schema validation
+
 - Runtime configuration updates
+
 - Environment-specific settings
 
 ## Functions

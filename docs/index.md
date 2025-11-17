@@ -5,15 +5,21 @@ Welcome to the CAsMan (CASM Assembly Manager) documentation. This documentation 
 ## Getting Started
 
 - [Overview and Quick Start](README.md) - Start here for an introduction to CAsMan
+
 - [Migration Guide](migration_guide.md) - **IMPORTANT**: Guide for upgrading from v1.x to v2.0
+
 - [Development Guide](development.md) - Comprehensive guide for developers
+
 - [API Reference](api_reference.md) - Quick reference for all modules and functions
 
 ## User Documentation
 
 - [Command Line Interface](cli.md) - Learn about all available CLI commands
+
 - [Examples and Tutorials](examples.md) - Comprehensive examples and step-by-step tutorials
+
 - [Safety Features](safety_features.md) - Comprehensive safety and security features
+
 - [Configuration](config.md) - Configuration management and settings
 
 ## API Documentation
@@ -25,12 +31,19 @@ Welcome to the CAsMan (CASM Assembly Manager) documentation. This documentation 
 The following documentation is automatically generated from the source code:
 
 - [Auto-Generated API Reference](auto-generated/api_reference.md) - Complete API reference from code analysis
+
 - [Auto-Generated CLI Documentation](auto-generated/cli.md) - CLI commands extracted from code
+
 - [Auto-Generated Assembly Package](auto-generated/assembly.md) - Assembly package API from source
+
 - [Auto-Generated CLI Package](auto-generated/cli.md) - CLI package API from source  
+
 - [Auto-Generated Config Package](auto-generated/config.md) - Config package API from source
+
 - [Auto-Generated Database Package](auto-generated/database.md) - Database package API from source
+
 - [Auto-Generated Parts Package](auto-generated/parts.md) - Parts package API from source
+
 - [Auto-Generated Visualization Package](auto-generated/visualization.md) - Visualization package API from source
 
 *Note: Auto-generated docs are created by running `python docs/generate_docs.py` and provide technical API details extracted directly from the source code.*
@@ -40,11 +53,17 @@ The following documentation is automatically generated from the source code:
 CAsMan v2.0 uses a fully modular architecture with focused packages:
 
 - [Assembly Package](assembly.md) - Assembly connection recording and management
+
 - [CLI Package](cli.md) - Command-line interface with hierarchical commands
+
 - [Parts Package](parts.md) - Part management and validation
+
 - [Database Package](database.md) - Database operations and CLI management
+
 - [Config Package](config.md) - Configuration handling and environments
+
 - [Barcode Package](barcode_utils.md) - Barcode generation and validation
+
 - [Visualization Package](visualization.md) - ASCII and web visualization
 
 ### Legacy Modules (Compatibility)
@@ -52,8 +71,11 @@ CAsMan v2.0 uses a fully modular architecture with focused packages:
 These modules maintain backward compatibility:
 
 - [Database](database.md) - Database initialization and utilities
+
 - [Barcode Utils](barcode_utils.md) - Barcode generation and printing  
+
 - [Visualization](visualization.md) - ASCII chain visualization
+
 - [Configuration](config.md) - Configuration management
 
 ## Architecture Overview
@@ -63,6 +85,7 @@ CAsMan v2.0 follows a **fully modular architecture** with clear separation of co
 ### Package Structure
 
 ```text
+
 casman/
 ├── assembly/            # Assembly management (NEW: fully modularized)
 │   ├── chains.py       # Connection chain analysis
@@ -97,15 +120,21 @@ casman/
 └── visualization/     # Visualization tools (NEW: modularized)
     ├── core.py        # ASCII visualization
     └── web.py         # Web-based visualization
-```
+
+```python
 
 ### Key Benefits
 
 - **🎯 Focused Modules**: Each package has a single responsibility
+
 - **🔧 Better Maintainability**: Clear separation makes code easier to maintain
+
 - **🧪 Enhanced Testing**: Modular structure enables comprehensive testing
+
 - **📚 Clear Documentation**: Each module has dedicated documentation
+
 - **🔄 Backward Compatibility**: Legacy imports continue to work
+
 - **⚡ Performance**: Optimized imports and reduced dependencies
 
 ## Testing
@@ -113,6 +142,7 @@ casman/
 All functionality is covered by comprehensive tests:
 
 ```bash
+
 # Run all tests (59 tests total)
 python -m pytest
 
@@ -120,7 +150,8 @@ python -m pytest
 python -m pytest tests/test_assembly.py -v  # Assembly package tests
 python -m pytest tests/test_cli.py -v      # CLI package tests
 python -m pytest tests/test_parts.py -v    # Parts package tests
-```
+
+```python
 
 ## Scripts
 
@@ -141,14 +172,17 @@ The main documentation (guides, tutorials, examples) is manually maintained for 
 To generate technical API documentation from source code:
 
 ```bash
+
 python docs/generate_docs.py
-```
+
+```python
 
 This creates auto-generated documentation in `docs/auto-generated/` with technical API details extracted from the source code.
 
 ## Project Structure
 
 ```text
+
 CAsMan/
 ├── casman/                 # Main Python package
 ├── scripts/               # Standalone utility scripts
@@ -159,4 +193,5 @@ CAsMan/
 │   └── *.md              # Manual documentation
 ├── tests/                 # Unit tests
 └── config.yaml           # Project configuration
-```
+
+```python

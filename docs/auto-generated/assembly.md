@@ -30,7 +30,8 @@ This module handles the recording of assembly connections between parts
 in the assembled database.
 
 **Functions:**
-- `record_assembly_connection()` - Record an assembly connection in the database with explicit timestamps and all fields
+- `record_assembly_connection()` - Record an assembly connection or disconnection in the database with explicit timestamps
+- `record_assembly_disconnection()` - Record an assembly disconnection in the database
 
 ### interactive
 
@@ -47,6 +48,7 @@ and assembling parts.
 - `validate_part_in_database()` - Validate if a part exists in the parts database or SNAP mapping
 - `validate_snap_part()` - Validate a SNAP part against the snap_feng_map
 - `scan_and_assemble_interactive()` - Interactive scanning and assembly function
+- `scan_and_disassemble_interactive()` - Interactive scanning and disassembly function
 - `main()` - Main entry point for assembly scanning CLI
 
 ### data
@@ -58,7 +60,6 @@ statistics from the assembled database.
 
 **Functions:**
 - `get_assembly_connections()` - Get all assembly connections from the database
-- `get_assembly_stats()` - Get assembly statistics from the database
 
 ## __Init__ Module Details
 
@@ -138,9 +139,9 @@ in the assembled database.
 
 ### record_assembly_connection
 
-**Signature:** `record_assembly_connection(part_number: str, part_type: str, polarization: str, scan_time: str, connected_to: str, connected_to_type: str, connected_polarization: str, connected_scan_time: str, db_dir: Optional[str]) -> bool`
+**Signature:** `record_assembly_connection(part_number: str, part_type: str, polarization: str, scan_time: str, connected_to: str, connected_to_type: str, connected_polarization: str, connected_scan_time: str, db_dir: Optional[str], connection_status: str) -> bool`
 
-Record an assembly connection in the database with explicit timestamps and all fields.
+Record an assembly connection or disconnection in the database with explicit timestamps.
 
 **Parameters:**
 
@@ -162,6 +163,8 @@ connected_scan_time : str
 The timestamp when the connection was made (YYYY-MM-DD HH:MM:SS).
 db_dir : Optional[str]
 Custom database directory. If not provided, uses the project root's database directory.
+connection_status : str, optional
+Status of the connection: 'connected' or 'disconnected'. Defaults to 'connected'.
 
 **Returns:**
 
@@ -174,6 +177,56 @@ True if the connection was recorded successfully, False otherwise.
 >>> success = record_assembly_connection(
 ...     "ANTP1-00001", "ANTENNA", "X", "2024-01-01 10:00:00",
 ...     "LNA-P1-00001", "LNA", "X", "2024-01-01 10:05:00"
+... )
+>>> print(success)
+True
+>>> success = record_assembly_connection(
+...     "ANTP1-00001", "ANTENNA", "X", "2024-01-01 10:00:00",
+...     "LNA-P1-00001", "LNA", "X", "2024-01-01 10:10:00",
+...     connection_status="disconnected"
+... )
+```
+
+---
+
+### record_assembly_disconnection
+
+**Signature:** `record_assembly_disconnection(part_number: str, part_type: str, polarization: str, scan_time: str, connected_to: str, connected_to_type: str, connected_polarization: str, connected_scan_time: str, db_dir: Optional[str]) -> bool`
+
+Record an assembly disconnection in the database. This is a convenience wrapper around record_assembly_connection that sets the connection_status to 'disconnected'.
+
+**Parameters:**
+
+part_number : str
+The part number being disconnected.
+part_type : str
+The type of the part being disconnected.
+polarization : str
+The polarization of the part being disconnected.
+scan_time : str
+The timestamp when the part was scanned (YYYY-MM-DD HH:MM:SS).
+connected_to : str
+The part number this part was connected to.
+connected_to_type : str
+The type of the connected part.
+connected_polarization : str
+The polarization of the connected part.
+connected_scan_time : str
+The timestamp when the disconnection was made (YYYY-MM-DD HH:MM:SS).
+db_dir : Optional[str]
+Custom database directory. If not provided, uses the project root's database directory.
+
+**Returns:**
+
+bool
+True if the disconnection was recorded successfully, False otherwise.
+
+**Examples:**
+
+```python
+>>> success = record_assembly_disconnection(
+...     "ANTP1-00001", "ANTENNA", "X", "2024-01-01 10:00:00",
+...     "LNA-P1-00001", "LNA", "X", "2024-01-01 10:10:00"
 ... )
 >>> print(success)
 True
@@ -286,6 +339,32 @@ Goodbye!
 
 ---
 
+### scan_and_disassemble_interactive
+
+**Signature:** `scan_and_disassemble_interactive() -> None`
+
+Interactive scanning and disassembly function. Provides a command-line interface for scanning parts and recording their disconnections. Continues until the user types 'quit'.
+
+**Returns:**
+
+None
+
+**Examples:**
+
+```python
+>>> scan_and_disassemble_interactive()  # doctest: +SKIP
+Interactive Disassembly Scanner
+===============================
+Type 'quit' to exit.
+Scan first part: ANTP1-00001
+Scan disconnected part: LNA-P1-00001
+Disconnection recorded: ANTP1-00001 -X-> LNA-P1-00001
+Scan first part: quit
+Goodbye!
+```
+
+---
+
 ### main
 
 **Signature:** `main() -> None`
@@ -324,38 +403,6 @@ List of (part_number, connected_to, scan_time, part_type, polarization) tuples.
 >>> for part, connected, time, ptype, pol in connections:
 ...     print(f"{part} -> {connected} at {time}")
 ANTP1-00001 -> LNA-P1-00001 at 2024-01-01 10:00:00
-```
-
----
-
-### get_assembly_stats
-
-**Signature:** `get_assembly_stats(db_dir: Optional[str]) -> Dict[str, Any]`
-
-Get assembly statistics from the database.
-
-**Parameters:**
-
-db_dir : Optional[str]
-Custom database directory. If not provided, uses the project root's database directory.
-
-**Returns:**
-
-Dict[str, Any]
-Dictionary containing assembly statistics with keys:
-- total_scans: Total number of assembly scans
-- unique_parts: Number of unique parts in assemblies
-- connected_parts: Number of parts with connections
-- latest_scan: Timestamp of the most recent scan
-
-**Examples:**
-
-```python
->>> stats = get_assembly_stats()
->>> print(f"Total scans: {stats['total_scans']}")
->>> print(f"Latest scan: {stats['latest_scan']}")
-Total scans: 42
-Latest scan: 2024-01-01 15:30:00
 ```
 
 ---
