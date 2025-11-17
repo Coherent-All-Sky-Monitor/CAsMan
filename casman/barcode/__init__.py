@@ -9,8 +9,6 @@ validation, batch operations, and PDF printing capabilities.
 from .generation import generate_barcode, generate_multiple_barcodes
 from .operations import (
     arrange_barcodes_in_pdf,
-    get_available_barcode_directories,
-    scan_barcode_directory,
     validate_barcode_file,
 )
 from .printing import (
@@ -20,7 +18,6 @@ from .printing import (
 )
 from .validation import (
     is_valid_barcode_format,
-    validate_barcode_content,
     validate_part_number_format,
 )
 
@@ -31,8 +28,6 @@ __all__ = [
     "generate_multiple_barcodes",
     # File operations
     "arrange_barcodes_in_pdf",
-    "get_available_barcode_directories",
-    "scan_barcode_directory",
     "validate_barcode_file",
     # Printing utilities
     "create_printable_pages",
@@ -40,6 +35,5 @@ __all__ = [
     "optimize_page_layout",
     # Validation
     "is_valid_barcode_format",
-    "validate_barcode_content",
     "validate_part_number_format",
 ]

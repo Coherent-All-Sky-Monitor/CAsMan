@@ -96,8 +96,8 @@ CAsMan enforces strict assembly chain rules to ensure proper CASM assembly:
 graph TD
     A["ANTENNA (ANT)"]
     B["LNA (LNA)"]
-    C["COAX1 (CX1)"]
-    D["COAX2 (CX2)"]
+    C["COAXSHORT (CXS)"]
+    D["COAXLONG (CXL)"]
     E["BACBOARD (BAC)"]
     F["SNAP (SNAP)"]
 
@@ -113,7 +113,7 @@ graph TD
 
 ### Connection Rules
 
-- **🔒 Sequence Enforcement**: Parts must connect in order: `ANT → LNA → COAX1 → COAX2 → BACBOARD → SNAP`
+- **🔒 Sequence Enforcement**: Parts must connect in order: `ANT → LNA → COAXSHORT → COAXLONG → BACBOARD → SNAP`
 - **🔒 Directionality**: ANTENNA parts can only be sources, SNAP parts can only be targets
 - **🔒 No Duplicates**: Each part can have only one outgoing and one incoming connection
 - **🔒 Part Validation**: All parts validated against database and SNAP mapping files
@@ -159,57 +159,46 @@ pip install git+https://github.com/Coherent-All-Sky-Monitor/CAsMan.git
 
 ## Migration Guide
 
-If you're upgrading from CAsMan v1.x to v2.x, you'll need to update your imports due to the new modular architecture.
+If you're upgrading from CAsMan v0.1.x to v0.2.x, you'll need to update your imports due to the new modular architecture.
 
 ### Common Migration Patterns
 
 #### Parts Management
 ```python
-# Old (v1.x)
+# Old (v0.1.x) - Legacy files (now removed)
 from casman.parts import add_parts_interactive, get_last_part_number
 
-# New (v2.x)
+# New (v0.2.x) - Modular structure
 from casman.parts.interactive import add_parts_interactive
 from casman.parts.generation import get_last_part_number
 ```
 
 #### Assembly Operations
 ```python
-# Old (v1.x)
+# Old (v0.1x) - Legacy files (now removed)
 from casman.assembly import build_connection_chains, print_assembly_chains
 
-# New (v2.x)
+# New (v0.2x) - Modular structure
 from casman.assembly.chains import build_connection_chains, print_assembly_chains
 ```
 
 #### Database Operations
 ```python
-# Old (v1.x)
+# Old (v0.1x) - Legacy files (now removed)
 from casman.database import get_parts_by_criteria, init_parts_db
 
-# New (v2.x)
+# New (v0.2x) - Modular structure
 from casman.database.operations import get_parts_by_criteria
 from casman.database.initialization import init_parts_db
 ```
 
 #### Visualization
 ```python
-# Old (v1.x)
+# Old (v0.1x) - Legacy files (now removed)
 from casman.visualization import format_ascii_chains, get_chain_summary
 
-# New (v2.x)
+# New (v0.2x) - Modular structure
 from casman.visualization.core import format_ascii_chains, get_chain_summary
-```
-
-### CLI Usage (Unchanged)
-
-The command-line interface remains the same - only Python imports have changed:
-
-```bash
-# These CLI commands work the same in both versions
-casman parts add
-casman scan connection
-casman visualize chains
 ```
 
 ## Quick Start
@@ -257,9 +246,9 @@ casman visualize web --port 8080     # Launch web interface on custom port
 casman barcode printpages --part-type ANTENNA --start-number 1 --end-number 50
 ```
 
-### Enhanced Database Management
+### Database Management
 
-The `casman database` commands provide safe and comprehensive database operations:
+The `casman database` commands provide database operations:
 
 ```bash
 # Clear database contents with double confirmation and visual warnings
@@ -277,7 +266,7 @@ casman database print               # Show assembly database in formatted tables
 # - Graceful error handling and recovery
 ```
 
-### Enhanced Part Management
+### Part Management
 
 The `casman parts add` command provides flexible part creation options:
 
@@ -288,8 +277,8 @@ casman parts add
 # Example session options:
 # 1: ANTENNA (alias: ANT)    - Add antenna parts
 # 2: LNA (alias: LNA)        - Add LNA parts  
-# 3: COAX1 (alias: CX1)      - Add COAX1 parts
-# 4: COAX2 (alias: CX2)      - Add COAX2 parts
+# 3: COAXSHORT (alias: CXS)      - Add COAXSHORT parts
+# 4: COAXLONG (alias: CXL)      - Add COAXLONG parts
 # 5: BACBOARD (alias: BAC)   - Add backboard parts
 # 0: ALL (add parts for all types) - Add parts for all types at once
 
@@ -303,7 +292,7 @@ The `casman scan connect` command provides the full interactive scanning experie
 
 - ✅ **Real-time part validation** against parts database
 - ✅ **SNAP part validation** using snap_feng_map.yaml  
-- ✅ **Connection sequence validation** (enforces ANT→LNA→COAX1→COAX2→BACBOARD→SNAP)
+- ✅ **Connection sequence validation** (enforces ANT→LNA→COAXSHORT→COAXLONG→BACBOARD→SNAP)
 - ✅ **Duplicate prevention** (blocks multiple connections)
 - ✅ **Chain directionality** (ANTENNA=sources only, SNAP=targets only)
 
@@ -412,8 +401,8 @@ CAsMan supports multiple part types:
 
 1. **ANTENNA** (ANT) - Antenna components
 2. **LNA** (LNA) - Low Noise Amplifier components  
-3. **COAX1** (CX1) - Coaxial cable components (first type)
-4. **COAX2** (CX2) - Coaxial cable components (second type)
+3. **COAXSHORT** (CXS) - Coaxial cable components (first type)
+4. **COAXLONG** (CXL) - Coaxial cable components (second type)
 5. **BACBOARD** (BAC) - Backboard components
 6. **SNAP** (SNAP) - SNAP components
 
@@ -529,7 +518,7 @@ For issues and questions:
 
 ## Changelog
 
-### Version 1.0.0
+### Version 0.2.0
 
 - Complete refactoring of script-based tools into installable package
 - Comprehensive CLI with subcommands

@@ -4,6 +4,7 @@ Parts-related CLI commands for CAsMan.
 
 import argparse
 import sys
+import shutil
 
 from casman.database.operations import get_parts_by_criteria
 from casman.database.initialization import init_all_databases
@@ -41,11 +42,7 @@ def cmd_parts() -> None:
     )
     parser.add_argument("--type", help="Filter parts by type (ANTENNA, LNA, COAX1, COAX2, BACBOARD, SNAP)")
     parser.add_argument("--polarization", help="Filter parts by polarization (e.g., 1, 2)")
-
-    # Check if help is requested or no arguments provided
-    if len(sys.argv) <= 2 or (len(sys.argv) == 3 and sys.argv[2] in ['-h', '--help']):
-        parser.print_help()
-        return
+    parser.add_argument("--all", action="store_true", help="Print all parts in the database (ignores filters)")
 
     # Check if help is requested or no arguments provided
     if len(sys.argv) <= 2 or (len(sys.argv) == 3 and sys.argv[2] in ['-h', '--help']):
@@ -57,7 +54,37 @@ def cmd_parts() -> None:
     init_all_databases()
 
     if args.action == "list":
-        if args.type or args.polarization:
+        if args.all:
+            parts = get_parts_by_criteria(None, None)
+            if parts:
+                headers = ["ID", "Part Number", "Part Type", "Polarization", "Date Created", "Date Modified"]
+                col_widths = [max(len(str(row[i])) for row in parts + [headers]) for i in range(6)]
+                table_width = sum(col_widths) + 5 * 3 + 2  # 3 spaces between columns, 2 for borders
+                term_width = shutil.get_terminal_size((80, 20)).columns
+                if table_width <= term_width:
+                    # Enhanced ASCII table
+                    sep = "+" + "+".join(["-" * (w + 2) for w in col_widths]) + "+"
+                    def row_line(row):
+                        return "| " + " | ".join(f"{str(cell):<{w}}" for cell, w in zip(row, col_widths)) + " |"
+                    print(sep)
+                    print(row_line(headers))
+                    print(sep)
+                    for part in parts:
+                        print(row_line(part))
+                    print(sep)
+                else:
+                    # Fallback: flat list
+                    for part in parts:
+                        print(f"ID: {part[0]}")
+                        print(f"Part Number: {part[1]}")
+                        print(f"Part Type: {part[2]}")
+                        print(f"Polarization: {part[3]}")
+                        print(f"Date Created: {part[4]}")
+                        print(f"Date Modified: {part[5]}")
+                        print("-" * 80)
+            else:
+                print("No parts found in the database.")
+        elif args.type or args.polarization:
             parts = get_parts_by_criteria(args.type, args.polarization)
             if parts:
                 print(f"Found {len(parts)} part(s):")

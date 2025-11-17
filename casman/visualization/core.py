@@ -146,39 +146,6 @@ def get_duplicate_connections(db_dir: Optional[str] = None) -> Dict[str, List[Tu
     return duplicates
 
 
-def get_visualization_data(db_dir: Optional[str] = None) -> Dict[str, List[Dict[str, str]]]:
-    """
-    Get data formatted for web visualization.
-
-    Parameters
-    ----------
-    db_dir : str, optional
-        Custom database directory. If not provided, uses the project root's database directory.
-
-    Returns
-    -------
-    Dict[str, List[Dict[str, str]]]
-        Dictionary containing nodes and links for visualization.
-    """
-    connections = get_assembly_connections(db_dir)
-    chains = build_connection_chains(db_dir)
-
-    # Create nodes
-    all_parts: Set[str] = set()
-    for part_number, connected_to, _, _, _ in connections:
-        all_parts.add(part_number)
-        if connected_to:
-            all_parts.add(connected_to)
-
-    nodes = [{"id": part, "label": part} for part in sorted(all_parts)]
-
-    # Create links
-    links = []
-    for part_number, connected_parts in chains.items():
-        for connected_part in connected_parts:
-            links.append({"source": part_number, "target": connected_part})
-
-    return {"nodes": nodes, "links": links}
 
 
 def get_chain_summary(db_dir: Optional[str] = None) -> Dict[str, float]:
@@ -270,27 +237,6 @@ def _calculate_chain_length(start_part: str, chains: Dict[str, List[str]], visit
     return length
 
 
-def format_chain_summary() -> str:
-    """
-    Format chain summary statistics as text.
-
-    Returns
-    -------
-    str
-        Formatted summary statistics
-    """
-    stats = get_chain_summary()
-
-    output_lines = []
-    output_lines.append("Assembly Chain Summary:")
-    output_lines.append("=" * 50)
-    output_lines.append(f"Total parts in chains: {stats['total_parts']}")
-    output_lines.append(f"Total connections: {stats['total_connections']}")
-    output_lines.append(f"Average chain length: {stats['average_chain_length']:.1f}")
-    output_lines.append(f"Longest chain: {stats['longest_chain']}")
-    output_lines.append("=" * 50)
-
-    return "\n".join(output_lines)
 
 
 def print_visualization_summary() -> None:

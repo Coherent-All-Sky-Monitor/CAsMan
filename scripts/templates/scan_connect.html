@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CASM Scan Connect (Web)</title>
+  <style>
+    @font-face {
+      font-family: 'National Park';
+      src: url('/static/fonts/NationalPark-Regular.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'National Park Bold';
+      src: url('/static/fonts/NationalPark-Bold.woff') format('woff');
+      font-weight: bold;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'National Park ExtraBold';
+      src: url('/static/fonts/NationalPark-ExtraBold.woff') format('woff');
+      font-weight: 900;
+      font-style: normal;
+    }
+    body.light-mode {
+      font-family: 'National Park', sans-serif;
+      margin: 0;
+      background-color: #f0f0f5;
+      color: #333;
+    }
+    body.dark-mode {
+      font-family: 'National Park', sans-serif;
+      margin: 0;
+      background-color: #333;
+      color: #f0f0f5;
+    }
+    .centered-container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 32px 24px;
+      background: rgba(255,255,255,0.10);
+      border-radius: 12px;
+      box-shadow: 0 4px 16px #0001;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-family: 'National Park ExtraBold', sans-serif;
+      color: inherit;
+      font-weight: 900;
+      margin-bottom: 24px;
+      text-align: center;
+      width: 100%;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 18px;
+      font-family: 'National Park Bold', sans-serif;
+    }
+    input[type=text] {
+      width: 100%;
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 6px;
+      border: 1.5px solid #bbb;
+      margin-top: 6px;
+      font-family: 'Courier New', monospace;
+    }
+    button {
+      margin-top: 22px;
+      padding: 12px 28px;
+      font-size: 1em;
+      border-radius: 6px;
+      border: none;
+      background: #007acc;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: 'National Park Bold', sans-serif;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .status {
+      margin-top: 18px;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 1em;
+      font-family: 'National Park', sans-serif;
+    }
+    .success {
+      background: #e6f9e6;
+      color: #1a7f1a;
+      border: 1.5px solid #1a7f1a;
+    }
+    .error {
+      background: #ffeaea;
+      color: #b30000;
+      border: 1.5px solid #b30000;
+    }
+    .info {
+      background: #eaf3ff;
+      color: #00529b;
+      border: 1.5px solid #00529b;
+    }
+    .details {
+      font-size: 0.97em;
+      color: #555;
+      margin-top: 6px;
+    }
+    .dark-mode-toggle { margin-left: 20px; cursor: pointer; font-size: 24px; }
+    .sun { display: none; }
+    .moon { display: inline; }
+    body.dark-mode .sun { display: inline; }
+    body.dark-mode .moon { display: none; }
+    .dark-mode-toggle span { transition: transform 0.3s ease; }
+    .dark-mode-toggle:hover span { transform: rotate(45deg); }
+  </style>
+</head>
+<body class="light-mode">
+  <div class="centered-container">
+    <div class="toolbar">
+      <h1>CASM Scan Connect (Web)</h1>
+      <div class="dark-mode-toggle" onclick="toggleDarkMode()">
+        <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+        </svg>
+        <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+      </div>
+    </div>
+    <form id="scan-form" autocomplete="off" style="width:100%;max-width:400px;">
+      <label for="first-part">Scan First Part:</label>
+      <input type="text" id="first-part" name="first-part" required autofocus autocomplete="off">
+      <div id="first-status" class="status info" style="display:none;"></div>
+      <label for="connected-part">Scan Connected Part:</label>
+      <input type="text" id="connected-part" name="connected-part" required disabled autocomplete="off">
+      <div id="connected-status" class="status info" style="display:none;"></div>
+      <button type="submit" id="connect-btn" disabled>Validate & Record Connection</button>
+    </form>
+    <div id="final-status" class="status" style="display:none;"></div>
+    <button id="reset-btn" style="display:none; margin-top:18px;">Scan Another Connection</button>
+  </div>
+  <script>
+    // --- Dark mode logic ---
+    function toggleDarkMode() {
+      const body = document.body;
+      const isDark = body.classList.contains('dark-mode');
+      if (isDark) {
+        body.classList.remove('dark-mode');
+        body.classList.add('light-mode');
+        localStorage.setItem('theme', 'light');
+      } else {
+        body.classList.remove('light-mode');
+        body.classList.add('dark-mode');
+        localStorage.setItem('theme', 'dark');
+      }
+    }
+    // Initialize theme from localStorage
+    (function() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.body.classList.remove('light-mode', 'dark-mode');
+      document.body.classList.add(savedTheme + '-mode');
+    })();
+    // ...existing code...
+  </script>
+</body>
+</html>

@@ -7,8 +7,8 @@
 PART_TYPES:
   1: [ANTENNA, ANT]
   2: [LNA, LNA]
-  3: [COAX1, CX1]
-  4: [COAX2, CX2]
+  3: [COAXSHORT, CXS]
+  4: [COAXLONG, CXL]
   5: [BACBOARD, BAC]
   6: [SNAP, SNAP]
 

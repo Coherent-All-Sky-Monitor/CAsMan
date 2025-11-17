@@ -11,7 +11,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 
 class VersionManager:
@@ -32,8 +32,8 @@ class VersionManager:
             },
             "casman/cli/utils.py": {
                 "path": project_root / "casman" / "cli" / "utils.py",
-                "pattern": r'print\("CAsMan version ([^"]+)"\)',
-                "replacement": 'print("CAsMan version {version}")'
+                "pattern": r'from casman import __version__',
+                "replacement": 'from casman import __version__'
             }
         }
     
@@ -146,14 +146,18 @@ class VersionManager:
                 content = file_path.read_text(encoding='utf-8')  # type: ignore
                 match = re.search(pattern, content)  # type: ignore
                 if match:
-                    version = match.group(1)
-                    print(f"✅ {file_key}: {version}")
+                    # Check if there's a capture group (version number)
+                    if match.groups():
+                        version = match.group(1)
+                        print(f"✅ {file_key}: {version}")
+                    else:
+                        print(f"✅ {file_key}: Uses dynamic version import")
                 else:
                     print(f"⚠️  {file_key}: Version pattern not found")
             except (OSError, IOError, UnicodeDecodeError) as e:
                 print(f"❌ {file_key}: Error reading file - {e}")
     
-    def create_git_tag(self, version: str, message: str | None = None) -> bool:
+    def create_git_tag(self, version: str, message: Optional[str] = None) -> bool:
         """Create a git tag for the version."""
         tag_name = f"v{version}"
         

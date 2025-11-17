@@ -19,33 +19,11 @@ from .utils import (
 from .visualization_commands import cmd_visualize
 
 # Import functions that tests still expect to be available
-try:
-    from casman.assembly.data import get_assembly_stats
-    from casman.barcode import generate_barcode_printpages
-    from casman.database.operations import get_parts_by_criteria
-    from casman.parts.interactive import add_parts_interactive
-    from casman.visualization.core import format_ascii_chains
-except ImportError:
-    # Fallback definitions if modules aren't available
-    def add_parts_interactive() -> None:
-        """Fallback function."""
-        pass
-
-    def get_parts_by_criteria(part_type=None, polarization=None) -> list:
-        """Fallback function."""
-        return []
-
-    def get_assembly_stats() -> dict:
-        """Fallback function."""
-        return {}
-
-    def format_ascii_chains() -> str:
-        """Fallback function."""
-        return ""
-
-    def generate_barcode_printpages(*args) -> None:
-        """Fallback function."""
-        pass
+from casman.assembly.data import get_assembly_stats
+from casman.barcode import generate_barcode_printpages
+from casman.database.operations import get_parts_by_criteria
+from casman.parts.interactive import add_parts_interactive
+from casman.visualization.core import format_ascii_chains
 
 
 __all__ = [

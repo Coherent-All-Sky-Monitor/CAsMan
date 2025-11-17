@@ -11,63 +11,8 @@ from typing import Dict, List, Optional, Tuple
 from PIL import Image
 
 
-def get_available_barcode_directories() -> List[str]:
-    """
-    Get list of available barcode directories.
-
-    Returns
-    -------
-    List[str]
-        List of directory names in the barcodes folder.
-    """
-    barcodes_path = "barcodes"
-    if not os.path.exists(barcodes_path):
-        return []
-
-    directories = []
-    for item in os.listdir(barcodes_path):
-        item_path = os.path.join(barcodes_path, item)
-        if os.path.isdir(item_path):
-            directories.append(item)
-
-    return sorted(directories)
 
 
-def scan_barcode_directory(directory: str) -> Dict[str, List[str]]:
-    """
-    Scan a directory for barcode files and organize by type.
-
-    Parameters
-    ----------
-    directory : str
-        Path to the directory to scan.
-
-    Returns
-    -------
-    Dict[str, List[str]]
-        Dictionary with file types as keys and lists of file paths as values.
-    """
-    if not os.path.exists(directory):
-        return {}
-
-    file_types: Dict[str, List[str]] = {
-        "png": [],
-        "jpg": [],
-        "jpeg": [],
-        "bmp": [],
-        "other": []
-    }
-
-    for filename in os.listdir(directory):
-        file_path = os.path.join(directory, filename)
-        if os.path.isfile(file_path):
-            extension = filename.lower().split(".")[-1] if "." in filename else "other"
-            if extension in file_types:
-                file_types[extension].append(file_path)
-            else:
-                file_types["other"].append(file_path)
-
-    return file_types
 
 
 def validate_barcode_file(file_path: str) -> Tuple[bool, Optional[str]]:

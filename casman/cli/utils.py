@@ -27,7 +27,8 @@ def show_completion_help() -> None:
 
 def show_version() -> None:
     """Show version information."""
-    print("CAsMan version 0.2.0")
+    from casman import __version__
+    print(f"CAsMan version {__version__}")
     sys.exit(0)
 
 

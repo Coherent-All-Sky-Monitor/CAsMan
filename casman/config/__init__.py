@@ -33,23 +33,15 @@ import yaml
 _CONFIG_PATH = os.path.join(Path(__file__).parent.parent.parent, "config.yaml")
 
 
-def load_config() -> Dict[str, Any]:
-    """
-    Load configuration from config.yaml (legacy function).
-
-    Returns:
-        dict: The configuration dictionary loaded from YAML.
-    """
-    with open(_CONFIG_PATH, "r", encoding="utf-8") as f:
-        data = yaml.safe_load(f)
-        if not isinstance(data, dict):
-            raise ValueError("config.yaml must contain a top-level dictionary")
-        return data
 
 
 # Load configuration on module import (legacy behavior)
 try:
-    _CONFIG = load_config()
+    with open(_CONFIG_PATH, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+        if not isinstance(data, dict):
+            raise ValueError("config.yaml must contain a top-level dictionary")
+        _CONFIG = data
 except Exception:
     _CONFIG = {}
 
@@ -97,5 +89,4 @@ __all__ = [
     "validate_config",
     # Legacy functions (backward compatibility)
     "get_config",
-    "load_config",
 ]
