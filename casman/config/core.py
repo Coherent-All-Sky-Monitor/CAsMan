@@ -116,7 +116,7 @@ class ConfigManager:
                 # Store both the full key and the key without prefix for
                 # flexibility
                 self._config[key] = value  # Full key (e.g., "CASMAN_PARTS_DB")
-                config_key = key[len(env_prefix) :]
+                config_key = key[len(env_prefix):]
                 # Key without prefix (e.g., "PARTS_DB")
                 self._config[config_key] = value
 

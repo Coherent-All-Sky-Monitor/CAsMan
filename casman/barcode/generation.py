@@ -162,10 +162,11 @@ def generate_barcode_range(
         if not part_abbrev:
             raise ValueError(f"Unknown part type: {part_type}")
 
-        prefix = f"{part_abbrev}P1"
+        prefix = part_abbrev
 
-    # Generate part numbers
-    part_numbers = [f"{prefix}-{i:05d}" for i in range(start_number, end_number + 1)]
+    # Generate part numbers in new format: {PREFIX}{NUMBER}P{POLARIZATION}
+    # Default to polarization 1
+    part_numbers = [f"{prefix}{i:05d}P1" for i in range(start_number, end_number + 1)]
 
     return generate_multiple_barcodes(part_numbers, part_type, output_dir)
 

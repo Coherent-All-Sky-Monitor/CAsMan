@@ -82,7 +82,7 @@ def generate_part_numbers(
     c = conn.cursor()
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     for i in range(count):
-        part_number = f"{part_abbrev}-P{polarization}-{last_number + i + 1:05d}"
+        part_number = f"{part_abbrev}{last_number + i + 1:05d}P{polarization}"
         c.execute(
             "INSERT INTO parts (part_number, part_type, polarization, date_created, date_modified) "
             "VALUES (?, ?, ?, ?, ?)",

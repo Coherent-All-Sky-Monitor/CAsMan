@@ -171,7 +171,7 @@ def generate_part_number(part_type, polarization, number):
 
         return f"{prefix}-D211{snap_number}-ADC{adcin:02d}"
 
-    return f"{prefix}P{polarization}-{number:05d}"
+    return f"{prefix}{number:05d}P{polarization}"
 
 
 def verify_connections(part_number, part_type):

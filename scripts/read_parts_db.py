@@ -20,13 +20,12 @@ import sqlite3
 
 from casman.database.operations import get_parts_by_criteria
 from casman.parts.types import load_part_types
+from casman.config.utils import setup_logging
 
 PART_TYPES = load_part_types()
 
-# Configure logging
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+# Configure logging from config
+setup_logging()
 
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description="Read parts from the database.")

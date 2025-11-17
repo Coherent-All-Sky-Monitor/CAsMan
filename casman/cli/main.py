@@ -22,6 +22,7 @@ from .utils import (
     show_version,
 )
 from .visualization_commands import cmd_visualize
+from .web_commands import cmd_web
 
 
 def main() -> None:
@@ -42,27 +43,34 @@ def main() -> None:
     """
     parser = argparse.ArgumentParser(
         description="CAsMan - CASM Assembly Manager\n\n"
-                   "A comprehensive toolkit for managing CASM assembly processes with connection validation,\n"
-                   "part tracking, barcode generation, and interactive visualization.\n\n"
-                   "Features: Interactive scanning, connection validation, duplicate detection,\n"
-                   "ASCII/web visualization, and comprehensive part management.\n\n"
-                   "Available Commands:\n"
-                   "  parts      - Manage parts in the database (list, add, search, validate)\n"
-                   "  scan       - Interactive scanning and assembly with real-time validation\n"
-                   "    └─ stats       Display assembly statistics and connection counts\n"
-                   "    └─ connection  Start interactive connection scanning with validation\n"
-                   "    └─ connect     Interactive part scanning and assembly operations\n"
-                   "  database   - Database management operations (clear, print)\n"
-                   "    └─ clear       Safely clear database contents with confirmations\n"
-                   "    └─ print       Display formatted database tables and records\n"
-                   "  visualize  - Visualize assembly chains and connection statistics\n"
-                   "    └─ chains      Display ASCII visualization with duplicate detection\n"
-                   "    └─ summary     Show comprehensive assembly statistics\n"
-                   "    └─ web         Launch web-based visualization interface\n"
-                   "  barcode    - Generate barcodes and printable pages for part identification\n"
-                   "    └─ printpages  Generate printable barcode pages for labeling\n"
-                   "  completion - Show shell completion setup instructions\n\n"
-                   "Use 'casman <command> --help' for detailed help on any command.",
+        "A comprehensive toolkit for managing CASM assembly processes with connection validation,\n"
+        "part tracking, barcode generation, and interactive visualization.\n\n"
+        "Features: Interactive scanning, connection validation, duplicate detection,\n"
+        "ASCII/web visualization, and comprehensive part management.\n\n"
+        "Available Commands:\n"
+        "  parts      - Manage parts in the database (list, add, search, validate)\n"
+        "  scan       - Interactive scanning and assembly with real-time validation\n"
+        "    └─ connection     Start interactive connection scanning with validation\n"
+        "    └─ disconnection  Start interactive disconnection scanning\n"
+        "    └─ connect        Full interactive part scanning and assembly operations\n"
+        "    └─ disconnect     Full interactive part disconnection operations\n"
+        "    └─ web            Quick access to web scanner interface (port 5001)\n"
+        "  database   - Database management operations (clear, print)\n"
+        "    └─ clear       Safely clear database contents with confirmations\n"
+        "    └─ print       Display formatted database tables and records\n"
+        "  visualize  - Visualize assembly chains and connection statistics\n"
+        "    └─ chains      Display ASCII visualization with duplicate detection\n"
+        "    └─ web         Launch web-based visualization interface (port 5000)\n"
+        "  web        - Launch unified web application (scanner + visualization)\n"
+        "    └─ --mode dev|production   Development (Flask) or production (Gunicorn) server\n"
+        "    └─ --scanner-only          Enable only scanner interface\n"
+        "    └─ --visualize-only        Enable only visualization interface\n"
+        "    └─ --port <port>           Custom port (default: 5000 dev, 8000 prod)\n"
+        "    └─ --workers <n>           Number of Gunicorn workers (production mode)\n"
+        "  barcode    - Generate barcodes and printable pages for part identification\n"
+        "    └─ printpages  Generate printable barcode pages for labeling\n"
+        "  completion - Show shell completion setup instructions\n\n"
+        "Use 'casman <command> --help' for detailed help on any command.",
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument("command", nargs="?", help="Command to run")
@@ -77,6 +85,7 @@ def main() -> None:
         "scan": "Interactive scanning and assembly with real-time validation",
         "database": "Database management operations - clear and print databases",
         "visualize": "Visualize assembly chains and connection statistics with duplicate detection",
+        "web": "Launch unified web application - scanner and/or visualization (dev/production modes)",
         "barcode": "Generate barcodes and printable pages for part identification",
         "completion": "Show shell completion setup instructions for enhanced CLI experience",
     }
@@ -93,6 +102,8 @@ def main() -> None:
             cmd_database()
         elif command == "visualize":
             cmd_visualize()
+        elif command == "web":
+            cmd_web()
         elif command == "barcode":
             cmd_barcode()
         elif command == "completion":
@@ -116,6 +127,8 @@ def main() -> None:
             cmd_database()
         elif command == "visualize":
             cmd_visualize()
+        elif command == "web":
+            cmd_web()
         elif command == "barcode":
             cmd_barcode()
         elif command == "completion":
@@ -145,6 +158,8 @@ def main() -> None:
         cmd_database()
     elif command == "visualize":
         cmd_visualize()
+    elif command == "web":
+        cmd_web()
     elif command == "barcode":
         cmd_barcode()
     elif command == "completion":

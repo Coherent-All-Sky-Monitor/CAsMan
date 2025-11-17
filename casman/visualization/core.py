@@ -91,13 +91,15 @@ def format_ascii_chains(db_dir: Optional[str] = None) -> str:
         for part, entries in duplicates.items():
             output_lines.append(f"Part {part} has {len(entries)} database entries:")
             for i, (connected_to, scan_time, connected_scan_time) in enumerate(entries, 1):
-                output_lines.append(f"  {i}. FRM: {scan_time}, NXT: {connected_scan_time}, connects to: {connected_to}")
+                output_lines.append(
+                    f"  {i}. FRM: {scan_time}, NXT: {connected_scan_time}, connects to: {connected_to}")
         output_lines.append("-" * 88)
 
     return "\n".join(output_lines)
 
 
-def get_duplicate_connections(db_dir: Optional[str] = None) -> Dict[str, List[Tuple[str, str, str]]]:
+def get_duplicate_connections(
+        db_dir: Optional[str] = None) -> Dict[str, List[Tuple[str, str, str]]]:
     """
     Get information about duplicate connections in the database.
 
@@ -116,9 +118,18 @@ def get_duplicate_connections(db_dir: Optional[str] = None) -> Dict[str, List[Tu
             cursor = conn.cursor()
             cursor.execute(
                 """
-                SELECT part_number, connected_to, scan_time, connected_scan_time
-                FROM assembly
-                ORDER BY scan_time
+                SELECT a.part_number, a.connected_to, a.scan_time, a.connected_scan_time
+                FROM assembly a
+                INNER JOIN (
+                    SELECT part_number, connected_to, MAX(scan_time) as max_time
+                    FROM assembly
+                    GROUP BY part_number, connected_to
+                ) latest
+                ON a.part_number = latest.part_number
+                AND a.connected_to = latest.connected_to
+                AND a.scan_time = latest.max_time
+                WHERE a.connection_status = 'connected'
+                ORDER BY a.scan_time
                 """
             )
             records = cursor.fetchall()
@@ -144,8 +155,6 @@ def get_duplicate_connections(db_dir: Optional[str] = None) -> Dict[str, List[Tu
             duplicates[part_number] = entries
 
     return duplicates
-
-
 
 
 def get_chain_summary(db_dir: Optional[str] = None) -> Dict[str, float]:
@@ -204,7 +213,8 @@ def get_chain_summary(db_dir: Optional[str] = None) -> Dict[str, float]:
     }
 
 
-def _calculate_chain_length(start_part: str, chains: Dict[str, List[str]], visited: Set[str]) -> int:
+def _calculate_chain_length(
+        start_part: str, chains: Dict[str, List[str]], visited: Set[str]) -> int:
     """
     Calculate the length of a chain starting from a given part.
 
@@ -237,34 +247,16 @@ def _calculate_chain_length(start_part: str, chains: Dict[str, List[str]], visit
     return length
 
 
-
-
-def print_visualization_summary() -> None:
-    """Print a summary of the visualization data."""
-    summary = get_chain_summary()
-
-    print("Assembly Visualization Summary:")
-    print("-" * 40)
-    print(f"Total parts: {summary['total_parts']}")
-    print(f"Total connections: {summary['total_connections']}")
-    print(f"Longest chain: {summary['longest_chain']} parts")
-    print(f"Average chain length: {summary['average_chain_length']:.1f} parts")
-    print("-" * 40)
-
-
 def main() -> None:
     """Main function for command-line usage."""
     print("CASM Visualization")
     print("1: Show ASCII chains")
-    print("2: Show summary")
 
     try:
         choice = int(input("Enter your choice: "))
 
         if choice == 1:
             print("\n" + format_ascii_chains())
-        elif choice == 2:
-            print_visualization_summary()
         else:
             print("Invalid choice.")
     except ValueError:

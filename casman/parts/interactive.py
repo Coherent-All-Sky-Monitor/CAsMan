@@ -145,7 +145,8 @@ def add_parts_interactive() -> None:
             print(f"Barcodes generated in barcodes/{part_type}/ directory.")
 
         if len(part_types_to_add) > 1:
-            print(f"\n🎉 Total: {total_created} parts created across {len(part_types_to_add)} part types!")
+            print(
+                f"\n🎉 Total: {total_created} parts created across {len(part_types_to_add)} part types!")
 
     except (ValueError, sqlite3.Error) as e:
         print(f"Error creating parts: {e}")

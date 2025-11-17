@@ -13,8 +13,8 @@ class TestPartsValidation:
 
     def test_validate_part_number(self):
         """Test part number validation."""
-        assert validate_part_number("ANT-P1-00001")
-        assert validate_part_number("LNA-P2-00123")
+        assert validate_part_number("ANT00001P1")
+        assert validate_part_number("LNA00123P2")
         assert not validate_part_number("INVALID")
         assert not validate_part_number(None)
 
@@ -35,9 +35,11 @@ class TestPartsValidation:
 
     def test_get_part_info(self):
         """Test part info extraction."""
-        info = get_part_info("ANT-P1-00001")
+        info = get_part_info("ANT00001P1")
         assert info is not None
         assert info["prefix"] == "ANT"
         assert info["part_type"] == "ANTENNA"
+        assert info["polarization"] == "P1"
+        assert info["number"] == "00001"
         
         assert get_part_info("INVALID") is None

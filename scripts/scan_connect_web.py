@@ -17,6 +17,7 @@ app = Flask(__name__)
 
 # --- Backend logic ---
 
+
 def import_casman():
     global validate_part_in_database, validate_connection_rules, record_assembly_connection
     try:
@@ -24,18 +25,24 @@ def import_casman():
         from casman.assembly.connections import record_assembly_connection
     except Exception as e:
         print(f"[ERROR] Could not import casman modules: {e}")
+
         def validate_part_in_database(part):
             return False, None, None
+
         def validate_connection_rules(*args, **kwargs):
             return False, "casman not available"
+
         def record_assembly_connection(*args, **kwargs):
             return False
 
+
 import_casman()
+
 
 @app.route("/", methods=["GET"])
 def scan_page():
     return render_template("scan_connect.html")
+
 
 @app.route("/validate-part", methods=["POST"])
 def validate_part():
@@ -49,17 +56,21 @@ def validate_part():
     if is_valid:
         return jsonify({'valid': True, 'type': part_type, 'polarization': polarization})
     else:
-        error = 'SNAP part not found in snap_feng_map.yaml' if part.startswith('SNAP') and '_ADC' in part else 'Part not found in parts database'
+        error = 'SNAP part not found in snap_feng_map.yaml' if part.startswith(
+            'SNAP') and '_ADC' in part else 'Part not found in parts database'
         return jsonify({'valid': False, 'error': error})
+
 
 @app.route("/validate-connection", methods=["POST"])
 def validate_connection():
     data = request.json
     try:
-        valid, error = validate_connection_rules(data['first'], data['first_type'], data['connected'], data['connected_type'])
+        valid, error = validate_connection_rules(
+            data['first'], data['first_type'], data['connected'], data['connected_type'])
     except Exception as e:
         return jsonify({'valid': False, 'error': f'Internal error: {e}'})
     return jsonify({'valid': valid, 'error': error})
+
 
 @app.route("/record-connection", methods=["POST"])
 def record_connection():
@@ -79,9 +90,11 @@ def record_connection():
     except Exception as e:
         return jsonify({'success': False, 'error': f'Internal error: {e}'})
     if success:
-        return jsonify({'success': True, 'message': f"Connection recorded: {data['first']} → {data['connected']}"})
+        return jsonify({'success': True,
+                        'message': f"Connection recorded: {data['first']} → {data['connected']}"})
     else:
         return jsonify({'success': False, 'error': 'Failed to record connection to database'})
+
 
 @app.route('/all-parts')
 def all_parts():
@@ -99,6 +112,7 @@ def all_parts():
         return jsonify([])
     finally:
         conn.close()
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5050)

@@ -182,7 +182,7 @@ def generate_new_parts(part_type: int, count: int, polarization: str) -> None:
 
     for i in range(1, count + 1):
         new_number = last_number + i
-        part_number = f"{prefix}-P{polarization}-{new_number:05d}"
+        part_number = f"{prefix}{new_number:05d}P{polarization}"
         save_to_db(part_number, type_name)
         generate_barcode(part_number, part_dir)
         print(f"Generated and saved part number: {part_number}")

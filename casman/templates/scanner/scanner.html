@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAsMan - Part Scanner</title>
+    
+    <style>
+        @font-face {
+            font-family: 'National Park';
+            src: url('/visualize/static/fonts/NationalPark-Regular.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'National Park Bold';
+            src: url('/visualize/static/fonts/NationalPark-Bold.woff') format('woff');
+            font-weight: bold;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'National Park ExtraBold';
+            src: url('/visualize/static/fonts/NationalPark-ExtraBold.woff') format('woff');
+            font-weight: 900;
+            font-style: normal;
+        }
+        
+        body {
+            font-family: 'National Park', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        /* Dark mode styles */
+        body.dark-mode {
+            background: #000;
+            color: #fff;
+        }
+        
+        body.dark-mode button {
+            border-color: #fff;
+            background: #000;
+            color: #fff;
+        }
+        
+        body.dark-mode button:hover {
+            background: #fff;
+            color: #000;
+        }
+        
+        body.dark-mode .button-selected {
+            background: #fff !important;
+            color: #000 !important;
+        }
+        
+        body.dark-mode input,
+        body.dark-mode select {
+            border-color: #fff;
+            background: #000;
+            color: #fff;
+        }
+        
+        body.dark-mode .section {
+            border-color: #fff;
+        }
+        
+        body.dark-mode .status-message {
+            border-color: #fff;
+        }
+        
+        body.dark-mode .status-success {
+            border-color: #0f0;
+            color: #0f0;
+        }
+        
+        body.dark-mode .status-error {
+            border-color: #f00;
+            color: #f00;
+        }
+        
+        body.dark-mode .status-info {
+            border-color: #0ff;
+            color: #0ff;
+        }
+        
+        body.dark-mode .part-display {
+            border-color: #fff;
+            background-color: #111;
+        }
+        
+        body.dark-mode .connection-item {
+            border-color: #fff;
+        }
+        
+        body.dark-mode .connection-item:hover {
+            background-color: #222;
+        }
+        
+        /* Toolbar */
+        .toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: inherit;
+            border-bottom: 2px solid;
+            backdrop-filter: blur(10px);
+        }
+        
+        body.dark-mode .toolbar {
+            border-bottom-color: #fff;
+            background: rgba(0, 0, 0, 0.9);
+        }
+        
+        body:not(.dark-mode) .toolbar {
+            border-bottom-color: #000;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .toolbar-spacer {
+            height: 70px;
+        }
+        
+        /* Home button */
+        .home-button {
+            padding: 10px 15px;
+            cursor: pointer;
+            border: 2px solid;
+            background: transparent;
+            text-decoration: none;
+            color: inherit;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .home-button:hover {
+            background: #333;
+            color: #fff;
+        }
+        
+        body.dark-mode .home-button:hover {
+            background: #fff;
+            color: #000;
+        }
+        
+        /* Theme toggle button */
+        .theme-toggle {
+            padding: 10px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .theme-toggle .sun {
+            display: none;
+        }
+        
+        .theme-toggle .moon {
+            display: inline;
+        }
+        
+        body.dark-mode .theme-toggle .sun {
+            display: inline;
+        }
+        
+        body.dark-mode .theme-toggle .moon {
+            display: none;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid;
+        }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .button-grid button {
+            padding: 15px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .connection-list {
+            margin: 15px 0;
+        }
+        
+        .connection-item {
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .connection-item:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .button-selected {
+            background-color: #333 !important;
+            color: #fff !important;
+            font-weight: bold;
+        }
+        
+        .status-message {
+            padding: 15px;
+            margin: 15px 0;
+            border: 2px solid;
+            font-weight: bold;
+        }
+        
+        .status-success {
+            border-color: green;
+            color: green;
+        }
+        
+        .status-error {
+            border-color: red;
+            color: red;
+        }
+        
+        .status-info {
+            border-color: blue;
+            color: blue;
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            font-family: 'National Park', sans-serif;
+            border: 2px solid;
+        }
+        
+        .part-display {
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid;
+            background-color: #f9f9f9;
+        }
+        
+        .part-display h3 {
+            margin-top: 0;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .nav-buttons button {
+            flex: 1;
+            padding: 15px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <a href="/" class="home-button" title="Home">← Home</a>
+        <div class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+            <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+            </svg>
+            <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+        </div>
+    </div>
+    <div class="toolbar-spacer"></div>
+    
+    <h1>🔍 CAsMan - Part Scanner</h1>
+    <p>Web-based interface for connecting and disconnecting parts</p>
+    
+    <!-- Step 1: Choose Action -->
+    <div id="step-action" class="section">
+        <h2>Step 1: Choose Action</h2>
+        <div class="button-grid">
+            <button onclick="selectAction('connect')">🔗 CONNECT Parts</button>
+            <button onclick="selectAction('disconnect')">❌ DISCONNECT Parts</button>
+        </div>
+    </div>
+    
+    <!-- Step 2: Choose Input Method -->
+    <div id="step-method" class="section hidden">
+        <h2>Step 2: Choose Input Method</h2>
+        <div id="action-display" class="status-info status-message"></div>
+        <div class="button-grid">
+            <button onclick="selectMethod('barcode')">📷 Barcode Reader</button>
+            <button onclick="selectMethod('manual')">⌨️ Manual Entry</button>
+        </div>
+        <div class="nav-buttons">
+            <button onclick="goToStep('action')">← Back</button>
+        </div>
+    </div>
+    
+    <!-- Step 3a: Barcode Reader Input -->
+    <div id="step-barcode" class="section hidden">
+        <h2>Barcode Reader Input</h2>
+        <div id="barcode-instructions" class="status-info status-message"></div>
+        <div class="input-group">
+            <label for="barcode-input">Scan or Type Part Number:</label>
+            <input type="text" id="barcode-input" placeholder="Scan barcode..." autofocus>
+        </div>
+        <div id="barcode-status"></div>
+        <div class="nav-buttons">
+            <button onclick="goToStep('method')">← Back</button>
+            <button onclick="resetScanner()">🔄 Reset</button>
+        </div>
+    </div>
+    
+    <!-- Step 3c: Manual Entry -->
+    <div id="step-manual" class="section hidden">
+        <h2>Manual Part Entry</h2>
+        <div id="manual-instructions" class="status-info status-message"></div>
+        
+        <div class="input-group">
+            <label>Select Part Type:</label>
+            <div id="part-type-buttons" class="button-grid"></div>
+        </div>
+        
+        <div id="manual-polarization" class="input-group hidden">
+            <label>Select Polarization:</label>
+            <div id="polarization-buttons" class="button-grid">
+                <button onclick="selectPolarization('1')">Polarization 1</button>
+                <button onclick="selectPolarization('2')">Polarization 2</button>
+            </div>
+        </div>
+        
+        <div id="manual-number" class="input-group hidden">
+            <label for="part-number-input">Enter Part Number:</label>
+            <input type="number" id="part-number-input" placeholder="Enter number..." min="1">
+            <button onclick="submitManualPart()" style="margin-top: 10px; width: 100%; padding: 15px;">Submit Part</button>
+        </div>
+        
+        <div id="manual-status"></div>
+        <div class="nav-buttons">
+            <button onclick="goToStep('method')">← Back</button>
+            <button onclick="resetScanner()">🔄 Reset</button>
+        </div>
+    </div>
+    
+    <!-- Step 4: Connection Selection (for disconnect mode) -->
+    <div id="step-select-connection" class="section hidden">
+        <h2>Select Connection to Disconnect</h2>
+        <div id="first-part-display" class="part-display"></div>
+        <div id="connection-list-container" class="connection-list"></div>
+        <div class="nav-buttons">
+            <button onclick="cancelDisconnection()">← Cancel</button>
+        </div>
+    </div>
+    
+    <!-- Step 5: Confirmation -->
+    <div id="step-confirm" class="section hidden">
+        <h2>Confirm Operation</h2>
+        <div id="confirm-details" class="part-display"></div>
+        <div class="nav-buttons">
+            <button onclick="cancelOperation()">← Cancel</button>
+            <button onclick="confirmOperation()">✓ Confirm</button>
+        </div>
+    </div>
+    
+    <!-- Final Result -->
+    <div id="step-result" class="section hidden">
+        <h2>Result</h2>
+        <div id="result-message" class="status-message"></div>
+        <div class="nav-buttons">
+            <button onclick="continueScanning()">▶️ Continue <span id="continue-action-text"></span></button>
+            <button onclick="resetScanner()">🔄 Start Over</button>
+        </div>
+    </div>
+
+    <script>
+        // Theme management
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            // Save preference to localStorage
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+        
+        // Load saved theme on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+        });
+        
+        // Global state
+        let state = {
+            action: null,          // 'connect' or 'disconnect'
+            method: null,          // 'barcode', 'camera', 'manual'
+            firstPart: null,       // {part_number, part_type, polarization}
+            secondPart: null,      // {part_number, part_type, polarization}
+            connections: [],       // For disconnect mode
+            manualPartType: null,
+            manualPolarization: null
+        };
+        
+        // Part types from server
+        const partTypes = {{ part_types | tojson }};
+        
+        // Navigation functions
+        function goToStep(step) {
+            document.querySelectorAll('.section').forEach(el => el.classList.add('hidden'));
+            document.getElementById('step-' + step).classList.remove('hidden');
+        }
+        
+        function selectAction(action) {
+            state.action = action;
+            document.getElementById('action-display').textContent = 
+                `Selected: ${action.toUpperCase()} parts`;
+            goToStep('method');
+        }
+        
+        function selectMethod(method) {
+            state.method = method;
+            
+            if (method === 'barcode') {
+                setupBarcodeInput();
+                goToStep('barcode');
+            } else if (method === 'manual') {
+                setupManualEntry();
+                goToStep('manual');
+            }
+        }
+        
+        function resetScanner() {
+            state = {
+                action: null,
+                method: null,
+                firstPart: null,
+                secondPart: null,
+                connections: [],
+                manualPartType: null,
+                manualPolarization: null
+            };
+            // Clear all button selections
+            document.querySelectorAll('.button-selected').forEach(btn => {
+                btn.classList.remove('button-selected');
+            });
+            goToStep('action');
+        }
+        
+        function continueScanning() {
+            // Keep the action and method, but reset the parts
+            const currentAction = state.action;
+            const currentMethod = state.method;
+            
+            state = {
+                action: currentAction,
+                method: currentMethod,
+                firstPart: null,
+                secondPart: null,
+                connections: [],
+                manualPartType: null,
+                manualPolarization: null
+            };
+            
+            // Clear all button selections
+            document.querySelectorAll('.button-selected').forEach(btn => {
+                btn.classList.remove('button-selected');
+            });
+            
+            // Go directly to the scanning step
+            if (currentMethod === 'barcode') {
+                setupBarcodeInput();
+                goToStep('barcode');
+            } else if (currentMethod === 'manual') {
+                setupManualEntry();
+                goToStep('manual');
+            }
+        }
+        
+        // Barcode reader mode
+        function setupBarcodeInput() {
+            const input = document.getElementById('barcode-input');
+            const instructions = document.getElementById('barcode-instructions');
+            const statusDiv = document.getElementById('barcode-status');
+            
+            // Clear previous status message
+            statusDiv.innerHTML = '';
+            
+            if (state.action === 'connect') {
+                if (!state.firstPart) {
+                    instructions.textContent = '📋 Scan FIRST part (source of connection)';
+                } else {
+                    const nextPartType = getNextPartInChain(state.firstPart.part_type);
+                    instructions.innerHTML = `
+                        <strong>Just scanned:</strong> ${state.firstPart.part_number}<br>
+                        <strong>Connecting to:</strong> ${nextPartType}<br>
+                        Scan the ${nextPartType} part
+                    `;
+                }
+            } else {
+                instructions.textContent = '📋 Scan part to disconnect';
+            }
+            
+            input.value = '';
+            input.focus();
+            
+            input.onkeypress = function(e) {
+                if (e.key === 'Enter') {
+                    const partNumber = input.value.trim();
+                    if (partNumber) {
+                        processBarcodeInput(partNumber);
+                    }
+                }
+            };
+        }
+        
+        // Determine next part type in the connection chain
+        function getNextPartInChain(currentType) {
+            const chain = {
+                'ANTENNA': 'LNA',
+                'LNA': 'COAXSHORT',
+                'COAXSHORT': 'COAXLONG',
+                'COAXLONG': 'BACBOARD',
+                'BACBOARD': 'SNAP'
+            };
+            return chain[currentType] || 'SNAP';
+        }
+        
+        async function processBarcodeInput(partNumber) {
+            const statusDiv = document.getElementById('barcode-status');
+            statusDiv.innerHTML = '<div class="status-info status-message">⏳ Validating part...</div>';
+            
+            try {
+                const response = await fetch('/scanner/api/validate-part', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({part_number: partNumber})
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const partInfo = {
+                        part_number: result.part_number,
+                        part_type: result.part_type,
+                        polarization: result.polarization,
+                        existing_connections: result.existing_connections || []
+                    };
+                    
+                    handlePartScanned(partInfo);
+                } else {
+                    statusDiv.innerHTML = `<div class="status-error status-message">❌ ${result.error}</div>`;
+                    setTimeout(() => {
+                        statusDiv.innerHTML = '';
+                        document.getElementById('barcode-input').value = '';
+                        document.getElementById('barcode-input').focus();
+                    }, 2000);
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status-error status-message">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Manual entry mode
+        function setupManualEntry() {
+            const instructions = document.getElementById('manual-instructions');
+            const statusDiv = document.getElementById('manual-status');
+            
+            // Clear previous status message
+            statusDiv.innerHTML = '';
+            
+            if (state.action === 'connect') {
+                if (!state.firstPart) {
+                    instructions.textContent = '⌨️ Enter FIRST part details (source)';
+                } else {
+                    // Show what was scanned and determine next expected part
+                    const nextPartType = getNextPartInChain(state.firstPart.part_type);
+                    instructions.innerHTML = `
+                        <strong>Just scanned:</strong> ${state.firstPart.part_number}<br>
+                        <strong>Connecting to:</strong> ${nextPartType}<br>
+                        Enter part number for ${nextPartType}
+                    `;
+                }
+            } else {
+                instructions.textContent = '⌨️ Enter part details to disconnect';
+            }
+            
+            // Create part type buttons
+            const buttonContainer = document.getElementById('part-type-buttons');
+            buttonContainer.innerHTML = '';
+            
+            // If we have first part, only show valid next parts
+            let availableTypes = partTypes;
+            if (state.action === 'connect' && state.firstPart) {
+                const nextType = getNextPartInChain(state.firstPart.part_type);
+                availableTypes = [nextType];
+            } else if (state.action === 'connect' && !state.firstPart) {
+                // In connect mode without first part, exclude SNAP (terminal connection)
+                availableTypes = partTypes.filter(type => type !== 'SNAP');
+            }
+            // In disconnect mode, show all types including SNAP
+            
+            availableTypes.forEach(type => {
+                const btn = document.createElement('button');
+                btn.textContent = type;
+                btn.onclick = () => selectPartType(type);
+                buttonContainer.appendChild(btn);
+            });
+            
+            // Clear previous selections
+            document.querySelectorAll('.button-selected').forEach(btn => {
+                btn.classList.remove('button-selected');
+            });
+            
+            document.getElementById('manual-polarization').classList.add('hidden');
+            document.getElementById('manual-number').classList.add('hidden');
+        }
+        
+        function selectPartType(type) {
+            state.manualPartType = type;
+            
+            // Highlight selected button
+            document.querySelectorAll('#part-type-buttons button').forEach(btn => {
+                btn.classList.remove('button-selected');
+            });
+            event.target.classList.add('button-selected');
+            
+            if (type === 'SNAP') {
+                // SNAP parts don't need polarization
+                state.manualPolarization = 'N/A';
+                document.getElementById('manual-polarization').classList.add('hidden');
+                document.getElementById('manual-number').classList.remove('hidden');
+            } else {
+                document.getElementById('manual-polarization').classList.remove('hidden');
+                document.getElementById('manual-number').classList.add('hidden');
+            }
+        }
+        
+        function selectPolarization(pol) {
+            state.manualPolarization = pol;
+            
+            // Highlight selected button
+            document.querySelectorAll('#polarization-buttons button').forEach(btn => {
+                btn.classList.remove('button-selected');
+            });
+            event.target.classList.add('button-selected');
+            
+            document.getElementById('manual-number').classList.remove('hidden');
+            document.getElementById('part-number-input').focus();
+        }
+        
+        async function submitManualPart() {
+            const partNum = document.getElementById('part-number-input').value;
+            
+            if (!partNum || !state.manualPartType) {
+                alert('Please complete all fields');
+                return;
+            }
+            
+            let partNumber;
+            if (state.manualPartType === 'SNAP') {
+                partNumber = `SNAP${String(partNum).padStart(3, '0')}_ADC00`;
+            } else {
+                const prefix = {
+                    'ANTENNA': 'ANT',
+                    'LNA': 'LNA',
+                    'COAXSHORT': 'CXS',
+                    'COAXLONG': 'CXL',
+                    'BACBOARD': 'BAC'
+                }[state.manualPartType];
+                partNumber = `${prefix}${String(partNum).padStart(5, '0')}P${state.manualPolarization}`;
+            }
+            
+            const statusDiv = document.getElementById('manual-status');
+            statusDiv.innerHTML = '<div class="status-info status-message">⏳ Validating part...</div>';
+            
+            try {
+                const response = await fetch('/scanner/api/validate-part', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({part_number: partNumber})
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const partInfo = {
+                        part_number: result.part_number,
+                        part_type: result.part_type,
+                        polarization: result.polarization,
+                        existing_connections: result.existing_connections || []
+                    };
+                    
+                    handlePartScanned(partInfo);
+                } else {
+                    statusDiv.innerHTML = `<div class="status-error status-message">❌ ${result.error}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status-error status-message">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Handle scanned/entered part
+        async function handlePartScanned(partInfo) {
+            if (state.action === 'connect') {
+                handleConnectMode(partInfo);
+            } else {
+                handleDisconnectMode(partInfo);
+            }
+        }
+        
+        function handleConnectMode(partInfo) {
+            if (!state.firstPart) {
+                // First part scanned - check for existing connections
+                state.firstPart = partInfo;
+                
+                const statusDiv = state.method === 'barcode' ?
+                    document.getElementById('barcode-status') :
+                    document.getElementById('manual-status');
+                
+                // Check if part already has an outgoing connection
+                let hasOutgoingConnection = false;
+                if (partInfo.existing_connections && partInfo.existing_connections.length > 0) {
+                    const connections = partInfo.existing_connections;
+                    let connMsg = `<div class="status-info status-message">ℹ️ Part ${partInfo.part_number} has existing connections:<br>`;
+                    connections.forEach(conn => {
+                        if (conn.part_number === partInfo.part_number) {
+                            connMsg += `• Connected to: ${conn.connected_to} (${conn.connected_to_type})<br>`;
+                            hasOutgoingConnection = true;
+                        } else {
+                            connMsg += `• Connected from: ${conn.part_number}<br>`;
+                        }
+                    });
+                    connMsg += '</div>';
+                    statusDiv.innerHTML = connMsg;
+                    
+                    // If part already has outgoing connection, cannot connect another part to it
+                    if (hasOutgoingConnection) {
+                        setTimeout(() => {
+                            statusDiv.innerHTML = `<div class="status-error status-message">❌ ${partInfo.part_number} already has an outgoing connection. Cannot add another connection.</div>`;
+                            setTimeout(() => {
+                                state.firstPart = null;
+                                statusDiv.innerHTML = '';
+                                if (state.method === 'barcode') {
+                                    setupBarcodeInput();
+                                } else if (state.method === 'manual') {
+                                    setupManualEntry();
+                                }
+                            }, 3000);
+                        }, 2000);
+                        return;
+                    }
+                } else {
+                    statusDiv.innerHTML = `<div class="status-success status-message">✓ Part ${partInfo.part_number} found in database</div>`;
+                }
+                
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                    if (state.method === 'barcode') {
+                        setupBarcodeInput();
+                    } else if (state.method === 'manual') {
+                        state.manualPartType = null;
+                        state.manualPolarization = null;
+                        setupManualEntry();
+                    }
+                }, 3000);
+            } else {
+                // Second part scanned - check if already connected
+                state.secondPart = partInfo;
+                
+                const statusDiv = state.method === 'barcode' ?
+                    document.getElementById('barcode-status') :
+                    document.getElementById('manual-status');
+                
+                // Check if this connection already exists (bidirectional)
+                let alreadyConnected = false;
+                let hasIncomingConnection = false;
+                
+                if (partInfo.existing_connections) {
+                    for (const conn of partInfo.existing_connections) {
+                        // Check if these exact parts are already connected
+                        if ((conn.part_number === state.firstPart.part_number && conn.connected_to === partInfo.part_number) ||
+                            (conn.part_number === partInfo.part_number && conn.connected_to === state.firstPart.part_number)) {
+                            alreadyConnected = true;
+                            break;
+                        }
+                        // Check if second part already has an incoming connection from someone else
+                        if (conn.connected_to === partInfo.part_number && conn.part_number !== state.firstPart.part_number) {
+                            hasIncomingConnection = true;
+                        }
+                    }
+                }
+                
+                if (alreadyConnected) {
+                    statusDiv.innerHTML = `<div class="status-error status-message">❌ ${state.firstPart.part_number} is already connected to ${partInfo.part_number}</div>`;
+                    setTimeout(() => {
+                        // Reset to scan second part again
+                        state.secondPart = null;
+                        statusDiv.innerHTML = '';
+                        if (state.method === 'barcode') {
+                            setupBarcodeInput();
+                        } else if (state.method === 'manual') {
+                            setupManualEntry();
+                        }
+                    }, 3000);
+                } else if (hasIncomingConnection) {
+                    statusDiv.innerHTML = `<div class="status-error status-message">❌ ${partInfo.part_number} already has an incoming connection from another part. Cannot add another connection.</div>`;
+                    setTimeout(() => {
+                        // Reset to scan second part again
+                        state.secondPart = null;
+                        statusDiv.innerHTML = '';
+                        if (state.method === 'barcode') {
+                            setupBarcodeInput();
+                        } else if (state.method === 'manual') {
+                            setupManualEntry();
+                        }
+                    }, 3000);
+                } else {
+                    statusDiv.innerHTML = `<div class="status-success status-message">✓ Part ${partInfo.part_number} found in database</div>`;
+                    setTimeout(() => {
+                        showConfirmation();
+                    }, 1000);
+                }
+            }
+        }
+        
+        async function handleDisconnectMode(partInfo) {
+            state.firstPart = partInfo;
+            
+            // Show success message
+            const statusDiv = state.method === 'barcode' ? 
+                document.getElementById('barcode-status') : 
+                document.getElementById('manual-status');
+            statusDiv.innerHTML = `<div class="status-success status-message">✓ Part ${partInfo.part_number} found in database</div>`;
+            
+            // Get existing connections
+            try {
+                const response = await fetch('/scanner/api/get-connections', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({part_number: partInfo.part_number})
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (result.count === 0) {
+                        statusDiv.innerHTML = '';
+                        alert(`Part ${partInfo.part_number} has no active connections to disconnect.`);
+                        resetScanner();
+                        return;
+                    }
+                    
+                    state.connections = result.connections;
+                    setTimeout(() => {
+                        showConnectionSelection();
+                    }, 1000);
+                } else {
+                    statusDiv.innerHTML = '';
+                    alert(`Error: ${result.error}`);
+                    resetScanner();
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '';
+                alert(`Error: ${error.message}`);
+                resetScanner();
+            }
+        }
+        
+        // Show connection selection for disconnect
+        function showConnectionSelection() {
+            const displayDiv = document.getElementById('first-part-display');
+            displayDiv.innerHTML = `
+                <h3>Part to Disconnect:</h3>
+                <p><strong>Part Number:</strong> ${state.firstPart.part_number}</p>
+                <p><strong>Type:</strong> ${state.firstPart.part_type}</p>
+                <p><strong>Polarization:</strong> ${state.firstPart.polarization}</p>
+            `;
+            
+            const listDiv = document.getElementById('connection-list-container');
+            listDiv.innerHTML = '<h3>Select Connection:</h3>';
+            
+            state.connections.forEach((conn, idx) => {
+                const div = document.createElement('div');
+                div.className = 'connection-item';
+                
+                if (conn.part_number === state.firstPart.part_number) {
+                    div.innerHTML = `
+                        <strong>${conn.part_number}</strong> → ${conn.connected_to} (${conn.connected_to_type})
+                        <br><small>Scanned: ${conn.scan_time}</small>
+                    `;
+                    div.onclick = () => selectConnection(conn.connected_to, conn.connected_to_type);
+                } else {
+                    div.innerHTML = `
+                        ${conn.part_number} → <strong>${conn.connected_to}</strong> (${conn.connected_to_type})
+                        <br><small>Scanned: ${conn.scan_time}</small>
+                    `;
+                    div.onclick = () => selectConnection(conn.part_number, conn.connected_to_type);
+                }
+                
+                listDiv.appendChild(div);
+            });
+            
+            goToStep('select-connection');
+        }
+        
+        async function selectConnection(otherPartNumber, otherPartType) {
+            // Get the other part's details
+            try {
+                const response = await fetch('/scanner/api/validate-part', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({part_number: otherPartNumber})
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    state.secondPart = {
+                        part_number: result.part_number,
+                        part_type: result.part_type,
+                        polarization: result.polarization,
+                        existing_connections: result.existing_connections || []
+                    };
+                    
+                    showConfirmation();
+                }
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        }
+        
+        function cancelDisconnection() {
+            state.firstPart = null;
+            state.connections = [];
+            resetScanner();
+        }
+        
+        // Show confirmation
+        function showConfirmation() {
+            const detailsDiv = document.getElementById('confirm-details');
+            
+            if (state.action === 'connect') {
+                detailsDiv.innerHTML = `
+                    <h3>Confirm Connection:</h3>
+                    <div style="margin: 15px 0;">
+                        <h4>First Part (Source):</h4>
+                        <p><strong>Part:</strong> ${state.firstPart.part_number}</p>
+                        <p><strong>Type:</strong> ${state.firstPart.part_type}</p>
+                        <p><strong>Polarization:</strong> ${state.firstPart.polarization}</p>
+                    </div>
+                    <div style="text-align: center; font-size: 24px; margin: 10px 0;">↓</div>
+                    <div style="margin: 15px 0;">
+                        <h4>Second Part (Target):</h4>
+                        <p><strong>Part:</strong> ${state.secondPart.part_number}</p>
+                        <p><strong>Type:</strong> ${state.secondPart.part_type}</p>
+                        <p><strong>Polarization:</strong> ${state.secondPart.polarization}</p>
+                    </div>
+                `;
+            } else {
+                detailsDiv.innerHTML = `
+                    <h3>Confirm Disconnection:</h3>
+                    <div style="margin: 15px 0;">
+                        <h4>First Part:</h4>
+                        <p><strong>Part:</strong> ${state.firstPart.part_number}</p>
+                        <p><strong>Type:</strong> ${state.firstPart.part_type}</p>
+                    </div>
+                    <div style="text-align: center; font-size: 24px; margin: 10px 0;">✗</div>
+                    <div style="margin: 15px 0;">
+                        <h4>Second Part:</h4>
+                        <p><strong>Part:</strong> ${state.secondPart.part_number}</p>
+                        <p><strong>Type:</strong> ${state.secondPart.part_type}</p>
+                    </div>
+                `;
+            }
+            
+            goToStep('confirm');
+        }
+        
+        function cancelOperation() {
+            state.secondPart = null;
+            resetScanner();
+        }
+        
+        // Confirm and execute operation
+        async function confirmOperation() {
+            const resultDiv = document.getElementById('result-message');
+            resultDiv.innerHTML = '<div class="status-info status-message">⏳ Processing...</div>';
+            
+            // Set the continue button text
+            const continueText = state.action === 'connect' ? 'Connecting' : 'Disconnecting';
+            document.getElementById('continue-action-text').textContent = continueText;
+            
+            goToStep('result');
+            
+            try {
+                const endpoint = state.action === 'connect' ? '/scanner/api/record-connection' : '/scanner/api/record-disconnection';
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        part_number: state.firstPart.part_number,
+                        part_type: state.firstPart.part_type,
+                        polarization: state.firstPart.polarization,
+                        connected_to: state.secondPart.part_number,
+                        connected_to_type: state.secondPart.part_type,
+                        connected_polarization: state.secondPart.polarization
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `<div class="status-success status-message">✓ ${result.message}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="status-error status-message">❌ ${result.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="status-error status-message">❌ Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

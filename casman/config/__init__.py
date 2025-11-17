@@ -33,8 +33,6 @@ import yaml
 _CONFIG_PATH = os.path.join(Path(__file__).parent.parent.parent, "config.yaml")
 
 
-
-
 # Load configuration on module import (legacy behavior)
 try:
     with open(_CONFIG_PATH, "r", encoding="utf-8") as f:

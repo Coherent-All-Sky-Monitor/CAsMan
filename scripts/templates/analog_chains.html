@@ -6,19 +6,19 @@
   <style>
     @font-face {
       font-family: 'National Park';
-      src: url('/static/fonts/NationalPark-Regular.woff') format('woff');
+      src: url('/visualize/static/fonts/NationalPark-Regular.woff') format('woff');
       font-weight: normal;
       font-style: normal;
     }
     @font-face {
       font-family: 'National Park Bold';
-      src: url('/static/fonts/NationalPark-Bold.woff') format('woff');
+      src: url('/visualize/static/fonts/NationalPark-Bold.woff') format('woff');
       font-weight: bold;
       font-style: normal;
     }
     @font-face {
       font-family: 'National Park ExtraBold';
-      src: url('/static/fonts/NationalPark-ExtraBold.woff') format('woff');
+      src: url('/visualize/static/fonts/NationalPark-ExtraBold.woff') format('woff');
       font-weight: 900;
       font-style: normal;
     }
@@ -133,7 +133,52 @@
       letter-spacing: 0.04em;
     }
     .monospace { font-family: 'Courier New', monospace; }
-    .dark-mode-toggle { margin-left: 20px; cursor: pointer; font-size: 24px; }
+    
+    /* Fixed Toolbar */
+    .fixed-toolbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      border-bottom: 2px solid currentColor;
+      backdrop-filter: blur(10px);
+    }
+    body.light-mode .fixed-toolbar {
+      background: rgba(240, 240, 245, 0.95);
+    }
+    body.dark-mode .fixed-toolbar {
+      background: rgba(51, 51, 51, 0.95);
+    }
+    .toolbar-spacer {
+      height: 70px;
+    }
+    
+    .home-button {
+      padding: 10px 15px;
+      cursor: pointer;
+      border: 2px solid currentColor;
+      background: transparent;
+      text-decoration: none;
+      color: inherit;
+      font-size: 14px;
+      font-family: 'National Park', sans-serif;
+      transition: all 0.2s;
+      border-radius: 8px;
+    }
+    .home-button:hover {
+      background: #333;
+      color: #f0f0f5;
+    }
+    body.dark-mode .home-button:hover {
+      background: #f0f0f5;
+      color: #333;
+    }
+    .dark-mode-toggle { cursor: pointer; font-size: 24px; padding: 10px; }
     .sun { display: none; }
     .moon { display: inline; }
     body.dark-mode .sun { display: inline; }
@@ -232,30 +277,32 @@
   </style>
 </head>
 <body>
-  <div class="centered-container">
-    <div class="toolbar">
-      <h1>CASM Analog Chains</h1>
-      <div class="dark-mode-toggle" onclick="toggleDarkMode()">
-        <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon">
-          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
-        </svg>
-        <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun">
-          <circle cx="12" cy="12" r="5"></circle>
-          <line x1="12" y1="1" x2="12" y2="3"></line>
-          <line x1="12" y1="21" x2="12" y2="23"></line>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-          <line x1="1" y1="12" x2="3" y2="12"></line>
-          <line x1="21" y1="12" x2="23" y2="12"></line>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-        </svg>
-      </div>
+  <div class="fixed-toolbar">
+    <a href="/" class="home-button" title="Home">← Home</a>
+    <div class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle dark/light mode">
+      <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon">
+        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+      </svg>
+      <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
     </div>
+  </div>
+  <div class="toolbar-spacer"></div>
+  <div class="centered-container">
+    <h1>CASM Analog Chains</h1>
     <div class="controls">
       <form method="post" style="display: inline;">
         <label for="part">Select Part:</label>
@@ -277,8 +324,8 @@
             <svg class="connection-svg"></svg>
             <div class="chain-container">
               {% for part in chain %}
-                <div class="box {% if part == selected_part %}selected{% endif %}" data-part-index="{{ loop.index0 }}">
-                  {{ format_display_data(part, connections) | safe }}
+                <div class="box {% if part == selected_part %}selected{% endif %}" data-part-index="{{ loop.index0 }}" {% if part in duplicates %}style="color: red; border-color: red;"{% endif %}>
+                  {{ format_display_data(part, connections, duplicates) | safe }}
                 </div>
               {% endfor %}
             </div>

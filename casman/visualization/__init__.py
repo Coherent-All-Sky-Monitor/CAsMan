@@ -12,7 +12,6 @@ The package focuses on core functionality for assembly visualization.
 from .core import (
     format_ascii_chains,
     get_chain_summary,
-    print_visualization_summary,
     main as cli_main,
 )
 
@@ -20,7 +19,6 @@ __all__ = [
     # Core functions
     "format_ascii_chains",
     "get_chain_summary",
-    "print_visualization_summary",
     "cli_main",
 ]
 

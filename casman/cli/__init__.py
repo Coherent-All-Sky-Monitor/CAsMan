@@ -19,7 +19,7 @@ from .utils import (
 from .visualization_commands import cmd_visualize
 
 # Import functions that tests still expect to be available
-from casman.assembly.data import get_assembly_stats
+
 from casman.barcode import generate_barcode_printpages
 from casman.database.operations import get_parts_by_criteria
 from casman.parts.interactive import add_parts_interactive
@@ -40,7 +40,7 @@ __all__ = [
     # Functions that tests expect
     "add_parts_interactive",
     "get_parts_by_criteria",
-    "get_assembly_stats",
+
     "format_ascii_chains",
     "generate_barcode_printpages",
 ]

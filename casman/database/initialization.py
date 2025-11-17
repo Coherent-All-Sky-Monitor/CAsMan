@@ -120,9 +120,26 @@ def init_assembled_db(db_dir: Optional[str] = None) -> None:
             connected_to TEXT,
             connected_to_type TEXT,
             connected_polarization TEXT,
-            connected_scan_time TEXT
+            connected_scan_time TEXT,
+            connection_status TEXT DEFAULT 'connected'
         )"""
         )
+
+        # Migrate existing databases: add connection_status column if it doesn't exist
+        c.execute("PRAGMA table_info(assembly)")
+        columns = [row[1] for row in c.fetchall()]
+        if 'connection_status' not in columns:
+            c.execute(
+                """ALTER TABLE assembly
+                ADD COLUMN connection_status TEXT DEFAULT 'connected'"""
+            )
+            # Update all existing records to 'connected'
+            c.execute(
+                """UPDATE assembly
+                SET connection_status = 'connected'
+                WHERE connection_status IS NULL"""
+            )
+
         conn.commit()
 
 

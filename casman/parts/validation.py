@@ -17,8 +17,8 @@ def validate_part_number(part_number: str) -> bool:
     """
     Validate a part number format.
 
-    Expected format: {PREFIX}-P{POLARIZATION}-{NUMBER}
-    Example: ANT-P1-00001, LNA-P2-00123, BAC-PV-00001
+    Expected format: {PREFIX}{NUMBER}P{POLARIZATION}
+    Example: ANT00001P1, LNA00123P2, BAC00001P1
 
     Parameters
     ----------
@@ -33,14 +33,22 @@ def validate_part_number(part_number: str) -> bool:
     if not isinstance(part_number, str):
         return False
 
-    # Regular expression for part number format
-    pattern = r'^[A-Z]{2,4}-P[A-Z0-9]+-\d{5}$'
+    # Regular expression for part number format: PREFIX (2-4 letters) + NUMBER
+    # (5 digits) + P + POLARIZATION (1-2 chars)
+    pattern = r'^[A-Z]{2,4}\d{5}P[A-Z0-9]{1,2}$'
 
     if not re.match(pattern, part_number):
         return False
 
     # Extract prefix and check if it's a valid part type
-    prefix = part_number.split('-')[0]
+    # Find where digits start
+    for i, char in enumerate(part_number):
+        if char.isdigit():
+            prefix = part_number[:i]
+            break
+    else:
+        return False
+
     valid_prefixes = [abbrev for _, (_, abbrev) in PART_TYPES.items()]
 
     return prefix in valid_prefixes
@@ -109,11 +117,23 @@ def get_part_info(part_number: str) -> Optional[Dict[str, str]]:
     if not validate_part_number(part_number):
         return None
 
-    # Parse the part number
-    parts = part_number.split('-')
-    prefix = parts[0]
-    polarization_part = parts[1]  # e.g., "P1"
-    number = parts[2]
+    # Parse the part number: {PREFIX}{NUMBER}P{POLARIZATION}
+    # Find where digits start
+    digit_start = 0
+    for i, char in enumerate(part_number):
+        if char.isdigit():
+            digit_start = i
+            break
+
+    prefix = part_number[:digit_start]
+
+    # Find where 'P' appears after the digits
+    p_index = part_number.find('P', digit_start)
+    if p_index == -1:
+        return None
+
+    number = part_number[digit_start:p_index]
+    polarization = part_number[p_index + 1:]  # Everything after 'P'
 
     # Find the full part type name
     part_type = None
@@ -125,7 +145,7 @@ def get_part_info(part_number: str) -> Optional[Dict[str, str]]:
     return {
         'prefix': prefix,
         'part_type': part_type or 'UNKNOWN',
-        'polarization': polarization_part,
+        'polarization': 'P' + polarization,
         'number': number,
         'full_number': part_number
     }
@@ -149,5 +169,7 @@ def normalize_part_number(part_number: str) -> Optional[str]:
     if not part_info:
         return None
 
-    # Ensure consistent formatting
-    return f"{part_info['prefix']}-{part_info['polarization']}-{part_info['number']}"
+    # Ensure consistent formatting: {PREFIX}{NUMBER}P{POLARIZATION}
+    polarization_suffix = part_info['polarization'][1:] if part_info['polarization'].startswith(
+        'P') else part_info['polarization']
+    return f"{part_info['prefix']}{part_info['number']}P{polarization_suffix}"

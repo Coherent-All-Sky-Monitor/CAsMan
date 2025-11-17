@@ -10,6 +10,8 @@ import os
 
 from PIL import Image
 
+from casman.config.core import get_config
+
 
 def arrange_barcodes_in_pdf(directory, output_pdf):
     """
@@ -26,11 +28,14 @@ def arrange_barcodes_in_pdf(directory, output_pdf):
     -------
     None
     """
+    # Get barcode layout settings from config
+    margin = get_config("barcode.margin_pixels", 100)
+    images_per_row = get_config("barcode.images_per_row", 3)
+    max_width = get_config("barcode.max_barcode_width", 600)
+    max_height = get_config("barcode.max_barcode_height", 200)
+    
     # Letter size in inches: 8.5 x 11, convert to pixels (assuming 300 DPI)
     letter_size = (2550, 3300)
-    margin = 100  # Margin in pixels
-    images_per_row = 3
-    max_width, max_height = (600, 200)  # Max dimensions for a barcode
 
     # Get all PNG images from the directory
     image_files = [f for f in os.listdir(directory) if f.endswith(".png")]

@@ -28,8 +28,8 @@ def cmd_barcode() -> None:
     """
     parser = argparse.ArgumentParser(
         description="CAsMan Barcode Generation and Printing Tools\n\n"
-                   "Generate professional barcode labels and printable pages for CASM parts.\n"
-                   "Supports all part types with customizable numbering ranges and formats.",
+        "Generate professional barcode labels and printable pages for CASM parts.\n"
+        "Supports all part types with customizable numbering ranges and formats.",
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument(
@@ -38,10 +38,13 @@ def cmd_barcode() -> None:
         help="Action to perform:\n"
              "  printpages - Generate printable barcode pages for part labeling"
     )
+    # Build part types help text from config
+    from casman.parts.types import load_part_types
+    part_types_list = ", ".join([name for _, (name, _) in sorted(load_part_types().items())])
     parser.add_argument(
         "--part-type",
         required=True,
-        help="Part type for barcode generation (ANTENNA, LNA, COAX1, COAX2, BACBOARD, SNAP)"
+        help=f"Part type for barcode generation ({part_types_list})"
     )
     parser.add_argument(
         "--start-number",

@@ -16,9 +16,9 @@ class TestBarcodeUtils:
         mock_barcode_instance = Mock()
         mock_barcode_get.return_value = mock_barcode_instance
         
-        result = generate_barcode("ANT-P1-00001", "ANTENNA")
+        result = generate_barcode("ANT00001P1", "ANTENNA")
         
-        assert "ANT-P1-00001.png" in result
+        assert "ANT00001P1.png" in result
         mock_barcode_get.assert_called_once()
         mock_barcode_instance.save.assert_called_once()
 
@@ -33,7 +33,7 @@ class TestBarcodeUtils:
 
     def test_validate_part_number_format(self):
         """Test validation of part number formats."""
-        is_valid, _ = validate_part_number_format("ANT-P1-00001")
+        is_valid, _ = validate_part_number_format("ANT00001P1")
         assert is_valid
         is_valid, _ = validate_part_number_format("INVALID")
         assert not is_valid

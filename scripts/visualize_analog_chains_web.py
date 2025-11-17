@@ -93,7 +93,7 @@ def get_all_chains(
 ]:
     """
     Fetch all connection chains from the assembled_casm.db database.
-    
+
     This function builds proper chains with duplicate detection,
     ensuring ANT parts are connected to their LNA chains.
 
@@ -113,39 +113,49 @@ def get_all_chains(
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute(
-        "SELECT part_number, connected_to, scan_time, connected_scan_time "
-        "FROM assembly ORDER BY scan_time"
+        """SELECT a.part_number, a.connected_to, a.scan_time, a.connected_scan_time
+        FROM assembly a
+        INNER JOIN (
+            SELECT part_number, connected_to, MAX(scan_time) as max_time
+            FROM assembly
+            GROUP BY part_number, connected_to
+        ) latest
+        ON a.part_number = latest.part_number
+        AND a.connected_to = latest.connected_to
+        AND a.scan_time = latest.max_time
+        WHERE a.connection_status = 'connected'
+        ORDER BY a.scan_time"""
     )
     records = c.fetchall()
     conn.close()
-    
+
     # Build chains with duplicate detection
     all_chains, connections = build_chains_with_duplicates_web(records)
-    
+
     if selected_part:
         all_chains = [chain for chain in all_chains if any(selected_part in part for part in chain)]
-    
+
     return all_chains, connections
 
 
 def build_chains_with_duplicates_web(records):
     """
     Build chains while detecting and handling duplicates for web interface.
-    
+
     Returns:
-        Tuple[List[List[str]], Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]]]: 
+        Tuple[List[List[str]], Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]]]:
         (chains, connections_dict)
     """
     # Use the same logic as the CLI to build basic chains
     from casman.assembly.chains import build_connection_chains
-    
+
     chains_dict = build_connection_chains()
-    
+
     # Build the connections_dict for display data
     connections_dict = {}
     for part_number, connected_to, scan_time, connected_scan_time in records:
         connections_dict[part_number] = (connected_to, scan_time, connected_scan_time)
-    
+
     if not chains_dict:
         return [], connections_dict
 
@@ -192,14 +202,14 @@ def build_chains_with_duplicates_web(records):
                 for next_part in next_parts:
                     if next_part not in printed_parts:
                         chain_queue.append(chain + [next_part])
-    
+
     return chains, connections_dict
 
 
 def get_duplicate_info() -> Dict[str, List[Tuple[str, str, str]]]:
     """
     Get information about duplicate connections for display.
-    
+
     Returns:
         Dict[str, List[Tuple[str, str, str]]]: Mapping from part to list of (connected_to, scan_time, connected_scan_time)
     """
@@ -209,27 +219,36 @@ def get_duplicate_info() -> Dict[str, List[Tuple[str, str, str]]]:
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     c.execute(
-        "SELECT part_number, connected_to, scan_time, connected_scan_time "
-        "FROM assembly ORDER BY scan_time"
+        """SELECT a.part_number, a.connected_to, a.scan_time, a.connected_scan_time
+        FROM assembly a
+        INNER JOIN (
+            SELECT part_number, connected_to, MAX(scan_time) as max_time
+            FROM assembly
+            GROUP BY part_number, connected_to
+        ) latest
+        ON a.part_number = latest.part_number
+        AND a.connected_to = latest.connected_to
+        AND a.scan_time = latest.max_time
+        WHERE a.connection_status = 'connected'
+        ORDER BY a.scan_time"""
     )
     records = c.fetchall()
     conn.close()
-    
+
     # Group connections by part number to find duplicates
     part_connections: Dict[str, List[Tuple[str, str, str]]] = {}
     for part_number, connected_to, scan_time, connected_scan_time in records:
         if part_number not in part_connections:
             part_connections[part_number] = []
         part_connections[part_number].append((connected_to, scan_time, connected_scan_time))
-    
+
     # Return only parts with duplicates
     duplicates = {}
     for part_number, entries in part_connections.items():
         if len(entries) > 1:
             duplicates[part_number] = entries
-    
-    return duplicates
 
+    return duplicates
 
 
 def format_display_data(
@@ -250,7 +269,7 @@ def format_display_data(
     # Check if this is a duplicate part (has _N suffix)
     is_duplicate = "_" in part and part.split("_")[-1].isdigit()
     base_part = part.split("_")[0] if is_duplicate else part
-    
+
     # Style for duplicate parts (red)
     part_style = "color: red; font-weight: bold;" if is_duplicate else ""
     part_class = "national-park-bold"
@@ -316,7 +335,7 @@ def get_last_update() -> Optional[str]:
 def ensure_app_configured(flask_app: Flask) -> None:
     """
     Ensure the Flask app is properly configured with Jinja globals.
-    
+
     Args:
         flask_app (Flask): The Flask application instance to configure.
     """
@@ -365,4 +384,5 @@ def run_flask_with_free_port(
 
 if __name__ == "__main__":
     app.jinja_env.globals.update(format_display_data=format_display_data)
-    run_flask_with_free_port(app, start_port=5000, max_tries=10)
+    default_port = get_config("visualization.web_port", 5000)
+    run_flask_with_free_port(app, start_port=default_port, max_tries=10)

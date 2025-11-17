@@ -10,26 +10,16 @@ PART_TYPES:
   3: [COAXSHORT, CXS]
   4: [COAXLONG, CXL]
   5: [BACBOARD, BAC]
-  6: [SNAP, SNAP]
+  6: [SNAP, SNP]
 
-# Database configuration (legacy keys maintained for compatibility)
+# Database configuration
 CASMAN_ASSEMBLED_DB: database/assembled_casm.db
 CASMAN_PARTS_DB: database/parts.db
-
-# Enhanced database settings
-database:
-  backup_enabled: true
-  backup_interval_hours: 24
-  max_backups: 7
-  integrity_check_enabled: true
-  connection_timeout: 30.0
 
 # Barcode generation settings
 barcode:
   default_format: code128
   output_directory: barcodes
-  image_format: png
-  pdf_page_size: letter
   images_per_row: 3
   margin_pixels: 100
   max_barcode_width: 600
@@ -38,9 +28,26 @@ barcode:
 # Visualization settings
 visualization:
   web_port: 8080
-  auto_refresh: true
-  theme: default
-  export_formats: [png, svg, pdf]
+
+# Unified web application settings
+web_app:
+  # Development server settings
+  dev:
+    port: 5555
+    host: "0.0.0.0"
+  
+  # Production server settings
+  production:
+    port: 8998
+    host: "0.0.0.0"
+    workers: 4
+    worker_class: "sync"
+  
+  # Interface configuration
+  enable_scanner: true         # Enable scanner interface (for commissioning/repairs)
+  enable_visualization: true   # Enable visualization interface (for viewing chains)
+  # Set enable_scanner=false if you only want the visualization interface
+  # Set enable_visualization=false if you only want the scanner interface
 
 # Logging configuration
 logging:

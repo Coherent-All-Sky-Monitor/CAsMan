@@ -102,8 +102,6 @@ def validate_part_number_format(part_number: str) -> Tuple[bool, Optional[str]]:
     return True, None
 
 
-
-
 def get_barcode_validation_rules() -> dict:
     """
     Get comprehensive barcode validation rules for CAsMan.

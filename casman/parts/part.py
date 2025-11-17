@@ -37,7 +37,7 @@ class Part:
         Parameters
         ----------
         part_number : str
-            The part number (e.g., "ANT-P1-00001")
+            The part number (e.g., "ANT00001P1")
         part_type : Optional[str]
             The part type (e.g., "ANTENNA"). If None, extracted from part_number
         polarization : Optional[str]
@@ -205,7 +205,7 @@ class Part:
         Returns
         -------
         str
-            Barcode filename (e.g., "ANT-P1-00001.png")
+            Barcode filename (e.g., "ANT00001P1.png")
         """
         return f"{self.part_number}.png"
 

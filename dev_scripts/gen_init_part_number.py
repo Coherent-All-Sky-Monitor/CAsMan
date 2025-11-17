@@ -128,7 +128,7 @@ def generate_parts(part_type: int, count: int) -> None:
         return
 
     for i in range(1, count + 1):
-        part_number = f"{prefix}-P{polarization}-{i:05d}"
+        part_number = f"{prefix}{i:05d}P{polarization}"
         part_numbers.append(part_number)
         save_to_db(part_number, type_name)
         generate_barcode(part_number, part_dir)

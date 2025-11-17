@@ -1,0 +1,160 @@
+/* Mono-color CSS - Minimalist monochrome design system */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    color: #000;
+    line-height: 1.6;
+}
+
+/* Typography - Monospace font */
+body,
+input,
+select,
+textarea,
+button {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* Buttons */
+button {
+    border: 2px solid #000;
+    background: #fff;
+    color: #000;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+button:hover {
+    background: #000;
+    color: #fff;
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Input elements */
+input,
+select,
+textarea {
+    border: 2px solid #000;
+    background: #fff;
+    color: #000;
+    padding: 10px;
+    font-size: 14px;
+    width: 100%;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #000;
+    background: #f9f9f9;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 0;
+    font-weight: bold;
+}
+
+h1 {
+    font-size: 2em;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10px;
+}
+
+h2 {
+    font-size: 1.5em;
+    border-bottom: 1px solid #000;
+    padding-bottom: 5px;
+}
+
+h3 {
+    font-size: 1.2em;
+}
+
+/* Links */
+a {
+    color: #000;
+    text-decoration: underline;
+}
+
+a:hover {
+    background: #000;
+    color: #fff;
+}
+
+/* Code blocks */
+code,
+pre {
+    font-family: 'Courier New', Courier, monospace;
+    background: #f5f5f5;
+    border: 1px solid #000;
+    padding: 2px 4px;
+}
+
+pre {
+    padding: 10px;
+    overflow-x: auto;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #000;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background: #000;
+    color: #fff;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+/* Horizontal rule */
+hr {
+    border: none;
+    border-top: 2px solid #000;
+    margin: 20px 0;
+}
+
+/* Lists */
+ul, ol {
+    padding-left: 30px;
+}
+
+li {
+    margin: 5px 0;
+}
+
+/* Blockquote */
+blockquote {
+    border-left: 4px solid #000;
+    margin: 0;
+    padding-left: 20px;
+    font-style: italic;
+}

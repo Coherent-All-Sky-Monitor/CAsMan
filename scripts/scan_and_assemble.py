@@ -116,8 +116,8 @@ def validate_connection_order(from_type: str, to_type: str) -> bool:
     bool
         True if connection is allowed, False otherwise.
     """
-    # Define the allowed connection chain
-    connection_chain = ["ANTENNA", "LNA", "COAX1", "COAX2", "BACBOARD", "SNAP"]
+    # Build the allowed connection chain from PART_TYPES config (ordered by key)
+    connection_chain = [name for _, (name, _) in sorted(PART_TYPES.items())]
 
     try:
         from_index = connection_chain.index(from_type)
@@ -204,8 +204,8 @@ def generate_part_number(
 
         return snap_str
 
-    # Standard format: <prefix>-P<polarization>-<number>
-    return f"{prefix}-P{polarization}-{number:05d}"
+    # Standard format: {PREFIX}{NUMBER}P{POLARIZATION}
+    return f"{prefix}{number:05d}P{polarization}"
 
 
 def main() -> None:
@@ -462,11 +462,14 @@ def main() -> None:
 
         # Validate connection order
         if not validate_connection_order(part_type, next_part_type):
+            # Build dynamic error message from PART_TYPES
+            connection_chain = [name for _, (name, _) in sorted(PART_TYPES.items())]
+            chain_str = " → ".join(connection_chain)
             print(
                 f"Error: Invalid connection order. {part_type} cannot be connected to {next_part_type}."
             )
             print(
-                "Valid connection order: ANTENNA → LNA → COAX1 → COAX2 → BACBOARD → SNAP"
+                f"Valid connection order: {chain_str}"
             )
             continue
 

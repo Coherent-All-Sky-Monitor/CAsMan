@@ -30,24 +30,11 @@ CASMAN_CONFIG_SCHEMA: Dict[str, Any] = {
             "type": "string",
             "description": "Path to the assembled components database file",
         },
-        "database": {
-            "type": "object",
-            "properties": {
-                "backup_enabled": {"type": "boolean"},
-                "backup_interval_hours": {"type": "number", "minimum": 1},
-                "max_backups": {"type": "integer", "minimum": 1},
-                "integrity_check_enabled": {"type": "boolean"},
-                "connection_timeout": {"type": "number", "minimum": 0},
-            },
-            "additionalProperties": True,
-        },
         "barcode": {
             "type": "object",
             "properties": {
                 "default_format": {"type": "string"},
                 "output_directory": {"type": "string"},
-                "image_format": {"type": "string"},
-                "pdf_page_size": {"type": "string"},
                 "images_per_row": {"type": "integer", "minimum": 1},
                 "margin_pixels": {"type": "integer", "minimum": 0},
                 "max_barcode_width": {"type": "integer", "minimum": 1},
@@ -59,9 +46,6 @@ CASMAN_CONFIG_SCHEMA: Dict[str, Any] = {
             "type": "object",
             "properties": {
                 "web_port": {"type": "integer", "minimum": 1024, "maximum": 65535},
-                "auto_refresh": {"type": "boolean"},
-                "theme": {"type": "string"},
-                "export_formats": {"type": "array", "items": {"type": "string"}},
             },
             "additionalProperties": True,
         },
@@ -140,18 +124,9 @@ class ConfigSchema:
             },
             "CASMAN_PARTS_DB": "database/parts.db",
             "CASMAN_ASSEMBLED_DB": "database/assembled_casm.db",
-            "database": {
-                "backup_enabled": True,
-                "backup_interval_hours": 24,
-                "max_backups": 7,
-                "integrity_check_enabled": True,
-                "connection_timeout": 30.0,
-            },
             "barcode": {
                 "default_format": "code128",
                 "output_directory": "barcodes",
-                "image_format": "png",
-                "pdf_page_size": "letter",
                 "images_per_row": 3,
                 "margin_pixels": 100,
                 "max_barcode_width": 600,
@@ -159,9 +134,6 @@ class ConfigSchema:
             },
             "visualization": {
                 "web_port": 8080,
-                "auto_refresh": True,
-                "theme": "default",
-                "export_formats": ["png", "svg", "pdf"],
             },
             "logging": {
                 "level": "INFO",

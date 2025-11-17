@@ -28,8 +28,8 @@ def get_all_parts(db_dir: Optional[str] = None) -> List[str]:
     conn = sqlite3.connect(get_database_path("assembled_casm.db", db_dir))
     c = conn.cursor()
     c.execute(
-        "SELECT DISTINCT part_number FROM assembly UNION "
-        "SELECT DISTINCT connected_to FROM assembly"
+        "SELECT DISTINCT part_number FROM assembly WHERE connection_status = 'connected' UNION "
+        "SELECT DISTINCT connected_to FROM assembly WHERE connection_status = 'connected'"
     )
     parts = [row[0] for row in c.fetchall() if row[0]]
     conn.close()
@@ -55,10 +55,9 @@ def get_last_update(db_dir: Optional[str] = None) -> Optional[str]:
 
     c.execute(
         "SELECT MAX(latest_time) FROM ("
-        "SELECT scan_time AS latest_time FROM assembly "
+        "SELECT scan_time AS latest_time FROM assembly WHERE connection_status = 'connected' "
         "UNION ALL "
-        "SELECT connected_scan_time AS latest_time FROM assembly)"
-    )
+        "SELECT connected_scan_time AS latest_time FROM assembly WHERE connection_status = 'connected')")
     result = c.fetchone()
     last_update = result[0] if result else None
     conn.close()
@@ -87,7 +86,7 @@ def get_assembly_records(
     c = conn.cursor()
     c.execute(
         "SELECT part_number, connected_to, scan_time, connected_scan_time "
-        "FROM assembly"
+        "FROM assembly WHERE connection_status = 'connected'"
     )
     records = c.fetchall()
     conn.close()

@@ -1,4 +1,7 @@
 # CAsMan Package
 
-# Flask is only used by the standalone scripts/visualize_analog_chains_web.py
+# Flask web framework for web interfaces
 flask>=2.0.0
+
+# Gunicorn for production WSGI server (optional)
+gunicorn>=21.0.0

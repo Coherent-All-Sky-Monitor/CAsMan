@@ -7,7 +7,7 @@ and configuration merging.
 
 import os
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 
 def resolve_config_path(path: Union[str, Path]) -> Path:
@@ -236,6 +236,67 @@ def validate_config_paths(config: Dict[str, Any]) -> Dict[str, bool]:
             results[key] = False
 
     return results
+
+
+def setup_logging(config: Optional[Dict[str, Any]] = None) -> None:
+    """Setup logging configuration from config.
+
+    Parameters
+    ----------
+    config : Dict[str, Any], optional
+        Configuration dictionary. If not provided, loads from default config.
+    """
+    import logging
+    import logging.handlers
+
+    if config is None:
+        from casman.config.core import get_config as load_config
+        level_str = load_config("logging.level", "INFO")
+        log_format = load_config("logging.format",
+                                 "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        file_path = load_config("logging.file_path", None)
+        max_file_size_mb = load_config("logging.max_file_size_mb", 10)
+        backup_count = load_config("logging.backup_count", 5)
+    else:
+        logging_config = config.get("logging", {})
+        level_str = logging_config.get("level", "INFO")
+        log_format = logging_config.get(
+            "format", "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        file_path = logging_config.get("file_path", None)
+        max_file_size_mb = logging_config.get("max_file_size_mb", 10)
+        backup_count = logging_config.get("backup_count", 5)
+
+    # Convert level string to logging constant
+    level = getattr(logging, level_str.upper(), logging.INFO)
+
+    # Setup handlers
+    handlers: list = []
+
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(logging.Formatter(log_format))
+    handlers.append(console_handler)
+
+    # File handler with rotation if file_path specified
+    if file_path:
+        log_path = Path(file_path)
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+
+        file_handler = logging.handlers.RotatingFileHandler(
+            file_path,
+            maxBytes=max_file_size_mb * 1024 * 1024,
+            backupCount=backup_count
+        )
+        file_handler.setFormatter(logging.Formatter(log_format))
+        handlers.append(file_handler)
+
+    # Configure root logger
+    logging.basicConfig(
+        level=level,
+        format=log_format,
+        handlers=handlers,
+        force=True  # Override any existing configuration
+    )
 
 
 def create_config_directories(config: Dict[str, Any]) -> None:
