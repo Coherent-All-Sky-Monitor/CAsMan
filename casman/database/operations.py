@@ -57,7 +57,8 @@ def get_last_update(db_dir: Optional[str] = None) -> Optional[str]:
         "SELECT MAX(latest_time) FROM ("
         "SELECT scan_time AS latest_time FROM assembly WHERE connection_status = 'connected' "
         "UNION ALL "
-        "SELECT connected_scan_time AS latest_time FROM assembly WHERE connection_status = 'connected')")
+        "SELECT connected_scan_time AS latest_time FROM assembly WHERE connection_status = 'connected')"
+    )
     result = c.fetchone()
     last_update = result[0] if result else None
     conn.close()

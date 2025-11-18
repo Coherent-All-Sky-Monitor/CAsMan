@@ -28,8 +28,9 @@ for i, part_type in enumerate(VALID_CONNECTION_CHAIN):
         VALID_NEXT_CONNECTIONS[part_type] = []  # Terminal - no outgoing connections
 
 
-def validate_connection_rules(first_part: str, first_type: str,
-                              connected_part: str, connected_type: str) -> tuple[bool, str]:
+def validate_connection_rules(
+    first_part: str, first_type: str, connected_part: str, connected_type: str
+) -> tuple[bool, str]:
     """
     Validate that the connection follows the defined chain rules.
 
@@ -45,12 +46,17 @@ def validate_connection_rules(first_part: str, first_type: str,
     # Check if the connection sequence is valid
     valid_next = VALID_NEXT_CONNECTIONS.get(first_type, [])
     if connected_type not in valid_next:
-        return False, f"'{first_type}' can only connect to {', '.join(valid_next) if valid_next else 'no other parts'}, not '{connected_type}'"
+        return (
+            False,
+            f"'{first_type}' can only connect to {', '.join(valid_next) if valid_next else 'no other parts'}, not '{connected_type}'",
+        )
 
     return True, ""
 
 
-def validate_chain_directionality(part_type: str, connection_direction: str) -> tuple[bool, str]:
+def validate_chain_directionality(
+    part_type: str, connection_direction: str
+) -> tuple[bool, str]:
     """
     Validate that parts follow proper chain directionality rules.
 
@@ -63,11 +69,17 @@ def validate_chain_directionality(part_type: str, connection_direction: str) -> 
     """
     # First part type (ANTENNA) can only have outgoing connections
     if part_type == "ANTENNA" and connection_direction == "incoming":
-        return False, "ANTENNA parts can only make outgoing connections. They cannot receive incoming connections."
+        return (
+            False,
+            "ANTENNA parts can only make outgoing connections. They cannot receive incoming connections.",
+        )
 
     # Final part type (SNAP) can only have incoming connections
     if part_type == "SNAP" and connection_direction == "outgoing":
-        return False, "SNAP parts can only receive incoming connections. They cannot make outgoing connections."
+        return (
+            False,
+            "SNAP parts can only receive incoming connections. They cannot make outgoing connections.",
+        )
 
     return True, ""
 
@@ -93,14 +105,14 @@ def check_existing_connections(part_number: str) -> tuple[bool, str, list]:
         # Check outgoing connections (this part connects to others)
         c.execute(
             "SELECT connected_to, connected_to_type FROM assembly WHERE part_number = ? AND connection_status = 'connected'",
-            (part_number,)
+            (part_number,),
         )
         outgoing_connections = c.fetchall()
 
         # Check incoming connections (other parts connect to this part)
         c.execute(
             "SELECT part_number, part_type FROM assembly WHERE connected_to = ? AND connection_status = 'connected'",
-            (part_number,)
+            (part_number,),
         )
         incoming_connections = c.fetchall()
 
@@ -112,12 +124,20 @@ def check_existing_connections(part_number: str) -> tuple[bool, str, list]:
 
         if outgoing_connections:
             existing_target = outgoing_connections[0][0]
-            return False, f"Part {part_number} already connects to {existing_target}. Remove existing connection first.", outgoing_connections
+            return (
+                False,
+                f"Part {part_number} already connects to {existing_target}. Remove existing connection first.",
+                outgoing_connections,
+            )
 
         # ALL parts (including SNAP) can only have one incoming connection
         if incoming_connections:
             existing_source = incoming_connections[0][0]
-            return False, f"Part {part_number} already has an incoming connection from {existing_source}. Each part can only have one input.", incoming_connections
+            return (
+                False,
+                f"Part {part_number} already has an incoming connection from {existing_source}. Each part can only have one input.",
+                incoming_connections,
+            )
 
         return True, "", []
 
@@ -146,8 +166,7 @@ def check_target_connections(connected_part: str) -> tuple[bool, str]:
 
         # Check how many parts already connect to this target
         c.execute(
-            "SELECT part_number FROM assembly WHERE connected_to = ?",
-            (connected_part,)
+            "SELECT part_number FROM assembly WHERE connected_to = ?", (connected_part,)
         )
         incoming_parts = c.fetchall()
         conn.close()
@@ -155,7 +174,10 @@ def check_target_connections(connected_part: str) -> tuple[bool, str]:
         # ALL parts (including SNAP) can only have one incoming connection
         if incoming_parts:
             existing_source = incoming_parts[0][0]
-            return False, f"Part {connected_part} already has an incoming connection from {existing_source}. Each part can only have one input."
+            return (
+                False,
+                f"Part {connected_part} already has an incoming connection from {existing_source}. Each part can only have one input.",
+            )
 
         return True, ""
 
@@ -188,7 +210,7 @@ def validate_part_in_database(part_number: str) -> tuple[bool, str, str]:
         c = conn.cursor()
         c.execute(
             "SELECT part_type, polarization FROM parts WHERE part_number = ?",
-            (part_number,)
+            (part_number,),
         )
         result = c.fetchone()
         conn.close()
@@ -205,38 +227,26 @@ def validate_part_in_database(part_number: str) -> tuple[bool, str, str]:
 
 def validate_snap_part(part_number: str) -> tuple[bool, str, str]:
     """
-    Validate a SNAP part against the snap_feng_map.yaml file.
+    Validate a SNAP part format (SNAP<crate><slot><port>).
 
     Args:
-        part_number (str): The SNAP part number to validate (e.g., SNAP002_ADC02)
+        part_number (str): The SNAP part number to validate (e.g., SNAP1A00)
 
     Returns:
         tuple[bool, str, str]: (is_valid, part_type, polarization)
     """
     try:
-        import yaml
-        import os
+        import re
 
-        # Load the SNAP to FENG mapping
-        snap_map_path = get_config("CASMAN_SNAP_MAP", "database/snap_feng_map.yaml")
-        if snap_map_path is None:
-            snap_map_path = "database/snap_feng_map.yaml"
+        # Format: SNAP<crate 1-4><slot A-K><port 00-11>
+        pattern = r"^SNAP[1-4][A-K](0[0-9]|1[01])$"
 
-        if not os.path.exists(snap_map_path):
-            logger.error("SNAP mapping file not found: %s", snap_map_path)
-            return False, "", ""
-
-        with open(snap_map_path, "r", encoding="utf-8") as f:
-            snap_map = yaml.safe_load(f)
-
-        # Check if the SNAP part exists in the mapping
-        if part_number in snap_map:
-            # SNAP part is valid if it exists in the mapping
+        if re.match(pattern, part_number):
             return True, "SNAP", "N/A"  # SNAP parts don't have traditional polarization
         else:
             return False, "", ""
 
-    except (yaml.YAMLError, OSError, IOError) as e:
+    except Exception as e:
         logger.error("Error validating SNAP part %s: %s", part_number, e)
         return False, "", ""
 
@@ -284,10 +294,14 @@ def scan_and_assemble_interactive() -> None:
                 continue
 
             # Validate first part in database
-            is_valid_first, first_type, first_polarization = validate_part_in_database(first_part)
+            is_valid_first, first_type, first_polarization = validate_part_in_database(
+                first_part
+            )
             if not is_valid_first:
                 if first_part.startswith("SNAP") and "_ADC" in first_part:
-                    print(f"❌ Error: SNAP part '{first_part}' not found in snap_feng_map.yaml.")
+                    print(
+                        f"❌ Error: SNAP part '{first_part}' not found in snap_feng_map.yaml."
+                    )
                 else:
                     print(f"❌ Error: Part '{first_part}' not found in parts database.")
                 print("Please check the part number and try again.")
@@ -295,45 +309,120 @@ def scan_and_assemble_interactive() -> None:
 
             print(f"✅ Valid part: {first_part} ({first_type}, {first_polarization})")
 
-            # Get connected part
-            connected_part = input("Scan connected part: ").strip()
-            if connected_part.lower() == "quit":
-                print("Goodbye!")
-                break
+            # Special handling for BACBOARD -> SNAP connection
+            if first_type == "BACBOARD":
+                print(
+                    "This is the last part in the sequence (SNAP). It must be connected to a SNAP board."
+                )
+                print("Enter SNAP/FENG connection details:")
 
-            if not connected_part:
-                print("Please enter a connected part number.")
-                continue
+                # Get crate number
+                while True:
+                    try:
+                        crate_input = input("Enter crate number (1-4): ").strip()
+                        if crate_input.lower() == "quit":
+                            print("Goodbye!")
+                            break
+                        crate = int(crate_input)
+                        if 1 <= crate <= 4:
+                            break
+                        else:
+                            print("❌ Crate must be between 1 and 4")
+                    except ValueError:
+                        print("❌ Please enter a valid number")
 
-            # Validate connected part in database
-            is_valid_connected, connected_type, connected_polarization = validate_part_in_database(
-                connected_part)
-            if not is_valid_connected:
-                if connected_part.startswith("SNAP") and "_ADC" in connected_part:
-                    print(f"❌ Error: SNAP part '{connected_part}' not found in snap_feng_map.yaml.")
-                else:
-                    print(f"❌ Error: Part '{connected_part}' not found in parts database.")
-                print("Please check the part number and try again.")
-                continue
+                if crate_input.lower() == "quit":
+                    break
 
-            print(f"✅ Valid part: {connected_part} ({connected_type}, {connected_polarization})")
+                # Get SNAP slot (A-K)
+                while True:
+                    slot = input("Enter SNAP slot (A-K): ").strip().upper()
+                    if slot.lower() == "quit":
+                        print("Goodbye!")
+                        break
+                    if slot in ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"]:
+                        break
+                    else:
+                        print("❌ Slot must be A through K")
+
+                if slot.lower() == "quit":
+                    break
+
+                # Get SNAP port (0-11)
+                while True:
+                    try:
+                        port_input = input("Enter SNAP port (0-11): ").strip()
+                        if port_input.lower() == "quit":
+                            print("Goodbye!")
+                            break
+                        port = int(port_input)
+                        if 0 <= port <= 11:
+                            break
+                        else:
+                            print("❌ Port must be between 0 and 11")
+                    except ValueError:
+                        print("❌ Please enter a valid number")
+
+                if port_input.lower() == "quit":
+                    break
+
+                # Format SNAP part number: SNAP<crate><slot><port>
+                connected_part = f"SNAP{crate}{slot}{str(port).zfill(2)}"
+                connected_type = "SNAP"
+                connected_polarization = "N/A"
+
+                print(f"✅ SNAP part formatted: {connected_part}")
+
+            else:
+                # Normal part scanning for non-BACBOARD parts
+                connected_part = input("Scan connected part: ").strip()
+                if connected_part.lower() == "quit":
+                    print("Goodbye!")
+                    break
+
+                if not connected_part:
+                    print("Please enter a connected part number.")
+                    continue
+
+                # Validate connected part in database
+                is_valid_connected, connected_type, connected_polarization = (
+                    validate_part_in_database(connected_part)
+                )
+                if not is_valid_connected:
+                    if connected_part.startswith("SNAP") and "_ADC" in connected_part:
+                        print(
+                            f"❌ Error: SNAP part '{connected_part}' not found in snap_feng_map.yaml."
+                        )
+                    else:
+                        print(
+                            f"❌ Error: Part '{connected_part}' not found in parts database."
+                        )
+                    print("Please check the part number and try again.")
+                    continue
+
+                print(
+                    f"✅ Valid part: {connected_part} ({connected_type}, {connected_polarization})"
+                )
 
             # Validate connection rules
             is_valid_rules, rules_error = validate_connection_rules(
-                first_part, first_type, connected_part, connected_type)
+                first_part, first_type, connected_part, connected_type
+            )
             if not is_valid_rules:
                 print(f"❌ Error: {rules_error}")
                 continue
 
             # Validate chain directionality (first/final part restrictions)
             is_valid_outgoing, outgoing_error = validate_chain_directionality(
-                first_type, "outgoing")
+                first_type, "outgoing"
+            )
             if not is_valid_outgoing:
                 print(f"❌ Error: {outgoing_error}")
                 continue
 
             is_valid_incoming, incoming_error = validate_chain_directionality(
-                connected_type, "incoming")
+                connected_type, "incoming"
+            )
             if not is_valid_incoming:
                 print(f"❌ Error: {incoming_error}")
                 continue
@@ -341,13 +430,15 @@ def scan_and_assemble_interactive() -> None:
             # Check for existing connections to prevent duplicates/branches
             if not check_existing_connections(first_part):
                 print(
-                    f"❌ Error: Part '{first_part}' already has an outgoing connection. Cannot create multiple connections.")
+                    f"❌ Error: Part '{first_part}' already has an outgoing connection. Cannot create multiple connections."
+                )
                 continue
 
             # Check target connections (all parts can only have one incoming connection)
             if not check_target_connections(connected_part):
                 print(
-                    f"❌ Error: Part '{connected_part}' already has an incoming connection. Cannot create multiple connections.")
+                    f"❌ Error: Part '{connected_part}' already has an incoming connection. Cannot create multiple connections."
+                )
                 continue
 
             # Record the connection to the database
@@ -437,10 +528,14 @@ def scan_and_disassemble_interactive() -> None:
                 continue
 
             # Validate first part in database
-            is_valid_first, first_type, first_polarization = validate_part_in_database(first_part)
+            is_valid_first, first_type, first_polarization = validate_part_in_database(
+                first_part
+            )
             if not is_valid_first:
                 if first_part.startswith("SNAP") and "_ADC" in first_part:
-                    print(f"❌ Error: SNAP part '{first_part}' not found in snap_feng_map.yaml.")
+                    print(
+                        f"❌ Error: SNAP part '{first_part}' not found in snap_feng_map.yaml."
+                    )
                 else:
                     print(f"❌ Error: Part '{first_part}' not found in parts database.")
                 print("Please check the part number and try again.")
@@ -450,7 +545,9 @@ def scan_and_disassemble_interactive() -> None:
 
             # Check for existing connections
             try:
-                db_path = get_config("CASMAN_ASSEMBLED_DB", "database/assembled_casm.db")
+                db_path = get_config(
+                    "CASMAN_ASSEMBLED_DB", "database/assembled_casm.db"
+                )
                 if db_path is None:
                     raise ValueError("Database path for assembled_casm.db is not set.")
 
@@ -474,39 +571,47 @@ def scan_and_disassemble_interactive() -> None:
                        WHERE a.connection_status = 'connected'
                        AND (a.part_number = ? OR a.connected_to = ?)
                        ORDER BY a.scan_time DESC""",
-                    (first_part, first_part, first_part, first_part)
+                    (first_part, first_part, first_part, first_part),
                 )
                 connections = c.fetchall()
                 conn.close()
 
                 if not connections:
-                    print(f"❌ Error: Part '{first_part}' is not connected to anything.")
+                    print(
+                        f"❌ Error: Part '{first_part}' is not connected to anything."
+                    )
                     print("Cannot disconnect a part that has no connections.")
                     continue
 
                 # Display connections and let user choose
                 print(f"\n📋 Found {len(connections)} connection(s) for {first_part}:")
                 print("-" * 60)
-                for idx, (part_num, connected, conn_type, scan_time) in enumerate(connections, 1):
+                for idx, (part_num, connected, conn_type, scan_time) in enumerate(
+                    connections, 1
+                ):
                     if part_num == first_part:
                         print(
-                            f"{idx}. {part_num} --> {connected} ({conn_type}) [Scanned: {scan_time}]")
+                            f"{idx}. {part_num} --> {connected} ({conn_type}) [Scanned: {scan_time}]"
+                        )
                     else:
                         print(
-                            f"{idx}. {part_num} --> {connected} ({conn_type}) [Scanned: {scan_time}]")
+                            f"{idx}. {part_num} --> {connected} ({conn_type}) [Scanned: {scan_time}]"
+                        )
                 print("-" * 60)
 
                 try:
                     choice = input(
-                        f"Select connection to disconnect (1-{len(connections)}) or 'quit': ").strip()
-                    if choice.lower() == 'quit':
+                        f"Select connection to disconnect (1-{len(connections)}) or 'quit': "
+                    ).strip()
+                    if choice.lower() == "quit":
                         print("Goodbye!")
                         break
 
                     choice_idx = int(choice) - 1
                     if not (0 <= choice_idx < len(connections)):
                         print(
-                            f"❌ Invalid selection. Please enter a number between 1 and {len(connections)}.")
+                            f"❌ Invalid selection. Please enter a number between 1 and {len(connections)}."
+                        )
                         continue
 
                 except ValueError:
@@ -531,12 +636,15 @@ def scan_and_disassemble_interactive() -> None:
                     if part_details[0]:
                         disconnected_type = part_details[1]
                     else:
-                        print(f"❌ Error: Could not validate source part '{disconnected_part}'")
+                        print(
+                            f"❌ Error: Could not validate source part '{disconnected_part}'"
+                        )
                         continue
 
                 # Get disconnected part details including polarization
-                is_valid_disconnected, disconnected_type, disconnected_polarization = validate_part_in_database(
-                    disconnected_part)
+                is_valid_disconnected, disconnected_type, disconnected_polarization = (
+                    validate_part_in_database(disconnected_part)
+                )
                 if not is_valid_disconnected:
                     print(f"❌ Error: Could not validate part '{disconnected_part}'")
                     continue
@@ -568,7 +676,9 @@ def scan_and_disassemble_interactive() -> None:
                 )
 
                 if success:
-                    print(f"✅ Disconnection recorded: {first_part} -X-> {disconnected_part}")
+                    print(
+                        f"✅ Disconnection recorded: {first_part} -X-> {disconnected_part}"
+                    )
                 else:
                     print("❌ Failed to record disconnection to database")
                 print()

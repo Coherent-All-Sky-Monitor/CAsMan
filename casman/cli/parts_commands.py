@@ -31,25 +31,33 @@ def cmd_parts() -> None:
         description="CAsMan Parts Database Management\n\n"
         "Comprehensive part management including listing, adding, and filtering.\n"
         "Supports all CASM part types with validation and database integration.",
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
-        "action", choices=[
-            "list", "add"], help="Action to perform:\n"
+        "action",
+        choices=["list", "add"],
+        help="Action to perform:\n"
         "  list - Display parts from database with optional filtering\n"
-        "  add  - Interactive part addition with validation (supports single type or ALL types)")
+        "  add  - Interactive part addition with validation (supports single type or ALL types)",
+    )
     # Build part types help text from config
     from casman.parts.types import load_part_types
-    part_types_list = ", ".join([name for _, (name, _) in sorted(load_part_types().items())])
+
+    part_types_list = ", ".join(
+        [name for _, (name, _) in sorted(load_part_types().items())]
+    )
     parser.add_argument("--type", help=f"Filter parts by type ({part_types_list})")
-    parser.add_argument("--polarization", help="Filter parts by polarization (e.g., 1, 2)")
+    parser.add_argument(
+        "--polarization", help="Filter parts by polarization (e.g., 1, 2)"
+    )
     parser.add_argument(
         "--all",
         action="store_true",
-        help="Print all parts in the database (ignores filters)")
+        help="Print all parts in the database (ignores filters)",
+    )
 
     # Check if help is requested or no arguments provided
-    if len(sys.argv) <= 2 or (len(sys.argv) == 3 and sys.argv[2] in ['-h', '--help']):
+    if len(sys.argv) <= 2 or (len(sys.argv) == 3 and sys.argv[2] in ["-h", "--help"]):
         parser.print_help()
         return
 
@@ -67,17 +75,28 @@ def cmd_parts() -> None:
                     "Part Type",
                     "Polarization",
                     "Date Created",
-                    "Date Modified"]
-                col_widths = [max(len(str(row[i])) for row in parts + [headers]) for i in range(6)]
-                table_width = sum(col_widths) + 5 * 3 + 2  # 3 spaces between columns, 2 for borders
+                    "Date Modified",
+                ]
+                col_widths = [
+                    max(len(str(row[i])) for row in parts + [headers]) for i in range(6)
+                ]
+                table_width = (
+                    sum(col_widths) + 5 * 3 + 2
+                )  # 3 spaces between columns, 2 for borders
                 term_width = shutil.get_terminal_size((80, 20)).columns
                 if table_width <= term_width:
                     # Enhanced ASCII table
                     sep = "+" + "+".join(["-" * (w + 2) for w in col_widths]) + "+"
 
                     def row_line(row):
-                        return "| " + " | ".join(f"{str(cell):<{w}}" for cell,
-                                                 w in zip(row, col_widths)) + " |"
+                        return (
+                            "| "
+                            + " | ".join(
+                                f"{str(cell):<{w}}" for cell, w in zip(row, col_widths)
+                            )
+                            + " |"
+                        )
+
                     print(sep)
                     print(row_line(headers))
                     print(sep)

@@ -33,8 +33,10 @@ def cmd_visualize() -> None:
         epilog="""
 Examples:
   casman visualize chains              # Show ASCII chains with duplicate detection
-  casman visualize web                 # Launch web-based visualization interface
-  casman visualize web --port 8080     # Launch web interface on specific port
+
+For web-based visualization, use:
+  casman web --visualize-only          # Launch web visualization interface
+  casman web --visualize-only --port 8080  # Custom port
         """,
     )
 
@@ -43,20 +45,8 @@ Examples:
     # Enhanced chains command
     subparsers.add_parser(
         "chains",
-        help="Display ASCII visualization of assembly chains with duplicate detection")
-
-    # Web visualization command
-    web_parser = subparsers.add_parser("web", help="Launch web-based visualization interface")
-    web_parser.add_argument(
-        "--port",
-        type=int,
-        default=5000,
-        help="Port to run web server on (default: 5000)")
-    web_parser.add_argument(
-        "--max-tries",
-        type=int,
-        default=10,
-        help="Maximum number of ports to try if default is busy (default: 10)")
+        help="Display ASCII visualization of assembly chains with duplicate detection",
+    )
 
     # Parse arguments
     if len(sys.argv) < 3:
@@ -64,7 +54,7 @@ Examples:
         return
 
     # Check if help is requested or no arguments provided
-    if len(sys.argv) <= 2 or (len(sys.argv) == 3 and sys.argv[2] in ['-h', '--help']):
+    if len(sys.argv) <= 2 or (len(sys.argv) == 3 and sys.argv[2] in ["-h", "--help"]):
         parser.print_help()
         return
 
@@ -81,8 +71,6 @@ Examples:
 
         if args.action == "chains":
             cmd_visualize_chains()
-        elif args.action == "web":
-            cmd_visualize_web(args)
         else:
             parser.print_help()
 
@@ -102,43 +90,3 @@ def cmd_visualize_chains() -> None:
         print(format_ascii_chains())
     except ImportError:
         print("Visualization functionality not available")
-
-
-def cmd_visualize_web(args) -> None:
-    """Launch web-based visualization interface."""
-    import os
-    import subprocess
-
-    try:
-        # Get path to web_app.py script
-        script_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        web_app_script = os.path.join(script_dir, "scripts", "web_app.py")
-
-        if not os.path.exists(web_app_script):
-            print(f"❌ Error: Web app script not found at {web_app_script}")
-            sys.exit(1)
-
-        print("📊 Starting CAsMan Web Visualization")
-        print("=" * 50)
-        print(f"📱 Server running at: http://localhost:{args.port}")
-        print("🌐 Access from other devices: http://<your-ip>:" + str(args.port))
-        print("⚠️  Press Ctrl+C to stop the server")
-        print("=" * 50)
-        print()
-
-        # Build command for visualization-only mode
-        cmd = [
-            sys.executable,
-            web_app_script,
-            "--mode", "dev",
-            "--host", "0.0.0.0",
-            "--port", str(args.port),
-            "--visualize-only"
-        ]
-        subprocess.run(cmd, check=False)
-    except KeyboardInterrupt:
-        print("\n\n⚠️  Visualization stopped by user")
-        sys.exit(0)
-    except (OSError, subprocess.SubprocessError) as e:
-        print(f"\n❌ Error: {e}")
-        sys.exit(1)

@@ -3,5 +3,8 @@
 # Flask web framework for web interfaces
 flask>=2.0.0
 
+# Flask-CORS for mobile browser access
+flask-cors>=3.0.0
+
 # Gunicorn for production WSGI server (optional)
 gunicorn>=21.0.0

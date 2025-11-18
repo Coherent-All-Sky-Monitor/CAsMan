@@ -5,7 +5,7 @@ This module provides functions for creating printable barcode layouts,
 optimizing page arrangements, and generating print-ready documents.
 """
 
-from typing import List, Tuple
+from typing import Tuple
 
 from .generation import generate_barcode_range
 from .operations import arrange_barcodes_in_pdf
@@ -81,7 +81,7 @@ def create_printable_pages(
 
 def optimize_page_layout(
     num_barcodes: int,
-    page_size: Tuple[int, int] = (8.5, 11),
+    page_size: Tuple[float, float] = (8.5, 11.0),
     barcode_size: Tuple[float, float] = (2.0, 0.7),
 ) -> Tuple[int, int]:
     """
@@ -118,7 +118,7 @@ def optimize_page_layout(
 
     # Find optimal layout that minimizes wasted space
     best_layout = (1, 1)
-    best_efficiency = 0
+    best_efficiency = 0.0
 
     for cols in range(1, max_columns + 1):
         for rows in range(1, max_rows + 1):
@@ -208,7 +208,9 @@ def main() -> None:
     print("=" * 30)
 
     try:
-        part_type = input("Enter part type (ANTENNA, LNA, BACBOARD, etc.): ").strip().upper()
+        part_type = (
+            input("Enter part type (ANTENNA, LNA, BACBOARD, etc.): ").strip().upper()
+        )
         if not part_type:
             print("Part type is required.")
             return
@@ -228,7 +230,7 @@ def main() -> None:
             print("\nOperation cancelled.")
         else:
             print(f"Error: {e}")
-    except Exception as e:
+    except (OSError, RuntimeError) as e:
         print(f"Unexpected error: {e}")
 
 

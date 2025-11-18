@@ -45,13 +45,11 @@ def cmd_database() -> None:
         "- Validation and error handling\n"
         "- Database existence checks",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        prog="casman database"
+        prog="casman database",
     )
 
     subparsers = parser.add_subparsers(
-        dest="subcommand",
-        help="Database operation to perform",
-        metavar="SUBCOMMAND"
+        dest="subcommand", help="Database operation to perform", metavar="SUBCOMMAND"
     )
 
     # Clear database subcommand
@@ -69,17 +67,15 @@ def cmd_database() -> None:
         "  casman database clear              # Clear both databases\n"
         "  casman database clear --parts      # Clear only parts.db\n"
         "  casman database clear --assembled  # Clear only assembled_casm.db",
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     clear_parser.add_argument(
-        "--parts",
-        action="store_true",
-        help="Clear only the parts database (parts.db)"
+        "--parts", action="store_true", help="Clear only the parts database (parts.db)"
     )
     clear_parser.add_argument(
         "--assembled",
         action="store_true",
-        help="Clear only the assembly database (assembled_casm.db)"
+        help="Clear only the assembly database (assembled_casm.db)",
     )
 
     # Print database subcommand
@@ -100,7 +96,8 @@ def cmd_database() -> None:
         "- Displays connection chains and timestamps\n"
         "- Handles NULL values gracefully\n"
         "- Provides empty table notifications",
-        formatter_class=argparse.RawDescriptionHelpFormatter)
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
 
     argcomplete.autocomplete(parser)
 
@@ -118,14 +115,14 @@ def cmd_database() -> None:
         clear_args = []
         if "clear" in args_to_parse:
             clear_index = args_to_parse.index("clear")
-            clear_args = args_to_parse[clear_index + 1:]  # Everything after "clear"
+            clear_args = args_to_parse[clear_index + 1 :]  # Everything after "clear"
         cmd_database_clear(clear_parser, clear_args)
     elif args.subcommand == "print":
         # Reconstruct arguments for the print subcommand
         print_args = []
         if "print" in args_to_parse:
             print_index = args_to_parse.index("print")
-            print_args = args_to_parse[print_index + 1:]  # Everything after "print"
+            print_args = args_to_parse[print_index + 1 :]  # Everything after "print"
         cmd_database_print(print_parser, print_args)
     else:
         parser.print_help()
@@ -171,10 +168,6 @@ def cmd_database_clear(parser: argparse.ArgumentParser, remaining_args: list) ->
             "                ████████████████████████████                \n"
             "                 ██████████████████████████             \n"
             "                  ████████████████████████             \n"
-
-
-
-
             "\x1b[0m"
         )
         print(stop_sign)
@@ -186,14 +179,22 @@ def cmd_database_clear(parser: argparse.ArgumentParser, remaining_args: list) ->
             print(f"Parts database not found at {db_path}. Nothing to clear.")
             return
         print_stop_sign()
-        print(f"WARNING: This will DELETE ALL records from the parts database at: {db_path}")
-        confirm1 = input(
-            "Are you sure you want to clear the parts database? (yes/no): ").strip().lower()
+        print(
+            f"WARNING: This will DELETE ALL records from the parts database at: {db_path}"
+        )
+        confirm1 = (
+            input("Are you sure you want to clear the parts database? (yes/no): ")
+            .strip()
+            .lower()
+        )
         if confirm1 != "yes":
             print("Aborted.")
             return
-        confirm2 = input(
-            "This action is IRREVERSIBLE. Type 'yes' again to confirm: ").strip().lower()
+        confirm2 = (
+            input("This action is IRREVERSIBLE. Type 'yes' again to confirm: ")
+            .strip()
+            .lower()
+        )
         if confirm2 != "yes":
             print("Aborted.")
             return
@@ -216,14 +217,23 @@ def cmd_database_clear(parser: argparse.ArgumentParser, remaining_args: list) ->
             sys.exit(1)
         print_stop_sign()
         print(
-            f"WARNING: This will DELETE ALL records from the assembled_casm database at: {db_path}")
-        confirm1 = input(
-            "Are you sure you want to clear the assembled_casm database? (yes/no): ").strip().lower()
+            f"WARNING: This will DELETE ALL records from the assembled_casm database at: {db_path}"
+        )
+        confirm1 = (
+            input(
+                "Are you sure you want to clear the assembled_casm database? (yes/no): "
+            )
+            .strip()
+            .lower()
+        )
         if confirm1 != "yes":
             print("Aborted.")
             return
-        confirm2 = input(
-            "This action is IRREVERSIBLE. Type 'yes' again to confirm: ").strip().lower()
+        confirm2 = (
+            input("This action is IRREVERSIBLE. Type 'yes' again to confirm: ")
+            .strip()
+            .lower()
+        )
         if confirm2 != "yes":
             print("Aborted.")
             return
@@ -290,12 +300,22 @@ def cmd_database_print(parser: argparse.ArgumentParser, remaining_args: list) ->
                 # Use user-suggested abbreviations for the assembly table
                 if table == "assembly":
                     abbr_names = [
-                        "id", "part_#", "Partype", "pol", "start scan",
-                        "connected", "Contype", "conn_pol", "Finish time", "status",
+                        "id",
+                        "part_#",
+                        "Partype",
+                        "pol",
+                        "start scan",
+                        "connected",
+                        "Contype",
+                        "conn_pol",
+                        "Finish time",
+                        "status",
                     ]
                 else:
+
                     def abbr(s: str) -> str:
                         return s[:8]
+
                     abbr_names = [abbr(n) for n in col_names]
 
                 col_widths = [
@@ -314,9 +334,14 @@ def cmd_database_print(parser: argparse.ArgumentParser, remaining_args: list) ->
                         return char * width
 
                     top = "  ┌" + "┬".join(h("─", w + 2) for w in col_widths) + "┐"
-                    header = "  │ " + " │ ".join(
-                        f"{abbr_names[i]:<{col_widths[i]}}" for i in range(len(col_names))
-                    ) + " │"
+                    header = (
+                        "  │ "
+                        + " │ ".join(
+                            f"{abbr_names[i]:<{col_widths[i]}}"
+                            for i in range(len(col_names))
+                        )
+                        + " │"
+                    )
                     sep = "  ├" + "┼".join(h("─", w + 2) for w in col_widths) + "┤"
                     bottom = "  └" + "┴".join(h("─", w + 2) for w in col_widths) + "┘"
                     print(top)
@@ -335,7 +360,8 @@ def cmd_database_print(parser: argparse.ArgumentParser, remaining_args: list) ->
                     for row in rows:
                         for i, val in enumerate(row):
                             print(
-                                f"  {abbr_names[i]:<{max(8, len(abbr_names[i]))}} : {val if val is not None else 'NULL'}")
+                                f"  {abbr_names[i]:<{max(8, len(abbr_names[i]))}} : {val if val is not None else 'NULL'}"
+                            )
                         print(sep_line)
             else:
                 print("  (No entries in this table)\n")

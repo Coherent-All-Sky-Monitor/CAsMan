@@ -4,12 +4,17 @@ Part class and core part functionality for CAsMan.
 This module provides the main Part class for representing individual parts
 and their properties, along with related utility functions.
 """
+
 from datetime import datetime
 from typing import Any, Dict, Optional
 
 from .types import load_part_types
-from .validation import (get_part_info, validate_part_number,
-                         validate_part_type, validate_polarization)
+from .validation import (
+    get_part_info,
+    validate_part_number,
+    validate_part_type,
+    validate_polarization,
+)
 
 # Load part types for reference
 PART_TYPES = load_part_types()
@@ -29,7 +34,7 @@ class Part:
         part_type: Optional[str] = None,
         polarization: Optional[str] = None,
         date_created: Optional[str] = None,
-        date_modified: Optional[str] = None
+        date_modified: Optional[str] = None,
     ) -> None:
         """
         Initialize a Part instance.
@@ -67,23 +72,25 @@ class Part:
         if part_type is not None:
             if not validate_part_type(part_type):
                 raise ValueError(f"Invalid part type: {part_type}")
-            if part_type != part_info['part_type']:
+            if part_type != part_info["part_type"]:
                 raise ValueError(
-                    f"Part type '{part_type}' doesn't match part number '{part_number}'")
+                    f"Part type '{part_type}' doesn't match part number '{part_number}'"
+                )
             self.part_type = part_type
         else:
-            self.part_type = part_info['part_type']
+            self.part_type = part_info["part_type"]
 
         # Set polarization - use provided or extracted
         if polarization is not None:
             if not validate_polarization(polarization):
                 raise ValueError(f"Invalid polarization: {polarization}")
-            if polarization != part_info['polarization']:
+            if polarization != part_info["polarization"]:
                 raise ValueError(
-                    f"Polarization '{polarization}' doesn't match part number '{part_number}'")
+                    f"Polarization '{polarization}' doesn't match part number '{part_number}'"
+                )
             self.polarization = polarization
         else:
-            self.polarization = part_info['polarization']
+            self.polarization = part_info["polarization"]
 
         # Set timestamps
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -91,8 +98,8 @@ class Part:
         self.date_modified = date_modified or current_time
 
         # Store parsed info
-        self.prefix = part_info['prefix']
-        self.number = part_info['number']
+        self.prefix = part_info["prefix"]
+        self.number = part_info["number"]
 
     def __str__(self) -> str:
         """String representation of the part."""
@@ -102,7 +109,8 @@ class Part:
         """Detailed string representation of the part."""
         return (
             f"Part(part_number='{self.part_number}', part_type='{self.part_type}', "
-            f"polarization='{self.polarization}', date_created='{self.date_created}')")
+            f"polarization='{self.polarization}', date_created='{self.date_created}')"
+        )
 
     def __eq__(self, other: object) -> bool:
         """Check equality based on part number."""
@@ -124,17 +132,17 @@ class Part:
             Dictionary containing all part properties
         """
         return {
-            'part_number': self.part_number,
-            'part_type': self.part_type,
-            'polarization': self.polarization,
-            'prefix': self.prefix,
-            'number': self.number,
-            'date_created': self.date_created,
-            'date_modified': self.date_modified
+            "part_number": self.part_number,
+            "part_type": self.part_type,
+            "polarization": self.polarization,
+            "prefix": self.prefix,
+            "number": self.number,
+            "date_created": self.date_created,
+            "date_modified": self.date_modified,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Part':
+    def from_dict(cls, data: Dict[str, Any]) -> "Part":
         """
         Create Part instance from dictionary.
 
@@ -149,15 +157,15 @@ class Part:
             New Part instance
         """
         return cls(
-            part_number=data['part_number'],
-            part_type=data.get('part_type'),
-            polarization=data.get('polarization'),
-            date_created=data.get('date_created'),
-            date_modified=data.get('date_modified')
+            part_number=data["part_number"],
+            part_type=data.get("part_type"),
+            polarization=data.get("polarization"),
+            date_created=data.get("date_created"),
+            date_modified=data.get("date_modified"),
         )
 
     @classmethod
-    def from_database_row(cls, row: tuple) -> 'Part':
+    def from_database_row(cls, row: tuple) -> "Part":
         """
         Create Part instance from database row.
 
@@ -182,7 +190,7 @@ class Part:
             part_type=part_type,
             polarization=polarization,
             date_created=date_created,
-            date_modified=date_modified
+            date_modified=date_modified,
         )
 
     def is_valid(self) -> bool:
@@ -194,9 +202,11 @@ class Part:
         bool
             True if all part properties are valid
         """
-        return (validate_part_number(self.part_number) and
-                validate_part_type(self.part_type) and
-                validate_polarization(self.polarization))
+        return (
+            validate_part_number(self.part_number)
+            and validate_part_type(self.part_type)
+            and validate_polarization(self.polarization)
+        )
 
     def get_barcode_filename(self) -> str:
         """

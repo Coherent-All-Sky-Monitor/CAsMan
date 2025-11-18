@@ -4,6 +4,7 @@ Part validation utilities for CAsMan.
 This module provides validation functions for part numbers, part types,
 and other part-related data integrity checks.
 """
+
 import re
 from typing import Dict, Optional
 
@@ -35,7 +36,7 @@ def validate_part_number(part_number: str) -> bool:
 
     # Regular expression for part number format: PREFIX (2-4 letters) + NUMBER
     # (5 digits) + P + POLARIZATION (1-2 chars)
-    pattern = r'^[A-Z]{2,4}\d{5}P[A-Z0-9]{1,2}$'
+    pattern = r"^[A-Z]{2,4}\d{5}P[A-Z0-9]{1,2}$"
 
     if not re.match(pattern, part_number):
         return False
@@ -95,7 +96,7 @@ def validate_polarization(polarization: str) -> bool:
         return False
 
     # Common polarization patterns
-    valid_patterns = [r'^P[12]$', r'^PV$', r'^P[A-Z0-9]+$']
+    valid_patterns = [r"^P[12]$", r"^PV$", r"^P[A-Z0-9]+$"]
 
     return any(re.match(pattern, polarization) for pattern in valid_patterns)
 
@@ -128,12 +129,12 @@ def get_part_info(part_number: str) -> Optional[Dict[str, str]]:
     prefix = part_number[:digit_start]
 
     # Find where 'P' appears after the digits
-    p_index = part_number.find('P', digit_start)
+    p_index = part_number.find("P", digit_start)
     if p_index == -1:
         return None
 
     number = part_number[digit_start:p_index]
-    polarization = part_number[p_index + 1:]  # Everything after 'P'
+    polarization = part_number[p_index + 1 :]  # Everything after 'P'
 
     # Find the full part type name
     part_type = None
@@ -143,11 +144,11 @@ def get_part_info(part_number: str) -> Optional[Dict[str, str]]:
             break
 
     return {
-        'prefix': prefix,
-        'part_type': part_type or 'UNKNOWN',
-        'polarization': 'P' + polarization,
-        'number': number,
-        'full_number': part_number
+        "prefix": prefix,
+        "part_type": part_type or "UNKNOWN",
+        "polarization": "P" + polarization,
+        "number": number,
+        "full_number": part_number,
     }
 
 
@@ -170,6 +171,9 @@ def normalize_part_number(part_number: str) -> Optional[str]:
         return None
 
     # Ensure consistent formatting: {PREFIX}{NUMBER}P{POLARIZATION}
-    polarization_suffix = part_info['polarization'][1:] if part_info['polarization'].startswith(
-        'P') else part_info['polarization']
+    polarization_suffix = (
+        part_info["polarization"][1:]
+        if part_info["polarization"].startswith("P")
+        else part_info["polarization"]
+    )
     return f"{part_info['prefix']}{part_info['number']}P{polarization_suffix}"

@@ -50,7 +50,7 @@ setup(
         "console_scripts": [
             "casman=casman.cli.main:main",
             "casman-parts=casman.parts.interactive:main",
-            "casman-scan=casman.assembly.interactive:main", 
+            "casman-scan=casman.assembly.interactive:main",
             "casman-visualize=casman.visualization.core:main",
             "casman-barcode=casman.barcode.printing:main",
         ],

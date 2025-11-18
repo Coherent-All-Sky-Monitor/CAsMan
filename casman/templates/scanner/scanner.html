@@ -133,6 +133,7 @@
             padding: 10px 15px;
             cursor: pointer;
             border: 2px solid;
+            border-radius: 8px;
             background: transparent;
             text-decoration: none;
             color: inherit;
@@ -186,6 +187,7 @@
             margin: 20px 0;
             padding: 20px;
             border: 2px solid;
+            border-radius: 12px;
         }
         
         .button-grid {
@@ -199,6 +201,37 @@
             padding: 15px;
             font-size: 16px;
             cursor: pointer;
+            border-radius: 8px;
+        }
+        
+        /* Touch-friendly button styles for SNAP selection grids */
+        #crate-buttons button,
+        #slot-buttons button,
+        #slot-selection > div > div button,
+        #port-buttons button {
+            min-height: 60px;
+            padding: 15px 20px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid #333;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        #crate-buttons button:hover,
+        #slot-buttons button:hover,
+        #slot-selection > div > div button:hover,
+        #port-buttons button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        #crate-buttons button:active,
+        #slot-buttons button:active,
+        #slot-selection > div > div button:active,
+        #port-buttons button:active {
+            transform: scale(0.98);
         }
         
         .connection-list {
@@ -209,6 +242,7 @@
             padding: 15px;
             margin: 10px 0;
             border: 2px solid;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -227,6 +261,7 @@
             padding: 15px;
             margin: 15px 0;
             border: 2px solid;
+            border-radius: 8px;
             font-weight: bold;
         }
         
@@ -262,12 +297,14 @@
             font-size: 16px;
             font-family: 'National Park', sans-serif;
             border: 2px solid;
+            border-radius: 8px;
         }
         
         .part-display {
             padding: 15px;
             margin: 10px 0;
             border: 2px solid;
+            border-radius: 10px;
             background-color: #f9f9f9;
         }
         
@@ -285,6 +322,7 @@
             flex: 1;
             padding: 15px;
             font-size: 16px;
+            border-radius: 8px;
         }
     </style>
 </head>
@@ -395,6 +433,62 @@
         </div>
     </div>
     
+    <!-- Step 4b: SNAP Selection (for BACBOARD connections) -->
+    <div id="step-snap-selection" class="section hidden">
+        <h2>Enter SNAP Connection Details</h2>
+        <div id="bacboard-display" class="part-display"></div>
+        <div style="margin: 20px 0;">
+            <h3>Select Crate Number (1-4)</h3>
+            <div id="crate-buttons" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; max-width: 200px; margin: 10px auto;">
+                <button onclick="selectCrate(1)">1</button>
+                <button onclick="selectCrate(2)">2</button>
+                <button onclick="selectCrate(3)">3</button>
+                <button onclick="selectCrate(4)">4</button>
+            </div>
+        </div>
+        <div id="slot-selection" class="hidden" style="margin: 20px 0;">
+            <h3>Select SNAP Slot (A-K)</h3>
+            <div style="max-width: 300px; margin: 10px auto;">
+                <div id="slot-buttons" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px;">
+                    <button onclick="selectSlot('A')">A</button>
+                    <button onclick="selectSlot('B')">B</button>
+                    <button onclick="selectSlot('C')">C</button>
+                    <button onclick="selectSlot('D')">D</button>
+                    <button onclick="selectSlot('E')">E</button>
+                    <button onclick="selectSlot('F')">F</button>
+                    <button onclick="selectSlot('G')">G</button>
+                    <button onclick="selectSlot('H')">H</button>
+                    <button onclick="selectSlot('I')">I</button>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: center; max-width: 200px; margin: 0 auto;">
+                    <button onclick="selectSlot('J')">J</button>
+                    <button onclick="selectSlot('K')">K</button>
+                </div>
+            </div>
+        </div>
+        <div id="port-selection" class="hidden" style="margin: 20px 0;">
+            <h3>Select SNAP Port (0-11)</h3>
+            <div id="port-buttons" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 400px; margin: 10px auto;">
+                <button onclick="selectPort(0)">0</button>
+                <button onclick="selectPort(1)">1</button>
+                <button onclick="selectPort(2)">2</button>
+                <button onclick="selectPort(3)">3</button>
+                <button onclick="selectPort(4)">4</button>
+                <button onclick="selectPort(5)">5</button>
+                <button onclick="selectPort(6)">6</button>
+                <button onclick="selectPort(7)">7</button>
+                <button onclick="selectPort(8)">8</button>
+                <button onclick="selectPort(9)">9</button>
+                <button onclick="selectPort(10)">10</button>
+                <button onclick="selectPort(11)">11</button>
+            </div>
+        </div>
+        <div id="snap-status" class="status-message" style="margin: 20px 0;"></div>
+        <div class="nav-buttons">
+            <button onclick="cancelSnapSelection()">← Cancel</button>
+        </div>
+    </div>
+    
     <!-- Step 5: Confirmation -->
     <div id="step-confirm" class="section hidden">
         <h2>Confirm Operation</h2>
@@ -440,7 +534,10 @@
             secondPart: null,      // {part_number, part_type, polarization}
             connections: [],       // For disconnect mode
             manualPartType: null,
-            manualPolarization: null
+            manualPolarization: null,
+            snapCrate: null,       // SNAP crate number (1-4)
+            snapSlot: null,        // SNAP slot letter (A-K)
+            snapPort: null         // SNAP port number (0-11)
         };
         
         // Part types from server
@@ -598,7 +695,11 @@
                     }, 2000);
                 }
             } catch (error) {
-                statusDiv.innerHTML = `<div class="status-error status-message">❌ Error: ${error.message}</div>`;
+                let errorMsg = error.message;
+                if (errorMsg.includes('Failed to fetch') || errorMsg.includes('Load failed') || errorMsg.includes('NetworkError')) {
+                    errorMsg = 'Cannot connect to server. Check network connection and server URL.';
+                }
+                statusDiv.innerHTML = `<div class="status-error status-message">❌ ${errorMsg}</div>`;
             }
         }
         
@@ -737,7 +838,11 @@
                     statusDiv.innerHTML = `<div class="status-error status-message">❌ ${result.error}</div>`;
                 }
             } catch (error) {
-                statusDiv.innerHTML = `<div class="status-error status-message">❌ Error: ${error.message}</div>`;
+                let errorMsg = error.message;
+                if (errorMsg.includes('Failed to fetch') || errorMsg.includes('Load failed') || errorMsg.includes('NetworkError')) {
+                    errorMsg = 'Cannot connect to server. Check network connection and server URL.';
+                }
+                statusDiv.innerHTML = `<div class="status-error status-message">❌ ${errorMsg}</div>`;
             }
         }
         
@@ -793,6 +898,14 @@
                     }
                 } else {
                     statusDiv.innerHTML = `<div class="status-success status-message">✓ Part ${partInfo.part_number} found in database</div>`;
+                }
+                
+                // If first part is BACBOARD, show SNAP crate/slot selection
+                if (partInfo.part_type === 'BACBOARD') {
+                    setTimeout(() => {
+                        showSnapSelection();
+                    }, 1500);
+                    return;
                 }
                 
                 setTimeout(() => {
@@ -906,6 +1019,188 @@
                 alert(`Error: ${error.message}`);
                 resetScanner();
             }
+        }
+        
+        // Show SNAP crate/slot/port selection for BACBOARD
+        function showSnapSelection() {
+            const displayDiv = document.getElementById('bacboard-display');
+            displayDiv.innerHTML = `
+                <h3>BACBOARD to Connect:</h3>
+                <p><strong>Part Number:</strong> ${state.firstPart.part_number}</p>
+                <p><strong>Type:</strong> ${state.firstPart.part_type}</p>
+                <p><strong>Polarization:</strong> ${state.firstPart.polarization}</p>
+                <p style="margin-top: 15px; font-style: italic;">This is the last part in the sequence. It must be connected to a SNAP board.</p>
+            `;
+            
+            // Reset button selections
+            document.querySelectorAll('.button-selected').forEach(btn => {
+                btn.classList.remove('button-selected');
+            });
+            
+            // Reset state
+            state.snapCrate = null;
+            state.snapSlot = null;
+            state.snapPort = null;
+            
+            document.getElementById('slot-selection').classList.add('hidden');
+            document.getElementById('port-selection').classList.add('hidden');
+            document.getElementById('snap-status').innerHTML = '';
+            
+            goToStep('snap-selection');
+        }
+        
+        function selectCrate(crate) {
+            state.snapCrate = crate;
+            
+            // Highlight selected button
+            document.querySelectorAll('#crate-buttons button').forEach(btn => {
+                btn.classList.remove('button-selected');
+            });
+            event.target.classList.add('button-selected');
+            
+            // Show slot selection
+            document.getElementById('slot-selection').classList.remove('hidden');
+            document.getElementById('snap-status').innerHTML = `<div class="status-info">Selected Crate: ${crate}</div>`;
+        }
+        
+        async function selectSlot(slot) {
+            state.snapSlot = slot;
+            
+            // Highlight selected button
+            document.querySelectorAll('#slot-buttons button').forEach(btn => {
+                btn.classList.remove('button-selected');
+            });
+            event.target.classList.add('button-selected');
+            
+            const statusDiv = document.getElementById('snap-status');
+            statusDiv.innerHTML = `<div class="status-info">⏳ Checking available ports for Crate ${state.snapCrate}, Slot ${slot}...</div>`;
+            
+            // Check which ports are already occupied
+            try {
+                const response = await fetch('/scanner/api/check-snap-ports', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        crate: state.snapCrate,
+                        slot: slot
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Show port selection
+                    document.getElementById('port-selection').classList.remove('hidden');
+                    
+                    // Disable occupied ports and update their appearance
+                    const occupiedPorts = result.occupied_ports || {};
+                    document.querySelectorAll('#port-buttons button').forEach(btn => {
+                        btn.style.opacity = '1';
+                        btn.style.cursor = 'pointer';
+                        btn.classList.remove('button-selected');
+                        btn.classList.remove('port-occupied');
+                        btn.title = '';
+                        btn.removeAttribute('data-occupied');
+                    });
+                    
+                    // Mark occupied ports
+                    Object.keys(occupiedPorts).forEach(portNum => {
+                        const portInfo = occupiedPorts[portNum];
+                        const portButton = document.querySelector(`#port-buttons button[onclick="selectPort(${portNum})"]`);
+                        if (portButton) {
+                            portButton.style.opacity = '0.4';
+                            portButton.style.cursor = 'not-allowed';
+                            portButton.classList.add('port-occupied');
+                            portButton.title = `Port already connected to ${portInfo.connected_to}`;
+                            portButton.setAttribute('data-occupied', portInfo.connected_to);
+                            portButton.setAttribute('data-port', portNum);
+                        }
+                    });
+                    
+                    const occupiedCount = Object.keys(occupiedPorts).length;
+                    if (occupiedCount > 0) {
+                        let portDetails = Object.keys(occupiedPorts).map(portNum => {
+                            return `Port ${portNum}: ${occupiedPorts[portNum].connected_to}`;
+                        }).join('<br>');
+                        statusDiv.innerHTML = `<div class="status-info">Selected: Crate ${state.snapCrate}, Slot ${slot}<br><small>${occupiedCount} port(s) already connected:</small><br><small>${portDetails}</small></div>`;
+                    } else {
+                        statusDiv.innerHTML = `<div class="status-info">Selected: Crate ${state.snapCrate}, Slot ${slot}<br><small>All ports available</small></div>`;
+                    }
+                } else {
+                    statusDiv.innerHTML = `<div class="status-error">❌ ${result.error}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status-error">❌ Error checking ports: ${error.message}</div>`;
+            }
+        }
+        
+        async function selectPort(port) {
+            const statusDiv = document.getElementById('snap-status');
+            
+            // Check if this port is occupied
+            const clickedButton = event.target;
+            if (clickedButton.classList.contains('port-occupied')) {
+                const connectedTo = clickedButton.getAttribute('data-occupied');
+                const portNum = clickedButton.getAttribute('data-port');
+                statusDiv.innerHTML = `<div class="status-error">❌ Port ${portNum} already connected to ${connectedTo}</div>`;
+                setTimeout(() => {
+                    statusDiv.innerHTML = `<div class="status-info">Selected: Crate ${state.snapCrate}, Slot ${state.snapSlot}<br><small>Please select an available port</small></div>`;
+                }, 3000);
+                return;
+            }
+            
+            state.snapPort = port;
+            
+            // Highlight selected button
+            document.querySelectorAll('#port-buttons button').forEach(btn => {
+                btn.classList.remove('button-selected');
+            });
+            clickedButton.classList.add('button-selected');
+            
+            statusDiv.innerHTML = `<div class="status-info">⏳ Formatting SNAP part: ${state.snapCrate}${state.snapSlot}${String(port).padStart(2, '0')}...</div>`;
+            
+            try {
+                // Format SNAP part
+                const response = await fetch('/scanner/api/format-snap', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        crate: state.snapCrate,
+                        slot: state.snapSlot,
+                        port: port
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusDiv.innerHTML = `<div class="status-success">✓ SNAP Part: ${result.snap_part}</div>`;
+                    
+                    // Set as second part
+                    state.secondPart = {
+                        part_number: result.snap_part,
+                        part_type: result.part_type,
+                        polarization: result.polarization,
+                        existing_connections: []
+                    };
+                    
+                    setTimeout(() => {
+                        showConfirmation();
+                    }, 1000);
+                } else {
+                    statusDiv.innerHTML = `<div class="status-error">❌ ${result.error}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status-error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        function cancelSnapSelection() {
+            state.firstPart = null;
+            state.snapCrate = null;
+            state.snapSlot = null;
+            state.snapPort = null;
+            goToStep('action');
         }
         
         // Show connection selection for disconnect

@@ -54,13 +54,11 @@ def main() -> None:
         "    └─ disconnection  Start interactive disconnection scanning\n"
         "    └─ connect        Full interactive part scanning and assembly operations\n"
         "    └─ disconnect     Full interactive part disconnection operations\n"
-        "    └─ web            Quick access to web scanner interface (port 5001)\n"
         "  database   - Database management operations (clear, print)\n"
         "    └─ clear       Safely clear database contents with confirmations\n"
         "    └─ print       Display formatted database tables and records\n"
         "  visualize  - Visualize assembly chains and connection statistics\n"
         "    └─ chains      Display ASCII visualization with duplicate detection\n"
-        "    └─ web         Launch web-based visualization interface (port 5000)\n"
         "  web        - Launch unified web application (scanner + visualization)\n"
         "    └─ --mode dev|production   Development (Flask) or production (Gunicorn) server\n"
         "    └─ --scanner-only          Enable only scanner interface\n"
@@ -71,7 +69,7 @@ def main() -> None:
         "    └─ printpages  Generate printable barcode pages for labeling\n"
         "  completion - Show shell completion setup instructions\n\n"
         "Use 'casman <command> --help' for detailed help on any command.",
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("command", nargs="?", help="Command to run")
     parser.add_argument("--version", action="store_true", help="Show version and exit")
@@ -91,8 +89,10 @@ def main() -> None:
     }
 
     # Check if a command with help is requested before full parsing
-    if len(sys.argv) >= 3 and (sys.argv[2] in ['-h', '--help'] or
-                               (len(sys.argv) >= 4 and sys.argv[3] in ['-h', '--help'])):
+    if len(sys.argv) >= 3 and (
+        sys.argv[2] in ["-h", "--help"]
+        or (len(sys.argv) >= 4 and sys.argv[3] in ["-h", "--help"])
+    ):
         command = sys.argv[1]
         if command == "parts":
             cmd_parts()
@@ -117,7 +117,11 @@ def main() -> None:
     args, remaining_args = parser.parse_known_args()
 
     # If help is requested for a specific command, let the command handle it
-    if len(remaining_args) > 0 and remaining_args[0] in ['-h', '--help'] and args.command:
+    if (
+        len(remaining_args) > 0
+        and remaining_args[0] in ["-h", "--help"]
+        and args.command
+    ):
         command = args.command
         if command == "parts":
             cmd_parts()

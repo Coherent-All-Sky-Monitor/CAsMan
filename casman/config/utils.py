@@ -251,9 +251,11 @@ def setup_logging(config: Optional[Dict[str, Any]] = None) -> None:
 
     if config is None:
         from casman.config.core import get_config as load_config
+
         level_str = load_config("logging.level", "INFO")
-        log_format = load_config("logging.format",
-                                 "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        log_format = load_config(
+            "logging.format", "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
         file_path = load_config("logging.file_path", None)
         max_file_size_mb = load_config("logging.max_file_size_mb", 10)
         backup_count = load_config("logging.backup_count", 5)
@@ -261,7 +263,8 @@ def setup_logging(config: Optional[Dict[str, Any]] = None) -> None:
         logging_config = config.get("logging", {})
         level_str = logging_config.get("level", "INFO")
         log_format = logging_config.get(
-            "format", "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            "format", "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
         file_path = logging_config.get("file_path", None)
         max_file_size_mb = logging_config.get("max_file_size_mb", 10)
         backup_count = logging_config.get("backup_count", 5)
@@ -283,9 +286,7 @@ def setup_logging(config: Optional[Dict[str, Any]] = None) -> None:
         log_path.parent.mkdir(parents=True, exist_ok=True)
 
         file_handler = logging.handlers.RotatingFileHandler(
-            file_path,
-            maxBytes=max_file_size_mb * 1024 * 1024,
-            backupCount=backup_count
+            file_path, maxBytes=max_file_size_mb * 1024 * 1024, backupCount=backup_count
         )
         file_handler.setFormatter(logging.Formatter(log_format))
         handlers.append(file_handler)
@@ -295,7 +296,7 @@ def setup_logging(config: Optional[Dict[str, Any]] = None) -> None:
         level=level,
         format=log_format,
         handlers=handlers,
-        force=True  # Override any existing configuration
+        force=True,  # Override any existing configuration
     )
 
 

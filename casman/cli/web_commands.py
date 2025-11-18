@@ -45,49 +45,47 @@ Examples:
         "--port",
         type=int,
         default=None,
-        help="Port to run the web server on (default: from config or 5000)"
+        help="Port to run the web server on (default: from config or 5000)",
     )
     parser.add_argument(
         "--host",
         type=str,
         default=None,
-        help="Host address to bind to (default: from config or 0.0.0.0)"
+        help="Host address to bind to (default: from config or 0.0.0.0)",
     )
     parser.add_argument(
         "--scanner-only",
         action="store_true",
-        help="Enable only the scanner interface (for commissioning/repairs)"
+        help="Enable only the scanner interface (for commissioning/repairs)",
     )
     parser.add_argument(
         "--visualize-only",
         action="store_true",
-        help="Enable only the visualization interface"
+        help="Enable only the visualization interface",
     )
     parser.add_argument(
-        "--no-scanner",
-        action="store_true",
-        help="Disable the scanner interface"
+        "--no-scanner", action="store_true", help="Disable the scanner interface"
     )
     parser.add_argument(
         "--no-visualization",
         action="store_true",
-        help="Disable the visualization interface"
+        help="Disable the visualization interface",
     )
     parser.add_argument(
         "--mode",
         choices=["dev", "prod"],
         default="dev",
-        help="Server mode: dev (Flask debug) or prod (Gunicorn)"
+        help="Server mode: dev (Flask debug) or prod (Gunicorn)",
     )
     parser.add_argument(
         "--workers",
         type=int,
         default=None,
-        help="Number of workers for production mode (default: from config or 4)"
+        help="Number of workers for production mode (default: from config or 4)",
     )
 
     # Parse arguments
-    if len(sys.argv) >= 3 and sys.argv[2] in ['-h', '--help']:
+    if len(sys.argv) >= 3 and sys.argv[2] in ["-h", "--help"]:
         parser.print_help()
         return
 
@@ -150,7 +148,8 @@ Examples:
             "--host",
             host,
             "--port",
-            str(port)]
+            str(port),
+        ]
 
         if args.mode == "production":
             cmd.extend(["--workers", str(workers)])
@@ -160,7 +159,9 @@ Examples:
         elif args.visualize_only:
             cmd.append("--visualize-only")
 
-        print(f"🚀 Starting CAsMan Web Application ({'Production' if args.mode == 'prod' else 'Development'} Mode)")
+        print(
+            f"🚀 Starting CAsMan Web Application ({'Production' if args.mode == 'prod' else 'Development'} Mode)"
+        )
         print()
 
         # Run the web application

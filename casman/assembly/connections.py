@@ -109,7 +109,10 @@ def record_assembly_connection(
 
             conn.commit()
             logger.info(
-                "Recorded assembly %s: %s -> %s", connection_status, part_number, connected_to
+                "Recorded assembly %s: %s -> %s",
+                connection_status,
+                part_number,
+                connected_to,
             )
             return True
 

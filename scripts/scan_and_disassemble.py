@@ -55,7 +55,7 @@ def get_part_details(part_number: str, db_dir: Optional[str] = None):
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT part_type, polarization FROM parts WHERE part_number = ?",
-                (part_number,)
+                (part_number,),
             )
             result = cursor.fetchone()
             return result if result else None
@@ -114,46 +114,29 @@ def generate_part_number(
     prefix = prefix_map.get(part_type, "")
 
     if part_type == "SNAP":
-        # Prompt for crate, snap letter, adc number
-        crate = input("Enter crate number (1 or 2): ").strip()
-        snap_letter = input("Enter SNAP letter (A-V): ").strip().upper()
+        # Prompt for crate, snap slot, port number
+        crate = input("Enter crate number (1-4): ").strip()
+        snap_slot = input("Enter SNAP slot (A-K): ").strip().upper()
         try:
-            adcin = int(input("Enter ADC input (0-11): ").strip())
-            if not 0 <= adcin <= 11:
-                print("Error: ADC input must be between 0 and 11.")
+            port = int(input("Enter SNAP port (0-11): ").strip())
+            if not 0 <= port <= 11:
+                print("Error: SNAP port must be between 0 and 11.")
                 return None
         except ValueError:
             print("Error: Invalid input. Please enter a number between 0 and 11.")
             return None
 
-        # Find SNAP number based on crate and snap letter
-        snap_letters = [chr(ord("A") + i) for i in range(22)]
-        if snap_letter not in snap_letters:
-            print("Error: Invalid SNAP letter. Must be A-V.")
+        # Validate crate and slot
+        valid_slots = [chr(ord("A") + i) for i in range(11)]  # A-K
+        if snap_slot not in valid_slots:
+            print("Error: Invalid SNAP slot. Must be A-K.")
             return None
-        if crate not in ["1", "2"]:
-            print("Error: Crate must be 1 or 2.")
-            return None
-
-        snap_index = snap_letters.index(snap_letter)
-        if crate == "1":
-            snap_number = snap_index + 1
-        else:
-            snap_number = 22 + snap_index + 1
-        snap_str = f"SNAP{snap_number:03d}_ADC{adcin:02d}"
-
-        # Validate against mapping
-        if not validate_snap_part(snap_str):
-            print(f"Error: SNAP input {snap_str} does not exist in the mapping YAML.")
+        if crate not in ["1", "2", "3", "4"]:
+            print("Error: Crate must be 1-4.")
             return None
 
-        # Load mapping from YAML for display
-        db_dir = "database"
-        mapping_path = os.path.join(db_dir, "snap_feng_map.yaml")
-        with open(mapping_path, "r", encoding="utf-8") as f:
-            snap_map = yaml.safe_load(f)
-        feng_id = snap_map.get(snap_str)
-        print(f"FENG ID for {snap_str}: {feng_id}")
+        snap_str = f"SNAP{crate}{snap_slot}{port:02d}"
+        print(f"SNAP connection: {snap_str}")
 
         return snap_str
 
@@ -185,7 +168,10 @@ def main() -> None:
 
         try:
             part_type_index = int(
-                input(f"Enter the number corresponding to the part type (0-{len(ALL_PART_TYPES)-1}): "))
+                input(
+                    f"Enter the number corresponding to the part type (0-{len(ALL_PART_TYPES)-1}): "
+                )
+            )
             if not (0 <= part_type_index < len(ALL_PART_TYPES)):
                 print("Invalid selection. Please enter a valid number.")
                 continue
@@ -207,7 +193,9 @@ def main() -> None:
                 print(f"Error: Part {part_number} not found in database.")
                 continue
             db_part_type, polarization_0 = part_details
-            print(f"Scanned: {part_number}, type: {db_part_type}, polarization: {polarization_0}")
+            print(
+                f"Scanned: {part_number}, type: {db_part_type}, polarization: {polarization_0}"
+            )
         elif choice == "2":
             if part_type == "SNAP":
                 part_number = generate_part_number(part_type, None, 0)
@@ -233,7 +221,9 @@ def main() -> None:
                 continue
         else:
             if not validate_snap_part(part_number):
-                print(f"Error: SNAP part {part_number} not found in snap_feng_map.yaml.")
+                print(
+                    f"Error: SNAP part {part_number} not found in snap_feng_map.yaml."
+                )
                 continue
 
         print(f"✓ Valid first part: {part_number}")
@@ -261,7 +251,7 @@ def main() -> None:
                        WHERE a.connection_status = 'connected'
                        AND (a.part_number = ? OR a.connected_to = ?)
                        ORDER BY a.scan_time DESC""",
-                    (part_number, part_number, part_number, part_number)
+                    (part_number, part_number, part_number, part_number),
                 )
                 connections = cursor.fetchall()
 
@@ -274,20 +264,28 @@ def main() -> None:
             # Display connections and let user choose
             print(f"\n📋 Found {len(connections)} connection(s) for {part_number}:")
             print("-" * 70)
-            for idx, (part_num, connected, conn_type, scan_time) in enumerate(connections, 1):
+            for idx, (part_num, connected, conn_type, scan_time) in enumerate(
+                connections, 1
+            ):
                 if part_num == part_number:
-                    print(f"{idx}. {part_num} --> {connected} ({conn_type}) [Scanned: {scan_time}]")
+                    print(
+                        f"{idx}. {part_num} --> {connected} ({conn_type}) [Scanned: {scan_time}]"
+                    )
                 else:
-                    print(f"{idx}. {part_num} --> {connected} ({conn_type}) [Scanned: {scan_time}]")
+                    print(
+                        f"{idx}. {part_num} --> {connected} ({conn_type}) [Scanned: {scan_time}]"
+                    )
             print("-" * 70)
 
             try:
                 choice_str = input(
-                    f"Select connection to disconnect (1-{len(connections)}): ").strip()
+                    f"Select connection to disconnect (1-{len(connections)}): "
+                ).strip()
                 choice_idx = int(choice_str) - 1
                 if not (0 <= choice_idx < len(connections)):
                     print(
-                        f"Error: Invalid selection. Please enter a number between 1 and {len(connections)}.")
+                        f"Error: Invalid selection. Please enter a number between 1 and {len(connections)}."
+                    )
                     continue
             except ValueError:
                 print("Error: Invalid input. Please enter a number.")
@@ -345,9 +343,12 @@ def main() -> None:
 
         if success:
             print(
-                f"\n✓ Successfully recorded disconnection: {part_number} -X-> {second_part_number}")
+                f"\n✓ Successfully recorded disconnection: {part_number} -X-> {second_part_number}"
+            )
         else:
-            print(f"\n✗ Error recording disconnection: {part_number} -X-> {second_part_number}")
+            print(
+                f"\n✗ Error recording disconnection: {part_number} -X-> {second_part_number}"
+            )
 
         # Ask if user wants to continue
         continue_choice = (

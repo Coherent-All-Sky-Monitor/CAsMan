@@ -6,7 +6,7 @@ A comprehensive toolkit for managing and visualizing CASM (Coherent All-Sky Moni
 
 ## Testing & Coverage
 
-![Tests](https://img.shields.io/badge/tests-5%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-22.0%25-red)
+![Tests](https://img.shields.io/badge/tests-7%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-65.0%25-red)
 
 CAsMan maintains comprehensive test coverage across all modules with 141 passing tests:
 
@@ -276,14 +276,12 @@ casman database print               # Display formatted database contents
 
 # Visualization with duplicate detection
 casman visualize chains              # ASCII chain visualization
-casman visualize web                 # Standalone web visualization interface
 
 # Web interfaces
 casman web                           # Launch unified web app (scanner + visualization)
 casman web --mode prod               # Launch production server with Gunicorn
-casman web --scanner-only            # Launch scanner interface only
-casman web --visualize-only          # Launch visualization interface only
-casman scan web                      # Quick access to scanner interface
+casman web --scanner-only            # Launch scanner interface only (port 5000)
+casman web --visualize-only          # Launch visualization interface only (port 5000)
 
 # Barcode generation
 casman barcode printpages --part-type ANTENNA --start-number 1 --end-number 50
@@ -533,11 +531,11 @@ This package replaces the individual scripts in the `scripts/` directory:
 | `read_parts_db.py` | `casman parts list` | `casman.parts` |
 | `scan_and_assemble.py` | `casman scan connect` | `casman.assembly` |
 | `visualize_analog_chains_term.py` | `casman visualize chains` | `casman.visualization` |
-| `visualize_analog_chains_web.py` | `casman visualize web` or `casman web --visualize-only` | `scripts/web_app.py` |
-| `web_scanner.py` | `casman web --scanner-only` or `casman scan web` | `scripts/web_app.py` |
 | `gen_barcode_printpages.py` | `casman barcode printpages` | `casman.barcode_utils` |
 | `clear_databases.py` | `casman database clear` | `casman.database` |
 | `print_assembled_db.py` | `casman database print` | `casman.database` |
+
+**Note:** Old standalone web scripts have been removed. Use `casman web` for all web interfaces.
 
 ## Dependencies
 
@@ -663,9 +661,6 @@ casman web --port 8080               # Custom port
 casman web --mode prod               # Production server on port 8000
 casman web --mode prod --workers 8   # Custom worker count
 
-# Quick Access Commands
-casman scan web                      # Scanner interface on port 5001
-
 ```
 
 ### Web App Configuration
@@ -740,8 +735,5 @@ casman web --mode prod               # Production mode with Gunicorn (port 8000)
 casman web --scanner-only            # Scanner interface only
 casman web --visualize-only          # Visualization interface only
 casman web --port 8080               # Custom port
-
-# Quick scanner access
-casman scan web                      # Launch scanner on port 5001
 
 ```

@@ -90,16 +90,20 @@ def format_ascii_chains(db_dir: Optional[str] = None) -> str:
         output_lines.append("-" * 88)
         for part, entries in duplicates.items():
             output_lines.append(f"Part {part} has {len(entries)} database entries:")
-            for i, (connected_to, scan_time, connected_scan_time) in enumerate(entries, 1):
+            for i, (connected_to, scan_time, connected_scan_time) in enumerate(
+                entries, 1
+            ):
                 output_lines.append(
-                    f"  {i}. FRM: {scan_time}, NXT: {connected_scan_time}, connects to: {connected_to}")
+                    f"  {i}. FRM: {scan_time}, NXT: {connected_scan_time}, connects to: {connected_to}"
+                )
         output_lines.append("-" * 88)
 
     return "\n".join(output_lines)
 
 
 def get_duplicate_connections(
-        db_dir: Optional[str] = None) -> Dict[str, List[Tuple[str, str, str]]]:
+    db_dir: Optional[str] = None,
+) -> Dict[str, List[Tuple[str, str, str]]]:
     """
     Get information about duplicate connections in the database.
 
@@ -142,11 +146,9 @@ def get_duplicate_connections(
     for part_number, connected_to, scan_time, connected_scan_time in records:
         if part_number not in part_connections:
             part_connections[part_number] = []
-        part_connections[part_number].append((
-            connected_to or "None",
-            scan_time or "None",
-            connected_scan_time or "None"
-        ))
+        part_connections[part_number].append(
+            (connected_to or "None", scan_time or "None", connected_scan_time or "None")
+        )
 
     # Return only parts with duplicates
     duplicates = {}
@@ -214,7 +216,8 @@ def get_chain_summary(db_dir: Optional[str] = None) -> Dict[str, float]:
 
 
 def _calculate_chain_length(
-        start_part: str, chains: Dict[str, List[str]], visited: Set[str]) -> int:
+    start_part: str, chains: Dict[str, List[str]], visited: Set[str]
+) -> int:
     """
     Calculate the length of a chain starting from a given part.
 

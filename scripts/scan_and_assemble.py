@@ -153,34 +153,28 @@ def generate_part_number(
     prefix = prefix_map.get(part_type, "")
 
     if part_type == "SNAP":
-        # Prompt for crate, snap letter, adc number
-        crate = input("Enter crate number (1 or 2): ").strip()
-        snap_letter = input("Enter SNAP letter (A-V): ").strip().upper()
+        # Prompt for crate, snap slot, port number
+        crate = input("Enter crate number (1-4): ").strip()
+        snap_slot = input("Enter SNAP slot (A-K): ").strip().upper()
         try:
-            adcin = int(input("Enter ADC input (0-11): ").strip())
-            if not 0 <= adcin <= 11:
-                print("Error: ADC input must be between 0 and 11.")
+            port = int(input("Enter SNAP port (0-11): ").strip())
+            if not 0 <= port <= 11:
+                print("Error: SNAP port must be between 0 and 11.")
                 return None
         except ValueError:
             print("Error: Invalid input. Please enter a number between 0 and 11.")
             return None
 
-        # Find SNAP number based on crate and snap letter
-        # Crate 1: SNAP001-SNAP022 (A-V), Crate 2: SNAP023-SNAP043 (A-V)
-        snap_letters = [chr(ord("A") + i) for i in range(22)]
-        if snap_letter not in snap_letters:
-            print("Error: Invalid SNAP letter. Must be A-V.")
+        # Validate crate and slot
+        valid_slots = [chr(ord("A") + i) for i in range(11)]  # A-K
+        if snap_slot not in valid_slots:
+            print("Error: Invalid SNAP slot. Must be A-K.")
             return None
-        if crate not in ["1", "2"]:
-            print("Error: Crate must be 1 or 2.")
+        if crate not in ["1", "2", "3", "4"]:
+            print("Error: Crate must be 1-4.")
             return None
 
-        snap_index = snap_letters.index(snap_letter)
-        if crate == "1":
-            snap_number = snap_index + 1
-        else:
-            snap_number = 22 + snap_index + 1
-        snap_str = f"SNAP{snap_number:03d}_ADC{adcin:02d}"
+        snap_str = f"SNAP{crate}{snap_slot}{port:02d}"
 
         # Load mapping from YAML
         db_dir = "database"
@@ -294,56 +288,28 @@ def main() -> None:
                 f"This is the last part in the sequence ({FINAL_TYPE}). It must be connected to a SNAP board."
             )
             # Prompt for SNAP connection
-            print("Enter SNAP/FENG connection details:")
-            crate = input("Enter crate number (1 or 2): ").strip()
-            snap_letter = input("Enter SNAP letter (A-V): ").strip().upper()
+            print("Enter SNAP connection details:")
+            crate = input("Enter crate number (1-4): ").strip()
+            snap_slot = input("Enter SNAP slot (A-K): ").strip().upper()
             try:
-                adcin = int(input("Enter ADC input (0-11): ").strip())
-                if not 0 <= adcin <= 11:
-                    print("Error: ADC input must be between 0 and 11.")
+                port = int(input("Enter SNAP port (0-11): ").strip())
+                if not 0 <= port <= 11:
+                    print("Error: SNAP port must be between 0 and 11.")
                     continue
             except ValueError:
                 print("Error: Invalid input. Please enter a number between 0 and 11.")
                 continue
 
-            snap_letters = [chr(ord("A") + i) for i in range(22)]
-            if snap_letter not in snap_letters:
-                print("Error: Invalid SNAP letter. Must be A-V.")
+            valid_slots = [chr(ord("A") + i) for i in range(11)]  # A-K
+            if snap_slot not in valid_slots:
+                print("Error: Invalid SNAP slot. Must be A-K.")
                 continue
-            if crate not in ["1", "2"]:
-                print("Error: Crate must be 1 or 2.")
+            if crate not in ["1", "2", "3", "4"]:
+                print("Error: Crate must be 1-4.")
                 continue
 
-            snap_index = snap_letters.index(snap_letter)
-            if crate == "1":
-                snap_number = snap_index + 1
-            else:
-                snap_number = 22 + snap_index + 1
-            snap_str = f"SNAP{snap_number:03d}_ADC{adcin:02d}"
-            feng_id = f"FENG_{crate}{snap_letter}{adcin:02d}"
-
-            # Load mapping from YAML
-            db_dir = "database"
-            mapping_path = os.path.join(db_dir, "snap_feng_map.yaml")
-            if os.path.exists(mapping_path):
-                with open(mapping_path, "r", encoding="utf-8") as f:
-                    snap_map = yaml.safe_load(f)
-                if snap_str not in snap_map:
-                    print(
-                        f"Error: SNAP input {snap_str} does not exist in the mapping YAML. Please check your entry."
-                    )
-                    continue
-                if snap_map[snap_str] != feng_id:
-                    print(
-                        f"Error: FENG ID mismatch. Expected {feng_id} for {snap_str}, found {snap_map[snap_str]} in YAML."
-                    )
-                    continue
-                print(f"FENG ID for {snap_str}: {feng_id}")
-            else:
-                print(
-                    "Warning: snap_feng_map.yaml not found. Skipping FENG mapping lookup."
-                )
-                continue
+            snap_str = f"SNAP{crate}{snap_slot}{port:02d}"
+            print(f"SNAP connection: {snap_str}")
 
             connected_to_type = "FENGINE"
             connected_polarization = "N/A"
@@ -361,12 +327,10 @@ def main() -> None:
             )
             if success:
                 print(
-                    f"Successfully recorded connection: {part_number} ---> {snap_str} / {feng_id}"
+                    f"Successfully recorded connection: {part_number} ---> {snap_str}"
                 )
             else:
-                print(
-                    f"Error recording connection: {part_number} ---> {snap_str} / {feng_id}"
-                )
+                print(f"Error recording connection: {part_number} ---> {snap_str}")
             # Ask if user wants to scan another part after final connection
             continue_choice = (
                 input("Do you want to enter another set of parts? (y/n): ")
@@ -468,9 +432,7 @@ def main() -> None:
             print(
                 f"Error: Invalid connection order. {part_type} cannot be connected to {next_part_type}."
             )
-            print(
-                f"Valid connection order: {chain_str}"
-            )
+            print(f"Valid connection order: {chain_str}")
             continue
 
         connected_to_type = next_part_type

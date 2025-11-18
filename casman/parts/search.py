@@ -4,6 +4,7 @@ Advanced search functionality for CAsMan parts.
 This module provides enhanced search capabilities for finding parts
 based on various criteria and patterns.
 """
+
 import sqlite3
 from typing import Any, Dict, List, Optional
 
@@ -20,7 +21,7 @@ def search_parts(
     created_after: Optional[str] = None,
     created_before: Optional[str] = None,
     limit: Optional[int] = None,
-    db_dir: Optional[str] = None
+    db_dir: Optional[str] = None,
 ) -> List[Part]:
     """
     Advanced search for parts with multiple criteria.
@@ -159,12 +160,12 @@ def get_part_statistics(db_dir: Optional[str] = None) -> Dict[str, Any]:
         total_parts = cursor.fetchone()[0]
 
         # Parts by type
-        cursor.execute(
-            "SELECT part_type, COUNT(*) FROM parts GROUP BY part_type")
+        cursor.execute("SELECT part_type, COUNT(*) FROM parts GROUP BY part_type")
         parts_by_type = dict(cursor.fetchall())
 
         # Parts by polarization
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT
                 CASE
                     WHEN part_number LIKE '%-P1-%' THEN 'P1'
@@ -175,28 +176,28 @@ def get_part_statistics(db_dir: Optional[str] = None) -> Dict[str, Any]:
                 COUNT(*)
             FROM parts
             GROUP BY polarization
-        """)
+        """
+        )
         parts_by_polarization = dict(cursor.fetchall())
 
         # Most recent part
         cursor.execute(
-            "SELECT part_number, date_created FROM parts ORDER BY date_created DESC LIMIT 1")
+            "SELECT part_number, date_created FROM parts ORDER BY date_created DESC LIMIT 1"
+        )
         latest_part = cursor.fetchone()
 
     return {
-        'total_parts': total_parts,
-        'parts_by_type': parts_by_type,
-        'parts_by_polarization': parts_by_polarization,
-        'latest_part': {
-            'part_number': latest_part[0] if latest_part else None,
-            'date_created': latest_part[1] if latest_part else None
-        }
+        "total_parts": total_parts,
+        "parts_by_type": parts_by_type,
+        "parts_by_polarization": parts_by_polarization,
+        "latest_part": {
+            "part_number": latest_part[0] if latest_part else None,
+            "date_created": latest_part[1] if latest_part else None,
+        },
     }
 
 
-def find_part(
-        part_number: str,
-        db_dir: Optional[str] = None) -> Optional[Part]:
+def find_part(part_number: str, db_dir: Optional[str] = None) -> Optional[Part]:
     """
     Find a specific part by part number.
 
@@ -212,16 +213,11 @@ def find_part(
     Optional[Part]
         The Part instance if found, None otherwise
     """
-    results = search_parts(
-        part_number_pattern=part_number,
-        limit=1,
-        db_dir=db_dir)
+    results = search_parts(part_number_pattern=part_number, limit=1, db_dir=db_dir)
     return results[0] if results else None
 
 
-def get_recent_parts(
-        count: int = 10,
-        db_dir: Optional[str] = None) -> List[Part]:
+def get_recent_parts(count: int = 10, db_dir: Optional[str] = None) -> List[Part]:
     """
     Get the most recently created parts.
 

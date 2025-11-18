@@ -1,6 +1,7 @@
 """
 Part type configuration utilities for CAsMan.
 """
+
 import ast
 from typing import Dict, Tuple
 

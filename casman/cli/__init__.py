@@ -40,7 +40,6 @@ __all__ = [
     # Functions that tests expect
     "add_parts_interactive",
     "get_parts_by_criteria",
-
     "format_ascii_chains",
     "generate_barcode_printpages",
 ]

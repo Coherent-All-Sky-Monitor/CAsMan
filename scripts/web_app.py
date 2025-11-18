@@ -35,6 +35,13 @@ from flask import (
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+try:
+    from flask_cors import CORS
+
+    HAS_CORS = True
+except ImportError:
+    HAS_CORS = False
+
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +52,9 @@ APP_CONFIG = {
 }
 
 
-def configure_apps(enable_scanner: bool = True, enable_visualization: bool = True) -> None:
+def configure_apps(
+    enable_scanner: bool = True, enable_visualization: bool = True
+) -> None:
     """Configure which applications to enable."""
     APP_CONFIG["enable_scanner"] = enable_scanner
     APP_CONFIG["enable_visualization"] = enable_visualization
@@ -59,7 +68,9 @@ scanner_bp = Blueprint(
     "scanner",
     __name__,
     url_prefix="/scanner",
-    template_folder=os.path.join(os.path.dirname(__file__), "..", "casman", "templates", "scanner"),
+    template_folder=os.path.join(
+        os.path.dirname(__file__), "..", "casman", "templates", "scanner"
+    ),
 )
 
 # Load part types
@@ -75,7 +86,7 @@ def get_part_details(part_number: str) -> Optional[Tuple[str, str]]:
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT part_type, polarization FROM parts WHERE part_number = ?",
-                (part_number,)
+                (part_number,),
             )
             result = cursor.fetchone()
             if result:
@@ -86,18 +97,52 @@ def get_part_details(part_number: str) -> Optional[Tuple[str, str]]:
 
 
 def validate_snap_part(part_number: str) -> bool:
-    """Validate SNAP part number against snap_feng_map.yaml."""
-    import yaml
+    """Validate SNAP part number format (SNAP<crate><slot><port>)."""
+    import re
+
+    # Format: SNAP<crate 1-4><slot A-K><port 00-11>
+    pattern = r"^SNAP[1-4][A-K](0[0-9]|1[01])$"
+    return bool(re.match(pattern, part_number))
+
+
+def validate_connection_sequence(first_type: str, second_type: str) -> tuple[bool, str]:
+    """Validate that connection follows the proper chain sequence."""
+    # Define the valid chain sequence
+    VALID_CHAIN = ["ANTENNA", "LNA", "COAXSHORT", "COAXLONG", "BACBOARD", "SNAP"]
 
     try:
-        db_dir = "database"
-        mapping_path = os.path.join(db_dir, "snap_feng_map.yaml")
-        with open(mapping_path, "r", encoding="utf-8") as f:
-            snap_map = yaml.safe_load(f)
-        return part_number in snap_map
-    except (OSError, yaml.YAMLError) as e:
-        logger.error("Error validating SNAP part: %s", e)
-        return False
+        first_idx = VALID_CHAIN.index(first_type)
+        second_idx = VALID_CHAIN.index(second_type)
+
+        # Second part must be exactly the next in chain
+        if second_idx != first_idx + 1:
+            valid_next = (
+                VALID_CHAIN[first_idx + 1]
+                if first_idx < len(VALID_CHAIN) - 1
+                else "none"
+            )
+            return (
+                False,
+                f"{first_type} can only connect to {valid_next}, not {second_type}",
+            )
+
+        return True, ""
+    except ValueError:
+        return False, f"Invalid part type in connection: {first_type} or {second_type}"
+
+
+def format_snap_part(crate: int, slot: str, port: int) -> str:
+    """Format SNAP part number from crate, slot, and port.
+
+    Args:
+        crate: Crate number (1-4)
+        slot: SNAP slot letter (A-K)
+        port: Port number (0-11)
+
+    Returns:
+        Formatted SNAP part number (e.g., SNAP1A00)
+    """
+    return f"SNAP{crate}{slot}{str(port).zfill(2)}"
 
 
 def get_existing_connections(part_number: str) -> List[Dict]:
@@ -121,7 +166,7 @@ def get_existing_connections(part_number: str) -> List[Dict]:
                    WHERE a.connection_status = 'connected'
                    AND (a.part_number = ? OR a.connected_to = ?)
                    ORDER BY a.scan_time DESC""",
-                (part_number, part_number, part_number, part_number)
+                (part_number, part_number, part_number, part_number),
             )
             rows = cursor.fetchall()
             return [
@@ -129,7 +174,7 @@ def get_existing_connections(part_number: str) -> List[Dict]:
                     "part_number": row[0],
                     "connected_to": row[1],
                     "connected_to_type": row[2],
-                    "scan_time": row[3]
+                    "scan_time": row[3],
                 }
                 for row in rows
             ]
@@ -158,29 +203,39 @@ def validate_part():
 
     if part_number.startswith("SNAP"):
         if validate_snap_part(part_number):
-            return jsonify({
-                "success": True,
-                "part_type": "SNAP",
-                "polarization": "N/A",
-                "part_number": part_number,
-                "existing_connections": existing
-            })
+            return jsonify(
+                {
+                    "success": True,
+                    "part_type": "SNAP",
+                    "polarization": "N/A",
+                    "part_number": part_number,
+                    "existing_connections": existing,
+                }
+            )
         else:
-            return jsonify({"success": False,
-                            "error": f"SNAP part {part_number} not found in snap_feng_map.yaml"})
+            return jsonify(
+                {
+                    "success": False,
+                    "error": f"Invalid SNAP format. Expected SNAP<crate 1-4><slot A-K><port 00-11>",
+                }
+            )
 
     part_details = get_part_details(part_number)
     if part_details:
         part_type, polarization = part_details
-        return jsonify({
-            "success": True,
-            "part_type": part_type,
-            "polarization": polarization,
-            "part_number": part_number,
-            "existing_connections": existing
-        })
+        return jsonify(
+            {
+                "success": True,
+                "part_type": part_type,
+                "polarization": polarization,
+                "part_number": part_number,
+                "existing_connections": existing,
+            }
+        )
     else:
-        return jsonify({"success": False, "error": f"Part {part_number} not found in database"})
+        return jsonify(
+            {"success": False, "error": f"Part {part_number} not found in database"}
+        )
 
 
 @scanner_bp.route("/api/get-connections", methods=["POST"])
@@ -194,11 +249,110 @@ def get_connections():
 
     connections = get_existing_connections(part_number)
 
-    return jsonify({
-        "success": True,
-        "connections": connections,
-        "count": len(connections)
-    })
+    return jsonify(
+        {"success": True, "connections": connections, "count": len(connections)}
+    )
+
+
+@scanner_bp.route("/api/check-snap-ports", methods=["POST"])
+def check_snap_ports():
+    """Check which SNAP ports are already connected for a given crate and slot."""
+    data = request.json
+    crate = data.get("crate")
+    slot = data.get("slot", "").strip().upper()
+
+    if not crate or not slot:
+        return jsonify({"success": False, "error": "Crate and slot are required"})
+
+    # Check all 12 ports (0-11) for this crate/slot combination
+    occupied_ports = {}
+    for port in range(12):
+        snap_part = format_snap_part(crate, slot, port)
+        existing = get_existing_connections(snap_part)
+
+        if existing:
+            # Find what BACBOARD is connected
+            connected_bacboard = None
+            for conn in existing:
+                if conn["part_number"] != snap_part:
+                    connected_bacboard = conn["part_number"]
+                    break
+                elif conn["connected_to"] != snap_part:
+                    connected_bacboard = conn["connected_to"]
+                    break
+
+            occupied_ports[port] = {
+                "snap_part": snap_part,
+                "connected_to": connected_bacboard or "unknown",
+            }
+
+    return jsonify({"success": True, "occupied_ports": occupied_ports})
+
+
+@scanner_bp.route("/api/format-snap", methods=["POST"])
+def format_snap():
+    """Format SNAP part number from crate, slot, and port."""
+    data = request.json
+    crate = data.get("crate")
+    slot = data.get("slot", "").strip().upper()
+    port = data.get("port")
+
+    if not crate or not slot or port is None:
+        return jsonify(
+            {"success": False, "error": "Crate, slot, and port are required"}
+        )
+
+    # Validate crate (1-4)
+    try:
+        crate = int(crate)
+        if crate < 1 or crate > 4:
+            return jsonify({"success": False, "error": "Crate must be between 1 and 4"})
+    except ValueError:
+        return jsonify({"success": False, "error": "Invalid crate number"})
+
+    # Validate slot (A-K)
+    if slot not in ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"]:
+        return jsonify({"success": False, "error": "Slot must be A through K"})
+
+    # Validate port (0-11)
+    try:
+        port = int(port)
+        if port < 0 or port > 11:
+            return jsonify({"success": False, "error": "Port must be between 0 and 11"})
+    except ValueError:
+        return jsonify({"success": False, "error": "Invalid port number"})
+
+    # Format SNAP part number
+    snap_part = format_snap_part(crate, slot, port)
+
+    # Check if this SNAP port already has a connection
+    existing = get_existing_connections(snap_part)
+    if existing:
+        # Find the BACBOARD connected to this SNAP port
+        connected_bacboard = None
+        for conn in existing:
+            if conn["part_number"] != snap_part:
+                connected_bacboard = conn["part_number"]
+            elif conn["connected_to"] != snap_part:
+                connected_bacboard = conn["connected_to"]
+
+        return jsonify(
+            {
+                "success": False,
+                "error": f"Port already connected to {connected_bacboard if connected_bacboard else 'another part'}",
+                "snap_part": snap_part,
+                "connected_to": connected_bacboard,
+            }
+        )
+
+    return jsonify(
+        {
+            "success": True,
+            "snap_part": snap_part,
+            "part_type": "SNAP",
+            "polarization": "N/A",
+        }
+    )
 
 
 @scanner_bp.route("/api/record-connection", methods=["POST"])
@@ -208,23 +362,42 @@ def record_connection():
 
     try:
         part_number = data["part_number"]
+        part_type = data["part_type"]
         connected_to = data["connected_to"]
+        connected_to_type = data["connected_to_type"]
+
+        # Validate connection sequence (e.g., BACBOARD must connect to SNAP)
+        is_valid_seq, seq_error = validate_connection_sequence(
+            part_type, connected_to_type
+        )
+        if not is_valid_seq:
+            return jsonify({"success": False, "error": seq_error})
 
         # Check if this exact connection already exists
         existing = get_existing_connections(part_number)
         for conn in existing:
             # Check if part_number is already connected to this specific part
-            if (conn["part_number"] == part_number and conn["connected_to"] == connected_to):
-                return jsonify({
-                    "success": False,
-                    "error": f"{part_number} is already connected to {connected_to}"
-                })
+            if (
+                conn["part_number"] == part_number
+                and conn["connected_to"] == connected_to
+            ):
+                return jsonify(
+                    {
+                        "success": False,
+                        "error": f"{part_number} is already connected to {connected_to}",
+                    }
+                )
             # Check if the connected_to part is already connected to part_number (reverse)
-            if (conn["part_number"] == connected_to and conn["connected_to"] == part_number):
-                return jsonify({
-                    "success": False,
-                    "error": f"{connected_to} is already connected to {part_number}"
-                })
+            if (
+                conn["part_number"] == connected_to
+                and conn["connected_to"] == part_number
+            ):
+                return jsonify(
+                    {
+                        "success": False,
+                        "error": f"{connected_to} is already connected to {part_number}",
+                    }
+                )
 
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -240,10 +413,12 @@ def record_connection():
         )
 
         if success:
-            return jsonify({
-                "success": True,
-                "message": f"Successfully connected {data['part_number']} → {data['connected_to']}"
-            })
+            return jsonify(
+                {
+                    "success": True,
+                    "message": f"Successfully connected {data['part_number']} → {data['connected_to']}",
+                }
+            )
         else:
             return jsonify({"success": False, "error": "Failed to record connection"})
 
@@ -272,12 +447,16 @@ def record_disconnection():
         )
 
         if success:
-            return jsonify({
-                "success": True,
-                "message": f"Successfully disconnected {data['part_number']} -X-> {data['connected_to']}"
-            })
+            return jsonify(
+                {
+                    "success": True,
+                    "message": f"Successfully disconnected {data['part_number']} -X-> {data['connected_to']}",
+                }
+            )
         else:
-            return jsonify({"success": False, "error": "Failed to record disconnection"})
+            return jsonify(
+                {"success": False, "error": "Failed to record disconnection"}
+            )
 
     except Exception as e:
         logger.error("Error recording disconnection: %s", e)
@@ -299,7 +478,9 @@ visualize_bp = Blueprint(
 
 def load_viz_template() -> str:
     """Load the visualization HTML template from file."""
-    template_path = os.path.join(os.path.dirname(__file__), "templates", "analog_chains.html")
+    template_path = os.path.join(
+        os.path.dirname(__file__), "templates", "analog_chains.html"
+    )
     with open(template_path, "r", encoding="utf-8") as f:
         return f.read()
 
@@ -495,8 +676,11 @@ def visualize_static(filename):
 @visualize_bp.route("/chains", methods=["GET", "POST"])
 def visualize_index():
     """Render the visualization interface."""
-    selected_part = request.form.get(
-        "part") if request.method == "POST" else request.args.get("part")
+    selected_part = (
+        request.form.get("part")
+        if request.method == "POST"
+        else request.args.get("part")
+    )
     parts = get_all_parts()
     chains, connections = get_all_chains(selected_part)
     duplicates = get_duplicate_info()
@@ -519,15 +703,27 @@ def visualize_index():
 # MAIN APPLICATION
 # ============================================================================
 
+
 def create_app(enable_scanner: bool = True, enable_visualization: bool = True) -> Flask:
     """Create and configure the unified Flask application."""
     configure_apps(enable_scanner, enable_visualization)
 
     app = Flask(
         __name__,
-        template_folder=os.path.join(os.path.dirname(__file__), "..", "casman", "templates"),
-        static_folder=os.path.join(os.path.dirname(__file__), "..", "casman", "static")
+        template_folder=os.path.join(
+            os.path.dirname(__file__), "..", "casman", "templates"
+        ),
+        static_folder=os.path.join(os.path.dirname(__file__), "..", "casman", "static"),
     )
+
+    # Enable CORS for mobile browser access
+    if HAS_CORS:
+        CORS(app)
+        logger.info("CORS enabled for cross-origin requests")
+    else:
+        logger.warning(
+            "CORS not available - mobile browsers may have issues. Install with: pip install flask-cors"
+        )
 
     if APP_CONFIG["enable_scanner"]:
         app.register_blueprint(scanner_bp)
@@ -542,12 +738,20 @@ def create_app(enable_scanner: bool = True, enable_visualization: bool = True) -
         enabled_apps = []
         if APP_CONFIG["enable_scanner"]:
             enabled_apps.append(
-                ("Scanner", "/scanner", "🔍 Connect/Disconnect parts (commissioning & repairs)"))
+                (
+                    "Scanner",
+                    "/scanner",
+                    "🔍 Connect/Disconnect parts (commissioning & repairs)",
+                )
+            )
         if APP_CONFIG["enable_visualization"]:
             enabled_apps.append(
-                ("Visualization",
-                 "/visualize",
-                 "📊 View assembly chains and connections"))
+                (
+                    "Visualization",
+                    "/visualize",
+                    "📊 View assembly chains and connections",
+                )
+            )
 
         if len(enabled_apps) == 1:
             return redirect(enabled_apps[0][1])
@@ -619,12 +823,12 @@ def run_production_server(
     app = create_app(enable_scanner, enable_visualization)
 
     options = {
-        'bind': f'{host}:{port}',
-        'workers': workers,
-        'worker_class': 'sync',
-        'accesslog': '-',
-        'errorlog': '-',
-        'loglevel': 'info',
+        "bind": f"{host}:{port}",
+        "workers": workers,
+        "worker_class": "sync",
+        "accesslog": "-",
+        "errorlog": "-",
+        "loglevel": "info",
     }
 
     print("🚀 Starting CAsMan Web Application (Production Mode)")
@@ -651,19 +855,19 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="CAsMan Web Application")
     parser.add_argument(
-        "--mode",
-        choices=["dev", "prod"],
-        default="dev",
-        help="Server mode")
+        "--mode", choices=["dev", "prod"], default="dev", help="Server mode"
+    )
     parser.add_argument("--host", default="0.0.0.0", help="Host address")
     parser.add_argument("--port", type=int, default=5000, help="Port number")
     parser.add_argument(
-        "--workers",
-        type=int,
-        default=4,
-        help="Number of workers (production only)")
-    parser.add_argument("--scanner-only", action="store_true", help="Enable only scanner")
-    parser.add_argument("--visualize-only", action="store_true", help="Enable only visualization")
+        "--workers", type=int, default=4, help="Number of workers (production only)"
+    )
+    parser.add_argument(
+        "--scanner-only", action="store_true", help="Enable only scanner"
+    )
+    parser.add_argument(
+        "--visualize-only", action="store_true", help="Enable only visualization"
+    )
 
     args = parser.parse_args()
 
@@ -672,10 +876,7 @@ if __name__ == "__main__":
 
     if args.mode == "prod":
         run_production_server(
-            args.host,
-            args.port,
-            args.workers,
-            enable_scanner,
-            enable_visualization)
+            args.host, args.port, args.workers, enable_scanner, enable_visualization
+        )
     else:
         run_dev_server(args.host, args.port, enable_scanner, enable_visualization)

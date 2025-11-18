@@ -28,7 +28,7 @@ def main():
     import sys
 
     # Check for help flag
-    if len(sys.argv) > 1 and sys.argv[1] in ['--help', '-h', 'help']:
+    if len(sys.argv) > 1 and sys.argv[1] in ["--help", "-h", "help"]:
         print("casman-scan: Interactive Assembly Scanner")
         print()
         print("Usage: casman-scan")

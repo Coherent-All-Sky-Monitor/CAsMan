@@ -19,10 +19,13 @@ sys.path.insert(0, str(project_root))
 
 try:
     import casman
+
     # Import the new package structure
     from casman import cli, config
+
     # Note: Top-level modules removed in v2.0, using package imports instead
     from casman import assembly, database, parts, visualization
+
     barcode_utils = None  # This module was restructured
 except ImportError as e:
     print(f"Warning: Could not import casman modules: {e}")

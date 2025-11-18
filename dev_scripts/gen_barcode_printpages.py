@@ -9,6 +9,7 @@ import argparse
 import os
 
 from PIL import Image
+from PIL.Image import Resampling
 
 from casman.config.core import get_config
 
@@ -33,7 +34,7 @@ def arrange_barcodes_in_pdf(directory, output_pdf):
     images_per_row = get_config("barcode.images_per_row", 3)
     max_width = get_config("barcode.max_barcode_width", 600)
     max_height = get_config("barcode.max_barcode_height", 200)
-    
+
     # Letter size in inches: 8.5 x 11, convert to pixels (assuming 300 DPI)
     letter_size = (2550, 3300)
 
@@ -58,7 +59,7 @@ def arrange_barcodes_in_pdf(directory, output_pdf):
         else:  # Tall image
             new_height = max_height
             new_width = int(max_height * aspect_ratio)
-
+        img = img.resize((new_width, new_height), Resampling.LANCZOS)
         img = img.resize((new_width, new_height), Image.LANCZOS)
 
         # Check if image fits in the current position, else start a new page
