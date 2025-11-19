@@ -47,7 +47,7 @@ def main():
         print("  Features:")
         print("  • Part validation: Ensures parts exist in database")
         print("    - Regular parts: Validated against parts.db")
-        print("    - SNAP parts: Validated against snap_feng_map.yaml")
+        print("    - SNAP parts: Validated by format (SNAP<chassis><slot><port>)")
         print("  • Connection format: Shows A --> B connections")
         print("  • Error handling: Clear error messages for invalid parts")
         print("  • Database recording: Stores connections with timestamps")

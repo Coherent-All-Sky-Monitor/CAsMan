@@ -99,7 +99,7 @@ During interactive scanning:
 
 - **Part Database Validation**: All parts validated against parts database
 
-- **SNAP Mapping Validation**: SNAP parts validated against snap_feng_map.yaml
+- **SNAP Format Validation**: SNAP parts validated against format pattern SNAP<chassis><slot><port>
 
 - **Connection Validation**: Each connection validated against chain rules
 

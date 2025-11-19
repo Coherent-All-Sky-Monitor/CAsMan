@@ -6,7 +6,7 @@ A comprehensive toolkit for managing and visualizing CASM (Coherent All-Sky Moni
 
 ## Testing & Coverage
 
-![Tests](https://img.shields.io/badge/tests-7%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-65.0%25-red)
+![Tests](https://img.shields.io/badge/tests-11%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-73.0%25-red)
 
 CAsMan maintains comprehensive test coverage across all modules with 141 passing tests:
 
@@ -349,7 +349,7 @@ The `casman scan connect` command provides the full interactive scanning experie
 
 - ✅ **Real-time part validation** against parts database
 
-- ✅ **SNAP part validation** using snap_feng_map.yaml  
+- ✅ **SNAP part validation** using format checks (SNAP<chassis><slot><port>)  
 
 - ✅ **Connection sequence validation** (enforces ANT→LNA→COAXSHORT→COAXLONG→BACBOARD→SNAP)
 

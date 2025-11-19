@@ -68,7 +68,16 @@ def generate_part_numbers(
     temp_conn.close()
     if last_part_number:
         try:
-            last_number = int(last_part_number.split("-")[-1])
+            # Parse part number format: ANT00011P1
+            # Extract the numeric portion between abbreviation and 'P'
+            # Find where 'P' appears (e.g., P1 or P2)
+            p_index = last_part_number.rfind('P')
+            if p_index > 0:
+                # Extract the numeric part before 'P'
+                numeric_part = last_part_number[len(part_abbrev):p_index]
+                last_number = int(numeric_part)
+            else:
+                last_number = 0
         except (ValueError, IndexError):
             last_number = 0
     else:

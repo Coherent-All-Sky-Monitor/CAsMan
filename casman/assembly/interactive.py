@@ -227,7 +227,7 @@ def validate_part_in_database(part_number: str) -> tuple[bool, str, str]:
 
 def validate_snap_part(part_number: str) -> tuple[bool, str, str]:
     """
-    Validate a SNAP part format (SNAP<crate><slot><port>).
+    Validate a SNAP part format (SNAP<chassis><slot><port>).
 
     Args:
         part_number (str): The SNAP part number to validate (e.g., SNAP1A00)
@@ -238,7 +238,7 @@ def validate_snap_part(part_number: str) -> tuple[bool, str, str]:
     try:
         import re
 
-        # Format: SNAP<crate 1-4><slot A-K><port 00-11>
+        # Format: SNAP<chassis 1-4><slot A-K><port 00-11>
         pattern = r"^SNAP[1-4][A-K](0[0-9]|1[01])$"
 
         if re.match(pattern, part_number):
@@ -298,9 +298,9 @@ def scan_and_assemble_interactive() -> None:
                 first_part
             )
             if not is_valid_first:
-                if first_part.startswith("SNAP") and "_ADC" in first_part:
+                if first_part.startswith("SNAP"):
                     print(
-                        f"❌ Error: SNAP part '{first_part}' not found in snap_feng_map.yaml."
+                        f"❌ Error: Invalid SNAP part format '{first_part}'. Expected format: SNAP<chassis><slot><port> (e.g., SNAP1A00)"
                     )
                 else:
                     print(f"❌ Error: Part '{first_part}' not found in parts database.")
@@ -316,22 +316,22 @@ def scan_and_assemble_interactive() -> None:
                 )
                 print("Enter SNAP/FENG connection details:")
 
-                # Get crate number
+                # Get chassis number
                 while True:
                     try:
-                        crate_input = input("Enter crate number (1-4): ").strip()
-                        if crate_input.lower() == "quit":
+                        chassis_input = input("Enter chassis number (1-4): ").strip()
+                        if chassis_input.lower() == "quit":
                             print("Goodbye!")
                             break
-                        crate = int(crate_input)
-                        if 1 <= crate <= 4:
+                        chassis = int(chassis_input)
+                        if 1 <= chassis <= 4:
                             break
                         else:
-                            print("❌ Crate must be between 1 and 4")
+                            print("❌ Chassis must be between 1 and 4")
                     except ValueError:
                         print("❌ Please enter a valid number")
 
-                if crate_input.lower() == "quit":
+                if chassis_input.lower() == "quit":
                     break
 
                 # Get SNAP slot (A-K)
@@ -366,8 +366,8 @@ def scan_and_assemble_interactive() -> None:
                 if port_input.lower() == "quit":
                     break
 
-                # Format SNAP part number: SNAP<crate><slot><port>
-                connected_part = f"SNAP{crate}{slot}{str(port).zfill(2)}"
+                # Format SNAP part number: SNAP<chassis><slot><port>
+                connected_part = f"SNAP{chassis}{slot}{str(port).zfill(2)}"
                 connected_type = "SNAP"
                 connected_polarization = "N/A"
 
@@ -389,9 +389,9 @@ def scan_and_assemble_interactive() -> None:
                     validate_part_in_database(connected_part)
                 )
                 if not is_valid_connected:
-                    if connected_part.startswith("SNAP") and "_ADC" in connected_part:
+                    if connected_part.startswith("SNAP"):
                         print(
-                            f"❌ Error: SNAP part '{connected_part}' not found in snap_feng_map.yaml."
+                            f"❌ Error: Invalid SNAP part format '{connected_part}'. Expected format: SNAP<chassis><slot><port> (e.g., SNAP1A00)"
                         )
                     else:
                         print(
@@ -527,21 +527,9 @@ def scan_and_disassemble_interactive() -> None:
                 print("Please enter a part number.")
                 continue
 
-            # Validate first part in database
-            is_valid_first, first_type, first_polarization = validate_part_in_database(
-                first_part
-            )
-            if not is_valid_first:
-                if first_part.startswith("SNAP") and "_ADC" in first_part:
-                    print(
-                        f"❌ Error: SNAP part '{first_part}' not found in snap_feng_map.yaml."
-                    )
-                else:
-                    print(f"❌ Error: Part '{first_part}' not found in parts database.")
-                print("Please check the part number and try again.")
-                continue
-
-            print(f"✅ Valid part: {first_part} ({first_type}, {first_polarization})")
+            # For disconnection, we don't validate against parts database
+            # We only check if there are existing connections to disconnect
+            print(f"Looking for connections involving: {first_part}")
 
             # Check for existing connections
             try:
@@ -555,9 +543,11 @@ def scan_and_disassemble_interactive() -> None:
                 c = conn.cursor()
 
                 # Get all connections for this part where latest status is 'connected'
-                # This ensures we only show connections that haven't been disconnected
+                # Include part_type and polarization for the first_part
                 c.execute(
-                    """SELECT a.part_number, a.connected_to, a.connected_to_type, a.scan_time
+                    """SELECT a.part_number, a.part_type, a.polarization, 
+                              a.connected_to, a.connected_to_type, a.connected_polarization,
+                              a.scan_time
                        FROM assembly a
                        INNER JOIN (
                            SELECT part_number, connected_to, MAX(scan_time) as max_time
@@ -586,9 +576,8 @@ def scan_and_disassemble_interactive() -> None:
                 # Display connections and let user choose
                 print(f"\n📋 Found {len(connections)} connection(s) for {first_part}:")
                 print("-" * 60)
-                for idx, (part_num, connected, conn_type, scan_time) in enumerate(
-                    connections, 1
-                ):
+                for idx, (part_num, part_type_db, polarization_db, 
+                          connected, conn_type, conn_pol, scan_time) in enumerate(connections, 1):
                     if part_num == first_part:
                         print(
                             f"{idx}. {part_num} --> {connected} ({conn_type}) [Scanned: {scan_time}]"
@@ -620,34 +609,25 @@ def scan_and_disassemble_interactive() -> None:
 
                 # Get the selected connection details
                 selected_connection = connections[choice_idx]
-                conn_part_num, conn_connected_to, conn_type, _ = selected_connection
+                (conn_part_num, conn_part_type, conn_part_pol, 
+                 conn_connected_to, conn_connected_type, conn_connected_pol, _) = selected_connection
 
                 # Determine which part is which: first_part should be source, other is target
                 # The selected connection could have first_part as either source or target
                 if conn_part_num == first_part:
                     # first_part is the source, connected_to is the target
+                    first_type = conn_part_type
+                    first_polarization = conn_part_pol
                     disconnected_part = conn_connected_to
-                    disconnected_type = conn_type
+                    disconnected_type = conn_connected_type
+                    disconnected_polarization = conn_connected_pol
                 else:
                     # first_part is the target, conn_part_num is the source
+                    first_type = conn_connected_type
+                    first_polarization = conn_connected_pol
                     disconnected_part = conn_part_num
-                    # Get type from database
-                    part_details = validate_part_in_database(disconnected_part)
-                    if part_details[0]:
-                        disconnected_type = part_details[1]
-                    else:
-                        print(
-                            f"❌ Error: Could not validate source part '{disconnected_part}'"
-                        )
-                        continue
-
-                # Get disconnected part details including polarization
-                is_valid_disconnected, disconnected_type, disconnected_polarization = (
-                    validate_part_in_database(disconnected_part)
-                )
-                if not is_valid_disconnected:
-                    print(f"❌ Error: Could not validate part '{disconnected_part}'")
-                    continue
+                    disconnected_type = conn_part_type
+                    disconnected_polarization = conn_part_pol
 
                 print(f"✅ Selected: {first_part} -X-> {disconnected_part}")
 

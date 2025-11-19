@@ -25,10 +25,6 @@ barcode:
   max_barcode_width: 600
   max_barcode_height: 200
 
-# Visualization settings
-visualization:
-  web_port: 8080
-
 # Unified web application settings
 web_app:
   # Development server settings

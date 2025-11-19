@@ -590,7 +590,7 @@ class TestAssemblyInteractive:
 
     def test_validate_snap_part_valid(self):
         """Test validating valid SNAP part."""
-        # Valid format: SNAP<crate 1-4><slot A-K><port 00-11>
+        # Valid format: SNAP<chassis 1-4><slot A-K><port 00-11>
         is_valid, part_type, polarization = validate_snap_part("SNAP1A00")
 
         assert is_valid is True
@@ -605,7 +605,7 @@ class TestAssemblyInteractive:
 
     def test_validate_snap_part_not_in_valid_format(self):
         """Test SNAP part not in valid format."""
-        # Invalid crate number (5 > 4)
+        # Invalid chassis number (5 > 4)
         is_valid, _, _ = validate_snap_part("SNAP5A00")
 
         assert is_valid is False

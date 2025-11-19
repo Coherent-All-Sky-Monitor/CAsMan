@@ -22,5 +22,5 @@ with open(yaml_path, "w", encoding="utf-8") as f:
             snap_letter = LETTERS[(snap_num - 1) % 22]
             for adc in range(12):
                 snap_key = f"SNAP{snap_num:03d}_ADC{adc:02d}"
-                feng_val = f"FENG_{crate}{snap_letter}{adc:02d}"
+                feng_val = f"FENG_{chassis}{snap_letter}{adc:02d}"
                 f.write(f"{snap_key}: {feng_val}\n")

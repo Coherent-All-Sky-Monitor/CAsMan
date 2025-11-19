@@ -70,7 +70,7 @@ web_app:
 ### Modified Files
 - `casman/cli/main.py` - Added `web` command routing
 - `casman/templates/scanner/scanner.html` - Added home link
-- `scripts/templates/analog_chains.html` - Added home link, fixed font paths
+- `casman/templates/analog_chains.html` - Added home link, fixed font paths
 - `config.yaml` - Added `web_app` configuration section
 
 ## Testing

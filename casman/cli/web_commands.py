@@ -92,9 +92,8 @@ Examples:
     args = parser.parse_args(sys.argv[2:])  # Skip 'casman web'
 
     try:
-        import os
-        import subprocess
         from casman.config.core import get_config
+        from casman.web import run_dev_server, run_production_server
 
         # Determine which interfaces to enable
         enable_scanner = True
@@ -131,43 +130,24 @@ Examples:
             host = args.host or get_config("web_app.dev.host", "0.0.0.0")
             workers = 4  # Not used in dev mode
 
-        # Get path to web_app.py script
-        script_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        web_app_script = os.path.join(script_dir, "scripts", "web_app.py")
+        # Run appropriate server
+        if args.mode == "prod":
+            run_production_server(
+                host=host,
+                port=port,
+                workers=workers,
+                enable_scanner=enable_scanner,
+                enable_visualization=enable_visualization,
+            )
+        else:
+            run_dev_server(
+                host=host,
+                port=port,
+                enable_scanner=enable_scanner,
+                enable_visualization=enable_visualization,
+            )
 
-        if not os.path.exists(web_app_script):
-            print(f"❌ Error: Web app script not found at {web_app_script}")
-            sys.exit(1)
-
-        # Build command
-        cmd = [
-            sys.executable,
-            web_app_script,
-            "--mode",
-            args.mode,
-            "--host",
-            host,
-            "--port",
-            str(port),
-        ]
-
-        if args.mode == "production":
-            cmd.extend(["--workers", str(workers)])
-
-        if args.scanner_only:
-            cmd.append("--scanner-only")
-        elif args.visualize_only:
-            cmd.append("--visualize-only")
-
-        print(
-            f"🚀 Starting CAsMan Web Application ({'Production' if args.mode == 'prod' else 'Development'} Mode)"
-        )
-        print()
-
-        # Run the web application
-        subprocess.run(cmd, check=False)
-
-    except (OSError, subprocess.SubprocessError) as e:
+    except ImportError as e:
         print(f"❌ Web application not available: {e}")
         print("💡 Make sure Flask is installed: pip install flask")
         sys.exit(1)

@@ -4,10 +4,12 @@
 # Usage: ./coverage_check.sh
 #
 
-echo "Running coverage analysis..."
+echo "🔍 Running coverage analysis..."
+echo "   (Running ~320 tests - this takes 30-60 seconds)"
+echo ""
 
 # Run tests with coverage
-coverage run -m pytest tests/ --quiet
+coverage run -m pytest tests/
 
 if [ $? -ne 0 ]; then
     echo "Tests failed!"

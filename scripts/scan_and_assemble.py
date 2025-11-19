@@ -15,12 +15,9 @@ Usage
 4. Results are saved, and timestamps are updated accordingly.
 """
 
-import os
 import sqlite3
 from datetime import datetime
 from typing import List, Optional
-
-import yaml
 
 from casman.assembly.connections import record_assembly_connection
 from casman.database.operations import check_part_in_db
@@ -39,7 +36,7 @@ FINAL_TYPE: str = ALL_PART_TYPES[-1]  # e.g., BACBOARD
 
 def check_part_already_scanned(part_number: str, db_dir: Optional[str] = None) -> bool:
     """
-    Check if a part has already been scanned/assembled.
+    Check if a part has already been scanned/assembled and is currently connected.
 
     Parameters
     ----------
@@ -51,18 +48,28 @@ def check_part_already_scanned(part_number: str, db_dir: Optional[str] = None) -
     Returns
     -------
     bool
-        True if the part has already been scanned, False otherwise.
+        True if the part is currently connected (most recent status is 'connected'), False otherwise.
     """
     try:
         db_path = get_database_path("assembled_casm.db", db_dir)
 
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
+            # Check if the part has any active (connected) connections
+            # Look at the most recent record for this part
             cursor.execute(
-                "SELECT COUNT(*) FROM assembly WHERE part_number = ?", (part_number,)
+                """
+                SELECT connection_status 
+                FROM assembly 
+                WHERE part_number = ? OR connected_to = ?
+                ORDER BY id DESC 
+                LIMIT 1
+                """,
+                (part_number, part_number)
             )
-            count = cursor.fetchone()[0]
-            return count > 0
+            result = cursor.fetchone()
+            # Part is "already scanned" only if most recent status is 'connected'
+            return result is not None and result[0] == 'connected'
     except (sqlite3.Error, OSError):
         return False
 
@@ -153,8 +160,8 @@ def generate_part_number(
     prefix = prefix_map.get(part_type, "")
 
     if part_type == "SNAP":
-        # Prompt for crate, snap slot, port number
-        crate = input("Enter crate number (1-4): ").strip()
+        # Prompt for chassis, snap slot, port number
+        chassis = input("Enter chassis number (1-4): ").strip()
         snap_slot = input("Enter SNAP slot (A-K): ").strip().upper()
         try:
             port = int(input("Enter SNAP port (0-11): ").strip())
@@ -165,37 +172,16 @@ def generate_part_number(
             print("Error: Invalid input. Please enter a number between 0 and 11.")
             return None
 
-        # Validate crate and slot
+        # Validate chassis and slot
         valid_slots = [chr(ord("A") + i) for i in range(11)]  # A-K
         if snap_slot not in valid_slots:
             print("Error: Invalid SNAP slot. Must be A-K.")
             return None
-        if crate not in ["1", "2", "3", "4"]:
-            print("Error: Crate must be 1-4.")
+        if chassis not in ["1", "2", "3", "4"]:
+            print("Error: Chassis must be 1-4.")
             return None
 
-        snap_str = f"SNAP{crate}{snap_slot}{port:02d}"
-
-        # Load mapping from YAML
-        db_dir = "database"
-        mapping_path = os.path.join(db_dir, "snap_feng_map.yaml")
-        if os.path.exists(mapping_path):
-            with open(mapping_path, "r", encoding="utf-8") as f:
-                snap_map = yaml.safe_load(f)
-            if snap_str not in snap_map:
-                print(
-                    f"Error: SNAP input {snap_str} does not exist in the mapping YAML. \
-                        Please check your entry."
-                )
-                return None
-            feng_id = snap_map.get(snap_str)
-            print(f"FENG ID for {snap_str}: {feng_id}")
-        else:
-            print(
-                "Warning: snap_feng_map.yaml not found. Skipping FENG mapping lookup."
-            )
-            return None
-
+        snap_str = f"SNAP{chassis}{snap_slot}{port:02d}"
         return snap_str
 
     # Standard format: {PREFIX}{NUMBER}P{POLARIZATION}
@@ -289,7 +275,7 @@ def main() -> None:
             )
             # Prompt for SNAP connection
             print("Enter SNAP connection details:")
-            crate = input("Enter crate number (1-4): ").strip()
+            chassis = input("Enter chassis number (1-4): ").strip()
             snap_slot = input("Enter SNAP slot (A-K): ").strip().upper()
             try:
                 port = int(input("Enter SNAP port (0-11): ").strip())
@@ -304,11 +290,11 @@ def main() -> None:
             if snap_slot not in valid_slots:
                 print("Error: Invalid SNAP slot. Must be A-K.")
                 continue
-            if crate not in ["1", "2", "3", "4"]:
-                print("Error: Crate must be 1-4.")
+            if chassis not in ["1", "2", "3", "4"]:
+                print("Error: Chassis must be 1-4.")
                 continue
 
-            snap_str = f"SNAP{crate}{snap_slot}{port:02d}"
+            snap_str = f"SNAP{chassis}{snap_slot}{port:02d}"
             print(f"SNAP connection: {snap_str}")
 
             connected_to_type = "FENGINE"

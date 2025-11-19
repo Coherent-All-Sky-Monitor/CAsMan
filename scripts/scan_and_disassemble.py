@@ -13,12 +13,9 @@ Usage
 4. Disconnection records are saved with timestamps.
 """
 
-import os
 import sqlite3
 from datetime import datetime
 from typing import List, Optional
-
-import yaml
 
 from casman.assembly.connections import record_assembly_disconnection
 from casman.database.operations import check_part_in_db
@@ -65,28 +62,22 @@ def get_part_details(part_number: str, db_dir: Optional[str] = None):
 
 def validate_snap_part(snap_str: str) -> bool:
     """
-    Validate a SNAP part against the snap_feng_map.yaml file.
+    Validate a SNAP part format (SNAP<chassis><slot><port>).
 
     Parameters
     ----------
     snap_str : str
-        The SNAP part identifier (e.g., SNAP001_ADC00).
+        The SNAP part identifier (e.g., SNAP1A00).
 
     Returns
     -------
     bool
-        True if valid, False otherwise.
+        True if valid format, False otherwise.
     """
-    try:
-        db_dir = "database"
-        mapping_path = os.path.join(db_dir, "snap_feng_map.yaml")
-        if os.path.exists(mapping_path):
-            with open(mapping_path, "r", encoding="utf-8") as f:
-                snap_map = yaml.safe_load(f)
-            return snap_str in snap_map
-        return False
-    except (yaml.YAMLError, OSError):
-        return False
+    import re
+    # Format: SNAP<chassis 1-4><slot A-K><port 00-11>
+    pattern = r"^SNAP[1-4][A-K](0[0-9]|1[01])$"
+    return bool(re.match(pattern, snap_str))
 
 
 def generate_part_number(
@@ -114,8 +105,8 @@ def generate_part_number(
     prefix = prefix_map.get(part_type, "")
 
     if part_type == "SNAP":
-        # Prompt for crate, snap slot, port number
-        crate = input("Enter crate number (1-4): ").strip()
+        # Prompt for chassis, snap slot, port number
+        chassis = input("Enter chassis number (1-4): ").strip()
         snap_slot = input("Enter SNAP slot (A-K): ").strip().upper()
         try:
             port = int(input("Enter SNAP port (0-11): ").strip())
@@ -126,16 +117,16 @@ def generate_part_number(
             print("Error: Invalid input. Please enter a number between 0 and 11.")
             return None
 
-        # Validate crate and slot
+        # Validate chassis and slot
         valid_slots = [chr(ord("A") + i) for i in range(11)]  # A-K
         if snap_slot not in valid_slots:
             print("Error: Invalid SNAP slot. Must be A-K.")
             return None
-        if crate not in ["1", "2", "3", "4"]:
-            print("Error: Crate must be 1-4.")
+        if chassis not in ["1", "2", "3", "4"]:
+            print("Error: Chassis must be 1-4.")
             return None
 
-        snap_str = f"SNAP{crate}{snap_slot}{port:02d}"
+        snap_str = f"SNAP{chassis}{snap_slot}{port:02d}"
         print(f"SNAP connection: {snap_str}")
 
         return snap_str
@@ -222,7 +213,7 @@ def main() -> None:
         else:
             if not validate_snap_part(part_number):
                 print(
-                    f"Error: SNAP part {part_number} not found in snap_feng_map.yaml."
+                    f"Error: Invalid SNAP part format {part_number}. Expected format: SNAP<chassis><slot><port> (e.g., SNAP1A00)"
                 )
                 continue
 

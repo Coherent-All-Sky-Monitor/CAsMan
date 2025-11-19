@@ -46,7 +46,7 @@ and assembling parts.
 - `check_existing_connections()` - Check if a part already has existing connections to prevent duplicates/branches
 - `check_target_connections()` - Check if the target part can accept a new connection
 - `validate_part_in_database()` - Validate if a part exists in the parts database or SNAP mapping
-- `validate_snap_part()` - Validate a SNAP part format (SNAP<crate><slot><port>)
+- `validate_snap_part()` - Validate a SNAP part format (SNAP<chassis><slot><port>)
 - `scan_and_assemble_interactive()` - Interactive scanning and assembly function
 - `scan_and_disassemble_interactive()` - Interactive scanning and disassembly function
 - `main()` - Main entry point for assembly scanning CLI
@@ -305,7 +305,7 @@ tuple[bool, str, str]: (is_valid, part_type, polarization)
 
 **Signature:** `validate_snap_part(part_number: str) -> tuple[bool, str, str]`
 
-Validate a SNAP part format (SNAP<crate><slot><port>).
+Validate a SNAP part format (SNAP<chassis><slot><port>).
 
 **Returns:**
 
@@ -384,7 +384,7 @@ statistics from the assembled database.
 
 **Signature:** `get_assembly_connections(db_dir: Optional[str]) -> List[Tuple[str, Optional[str], str, Optional[str], Optional[str]]]`
 
-Get all assembly connections from the database.
+Get all assembly connections from the database. Only returns connections where the most recent status between any two parts (checking both directions) is 'connected'. This ensures disconnected pairs are properly filtered out even if only one direction was recorded.
 
 **Parameters:**
 

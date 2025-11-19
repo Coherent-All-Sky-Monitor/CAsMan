@@ -30,7 +30,7 @@ and assembling parts.
 
 - `validate_part_in_database()` - Validate if a part exists in the parts database or SNAP mapping
 
-- `validate_snap_part()` - Validate a SNAP part against the snap_feng_map
+- `validate_snap_part()` - Validate a SNAP part format (SNAP<chassis><slot><port>)
 
 - `scan_and_assemble_interactive()` - Interactive scanning and assembly function
 
@@ -157,7 +157,7 @@ tuple[bool, str, str]: (is_valid, part_type, polarization)
 
 **Signature:** `validate_snap_part(part_number: str) -> tuple[bool, str, str]`
 
-Validate a SNAP part against the snap_feng_map.yaml file.
+Validate a SNAP part format (SNAP<chassis><slot><port>).
 
 **Returns:**
 

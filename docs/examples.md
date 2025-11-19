@@ -253,7 +253,7 @@ casman scan connect
 
 # 5. Scan BAC-P1-00001
 
-# 6. Enter SNAP part (validated against snap_feng_map.yaml)
+# 6. Enter SNAP part (validated by format: SNAP<chassis><slot><port>)
 
 # Result: Complete validated assembly chain
 

@@ -120,20 +120,47 @@ def get_duplicate_connections(
         db_path = get_database_path("assembled_casm.db", db_dir)
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
+            # Get latest status for each part pair (checking both directions)
             cursor.execute(
                 """
-                SELECT a.part_number, a.connected_to, a.scan_time, a.connected_scan_time
-                FROM assembly a
-                INNER JOIN (
-                    SELECT part_number, connected_to, MAX(scan_time) as max_time
+                WITH latest_connections AS (
+                    SELECT 
+                        CASE 
+                            WHEN part_number < connected_to THEN part_number
+                            ELSE connected_to
+                        END as part_a,
+                        CASE 
+                            WHEN part_number < connected_to THEN connected_to
+                            ELSE part_number
+                        END as part_b,
+                        MAX(scan_time) as latest_time
                     FROM assembly
-                    GROUP BY part_number, connected_to
-                ) latest
-                ON a.part_number = latest.part_number
-                AND a.connected_to = latest.connected_to
-                AND a.scan_time = latest.max_time
-                WHERE a.connection_status = 'connected'
-                ORDER BY a.scan_time
+                    WHERE part_number IS NOT NULL AND connected_to IS NOT NULL
+                    GROUP BY part_a, part_b
+                ),
+                pair_status AS (
+                    SELECT 
+                        a.part_number,
+                        a.connected_to,
+                        a.scan_time,
+                        a.connected_scan_time,
+                        a.connection_status
+                    FROM assembly a
+                    INNER JOIN latest_connections lc
+                    ON (
+                        (a.part_number = lc.part_a AND a.connected_to = lc.part_b) OR
+                        (a.part_number = lc.part_b AND a.connected_to = lc.part_a)
+                    )
+                    AND a.scan_time = lc.latest_time
+                )
+                SELECT DISTINCT 
+                    ps.part_number, 
+                    ps.connected_to, 
+                    ps.scan_time, 
+                    ps.connected_scan_time
+                FROM pair_status ps
+                WHERE ps.connection_status = 'connected'
+                ORDER BY ps.scan_time
                 """
             )
             records = cursor.fetchall()
