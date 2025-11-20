@@ -4,98 +4,6 @@
 
 A comprehensive toolkit for managing and visualizing CASM (Coherent All-Sky Monitor) assembly processes. CAsMan provides CLI tools for part management, barcode generation, assembly tracking with connection validation, and interactive visualization.
 
-## Testing & Coverage
-
-![Tests](https://img.shields.io/badge/tests-11%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-73.0%25-red)
-
-CAsMan maintains comprehensive test coverage across all modules with 141 passing tests:
-
-| Module | Coverage | Lines Covered |
-|--------|----------|---------------|
-| **__Init__** | 100.0% | 2/2 |
-| **Assembly Data** | 100.0% | 32/32 |
-| **Barcode __Init__** | 100.0% | 5/5 |
-| **Database __Init__** | 100.0% | 5/5 |
-| **Database Migrations** | 100.0% | 63/63 |
-| **Parts __Init__** | 100.0% | 10/10 |
-| **Parts Db** | 100.0% | 4/4 |
-| **Parts Validation** | 100.0% | 41/41 |
-| **Database Operations** | 98.0% | 52/53 |
-| **Database Connection** | 96.0% | 24/25 |
-| **Parts Generation** | 93.0% | 50/54 |
-| **Parts Part** | 89.0% | 54/61 |
-| **Database Initialization** | 84.0% | 32/38 |
-| **Cli Parts_Commands** | 83.0% | 29/35 |
-| **Config __Init__** | 83.0% | 25/30 |
-| **Config Core** | 83.0% | 97/117 |
-| **Parts Types** | 82.0% | 9/11 |
-| **Config Schema** | 81.0% | 17/21 |
-| **Config Environments** | 79.0% | 60/76 |
-| **Cli Assembly_Commands** | 75.0% | 18/24 |
-| **Parts Search** | 71.0% | 46/65 |
-| **Visualization Core** | 67.0% | 97/145 |
-| **Cli Barcode_Commands** | 64.0% | 18/28 |
-| **Barcode_Utils** | 61.0% | 46/76 |
-| **Cli __Init__** | 54.0% | 13/24 |
-| **Cli Main** | 52.0% | 33/64 |
-| **Cli Utils** | 52.0% | 16/31 |
-| **Cli Visualization_Commands** | 49.0% | 21/43 |
-| **Barcode Generation** | 39.0% | 18/46 |
-| **Assembly Chains** | 32.0% | 14/44 |
-| **Assembly Connections** | 29.0% | 6/21 |
-| **Config Utils** | 28.0% | 28/101 |
-| **Visualization __Init__** | 22.0% | 4/18 |
-| **Assembly __Init__** | 20.0% | 8/40 |
-| **Barcode Printing** | 16.0% | 8/51 |
-| **Barcode Operations** | 14.0% | 18/125 |
-| **Barcode Validation** | 9.0% | 6/64 |
-| **Parts Interactive** | 8.0% | 9/120 |
-| **Assembly Interactive** | 7.0% | 13/174 |
-| **Overall** | **53.0%** | **1051/1987** |
-
-### Running Tests
-
-```bash
-
-# Run all tests
-pytest
-
-# Run with coverage
-coverage run -m pytest
-coverage report --include="casman/*"
-
-# Run specific test modules
-pytest tests/test_parts.py -v
-pytest tests/test_cli.py -v
-
-# Quick coverage check script
-./coverage_check.sh
-
-```
-
-### Automated Coverage Tracking
-
-A coverage check script is provided for development workflow:
-
-```bash
-
-# Run coverage analysis and check threshold
-./coverage_check.sh
-
-# The script will:
-
-# 1. Run all tests with coverage
-
-# 2. Display detailed coverage report
-
-# 3. Check against minimum threshold (50%)
-
-# 4. Provide feedback on coverage status
-
-```
-
-The git pre-commit hook can optionally run coverage checks to ensure code quality before commits.
-
 ## Assembly Chain Validation
 
 CAsMan enforces strict assembly chain rules to ensure proper CASM assembly:
@@ -177,62 +85,6 @@ pip install git+https://github.com/Coherent-All-Sky-Monitor/CAsMan.git
 
 ```
 
-## Migration Guide
-
-If you're upgrading from CAsMan v0.1.x to v0.2.x, you'll need to update your imports due to the new modular architecture.
-
-### Common Migration Patterns
-
-#### Parts Management
-
-```python
-
-# Old (v0.1.x) - Legacy files (now removed)
-from casman.parts import add_parts_interactive, get_last_part_number
-
-# New (v0.2.x) - Modular structure
-from casman.parts.interactive import add_parts_interactive
-from casman.parts.generation import get_last_part_number
-
-```
-
-#### Assembly Operations
-
-```python
-
-# Old (v0.1x) - Legacy files (now removed)
-from casman.assembly import build_connection_chains, print_assembly_chains
-
-# New (v0.2x) - Modular structure
-from casman.assembly.chains import build_connection_chains, print_assembly_chains
-
-```
-
-#### Database Operations
-
-```python
-
-# Old (v0.1x) - Legacy files (now removed)
-from casman.database import get_parts_by_criteria, init_parts_db
-
-# New (v0.2x) - Modular structure
-from casman.database.operations import get_parts_by_criteria
-from casman.database.initialization import init_parts_db
-
-```
-
-#### Visualization
-
-```python
-
-# Old (v0.1x) - Legacy files (now removed)
-from casman.visualization import format_ascii_chains, get_chain_summary
-
-# New (v0.2x) - Modular structure
-from casman.visualization.core import format_ascii_chains, get_chain_summary
-
-```
-
 ## Quick Start
 
 **Note**: If you installed using a virtual environment, make sure to activate it before using CAsMan:
@@ -299,19 +151,7 @@ casman database clear                # Clear both parts and assembly databases
 casman database clear --parts        # Clear only the parts database
 casman database clear --assembled    # Clear only the assembly database
 
-# Display formatted database contents
 casman database print               # Show assembly database in formatted tables
-
-# Example safety features:
-
-# - Visual stop sign warnings for destructive operations
-
-# - Double "yes" confirmation required for clearing
-
-# - Automatic database existence checks
-
-# - Graceful error handling and recovery
-
 ```
 
 ### Part Management
@@ -345,59 +185,120 @@ casman parts add
 
 ### Enhanced Interactive Scanning
 
-The `casman scan connect` command provides the full interactive scanning experience with comprehensive validation:
+The `casman scan connect` command provides an interactive scanning experience:
 
-- ✅ **Real-time part validation** against parts database
+- **Real-time part validation** against parts database
 
-- ✅ **SNAP part validation** using format checks (SNAP<chassis><slot><port>)  
+- **SNAP part validation** using format checks (SNAP<chassis><slot><port>)  
 
-- ✅ **Connection sequence validation** (enforces ANT→LNA→COAXSHORT→COAXLONG→BACBOARD→SNAP)
+- **Connection sequence validation** (enforces ANT→LNA→COAXSHORT→COAXLONG→BACBOARD→SNAP)
 
-- ✅ **Duplicate prevention** (blocks multiple connections)
+- **Duplicate prevention** (blocks multiple connections)
 
-- ✅ **Chain directionality** (ANTENNA=sources only, SNAP=targets only)
+- **Chain directionality** (ANTENNA=sources only, SNAP=targets only), can only scan connection in one direction.
 
 ```sh
 
 # Start full interactive scanning and assembly workflow
 casman scan connect
 
-# Basic connection scanning (simplified workflow)
+# Basic connection scanning (manual entry or barcode scanner)
 casman scan connection
 
-# Example session with casman scan connect:
-
-# Scan first part: ANT-P1-00001
-
-# ✅ Valid part: ANT-P1-00001 (ANTENNA, 1)
-
-# Scan connected part: LNA-P1-00001  
-
-# ✅ Valid part: LNA-P1-00001 (LNA, 1)
-
-# ✅ Connection recorded: ANT-P1-00001 --> LNA-P1-00001
-
 ```
 
-### Individual Tools
+## Key Features
 
-Each module can also be run independently:
+### Disconnect Tracking
 
+Track part disconnections with full historical records. The database maintains both connection and disconnection events with automatic migration support.
+
+**Usage:**
 ```bash
-
-# Part management
-casman-parts
-
-# Assembly scanning
-casman-scan
-
-# Visualization
-casman-visualize
-
-# Barcode generation
-casman-barcode ANTENNA 1 50
-
+casman scan disconnect    # Record part disconnections
 ```
+
+**Database Schema:**
+- Automatic `connection_status` column migration
+- Records marked as 'connected' or 'disconnected'
+- Visualizations filter to show only connected parts
+- Allows part reconnection after disconnection
+
+**API:**
+```python
+from casman.assembly.connections import record_assembly_disconnection
+
+# Record a disconnection
+record_assembly_disconnection(
+    part_number, part_type, polarization, scan_time,
+    connected_to, connected_to_type, connected_polarization,
+    connected_scan_time, db_dir=None
+)
+```
+
+### Web Application
+
+A web server serving both scanner and visualization interfaces with flexible configuration.
+
+- Scanner interface for connecting/disconnecting parts
+- Visualization interface for viewing assembled chains
+  
+**Configuration (`config.yaml`):**
+```yaml
+web_app:
+  enable_scanner: true
+  enable_visualization: true
+  dev:
+    port: 5000
+    host: "0.0.0.0"
+  production:
+    port: 8000
+    workers: 4
+```
+
+**Deployment:**
+```bash
+# Development mode
+casman web
+
+# Production mode with Gunicorn
+casman web --mode prod
+
+# Scanner-only for commissioning/repairs
+casman web --scanner-only
+
+# Visualization-only for monitoring
+casman web --visualize-only
+```
+
+### Version Management
+
+Automated version number management across all project files with git integration.
+
+**Usage:**
+```bash
+# Show current version
+python version_manager.py --show
+
+# Increment version (patch/minor/major)
+python version_manager.py --increment minor
+
+# Set specific version
+python version_manager.py --set 1.2.3
+
+# Full release workflow
+python version_manager.py --increment minor --commit --tag
+```
+
+**Files Updated:**
+- `pyproject.toml` - Project version
+- `casman/__init__.py` - Package version
+- `casman/cli/utils.py` - CLI version display
+
+**Semantic Versioning:**
+- **MAJOR**: Breaking changes
+- **MINOR**: New features (backward compatible)
+- **PATCH**: Bug fixes and improvements
 
 ## Package Structure
 
@@ -521,22 +422,6 @@ python -m casman.cli --help
 2. **Database Changes**: Update modules in `casman/database/`
 3. **New Part Types**: Update `PART_TYPES` in part type definitions
 
-## Migration from Scripts
-
-This package replaces the individual scripts in the `scripts/` directory:
-
-| Old Script | New Command | New Module |
-|------------|-------------|------------|
-| `gen_add_part_numbers.py` | `casman parts add` | `casman.parts` |
-| `read_parts_db.py` | `casman parts list` | `casman.parts` |
-| `scan_and_assemble.py` | `casman scan connect` | `casman.assembly` |
-| `visualize_analog_chains_term.py` | `casman visualize chains` | `casman.visualization` |
-| `gen_barcode_printpages.py` | `casman barcode printpages` | `casman.barcode_utils` |
-| `clear_databases.py` | `casman database clear` | `casman.database` |
-| `print_assembled_db.py` | `casman database print` | `casman.database` |
-
-**Note:** Old standalone web scripts have been removed. Use `casman web` for all web interfaces.
-
 ## Dependencies
 
 ### Core Dependencies
@@ -602,86 +487,7 @@ For issues and questions:
 
 - Check the documentation in the repository
 
-## Changelog
 
-### Version 0.2.0
-
-- Complete refactoring of script-based tools into installable package
-
-- Comprehensive CLI with subcommands
-
-- Improved database management with proper schemas
-
-- Basic ASCII visualization functionality
-
-- Comprehensive documentation and type hints
-
-- Production-ready packaging with setup tools and project configuration
-
-## Web Application
-
-CAsMan provides a unified web interface with two main components:
-
-### Scanner Interface
-
-- 🔍 **Connect/Disconnect Parts**: Interactive workflows for commissioning and repairs
-
-- 📷 **Multiple Input Methods**: Barcode scanner, camera scanning, or manual entry
-
-- ✅ **Real-time Validation**: Immediate feedback on part validity and connection rules
-
-- 📊 **Connection History**: Track all connection/disconnection operations
-
-- 🎨 **Dark/Light Modes**: Comfortable viewing in any environment
-
-### Visualization Interface
-
-- 📊 **Assembly Chains**: View complete signal paths from ANTENNA to SNAP
-
-- 🔍 **SNAP Selection**: Filter by specific SNAP boards
-
-- ⚠️ **Duplicate Detection**: Highlights parts with multiple connections
-
-- 🎨 **Interactive Display**: Hover for connection details, timestamps
-
-- 🌓 **Theme Support**: Dark/light mode with persistent preferences
-
-### Running the Web Application
-
-
-```bash
-
-# Development Mode (Flask debug server)
-casman web                           # Both interfaces on port 5000
-casman web --scanner-only            # Scanner only
-casman web --visualize-only          # Visualization only
-casman web --port 8080               # Custom port
-
-# Production Mode (Gunicorn WSGI server)
-casman web --mode prod               # Production server on port 8000
-casman web --mode prod --workers 8   # Custom worker count
-
-```
-
-### Web App Configuration
-
-The web application can be configured in `config.yaml`:
-
-```yaml
-
-web_app:
-  enable_scanner: true              # Enable/disable scanner interface
-  enable_visualization: true        # Enable/disable visualization interface
-  dev:
-    port: 5000                      # Development mode port
-    host: "0.0.0.0"                # Listen on all interfaces
-  production:
-    port: 8000                      # Production mode port
-    host: "0.0.0.0"
-    workers: 4                      # Gunicorn worker processes
-    worker_class: "sync"            # Worker type
-
-```
 
 ## Usage Examples
 
@@ -737,3 +543,102 @@ casman web --visualize-only          # Visualization interface only
 casman web --port 8080               # Custom port
 
 ```
+
+---
+
+## Testing & Coverage
+
+![Tests](https://img.shields.io/badge/tests-414%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-72.0%25-yellow)
+
+
+| Module | Coverage | Lines Covered |
+|--------|----------|---------------|
+| **__Init__** | 100.0% | 2/2 |
+| **Assembly __Init__** | 100.0% | 40/40 |
+| **Assembly Connections** | 100.0% | 24/24 |
+| **Assembly Data** | 100.0% | 15/15 |
+| **Barcode __Init__** | 100.0% | 5/5 |
+| **Cli __Init__** | 100.0% | 11/11 |
+| **Database __Init__** | 100.0% | 5/5 |
+| **Database Migrations** | 100.0% | 63/63 |
+| **Database Operations** | 100.0% | 53/53 |
+| **Parts __Init__** | 100.0% | 10/10 |
+| **Parts Db** | 100.0% | 4/4 |
+| **Parts Search** | 100.0% | 65/65 |
+| **Parts Types** | 100.0% | 11/11 |
+| **Web __Init__** | 100.0% | 5/5 |
+| **Assembly Chains** | 98.0% | 43/44 |
+| **Parts Part** | 98.0% | 60/61 |
+| **Visualization Core** | 97.0% | 106/109 |
+| **Parts Validation** | 96.0% | 51/53 |
+| **Config Schema** | 95.0% | 20/21 |
+| **Web App** | 95.0% | 37/39 |
+| **Visualization __Init__** | 94.0% | 17/18 |
+| **Web Visualize** | 94.0% | 110/117 |
+| **Parts Generation** | 93.0% | 55/59 |
+| **Database Connection** | 92.0% | 22/24 |
+| **Parts Interactive** | 92.0% | 110/120 |
+| **Cli Utils** | 91.0% | 29/32 |
+| **Barcode Operations** | 86.0% | 94/109 |
+| **Web Scanner** | 86.0% | 190/222 |
+| **Barcode Generation** | 81.0% | 38/47 |
+| **Database Initialization** | 81.0% | 35/43 |
+| **Cli Web_Commands** | 80.0% | 44/55 |
+| **Web Server** | 76.0% | 41/54 |
+| **Config __Init__** | 75.0% | 21/28 |
+| **Cli Barcode_Commands** | 73.0% | 22/30 |
+| **Cli Main** | 72.0% | 56/78 |
+| **Cli Visualization_Commands** | 68.0% | 23/34 |
+| **Config Core** | 63.0% | 74/117 |
+| **Config Environments** | 59.0% | 45/76 |
+| **Assembly Interactive** | 58.0% | 188/324 |
+| **Barcode Printing** | 53.0% | 39/74 |
+| **Cli Parts_Commands** | 40.0% | 25/63 |
+| **Barcode Validation** | 30.0% | 11/37 |
+| **Cli Assembly_Commands** | 30.0% | 49/163 |
+| **Cli Database_Commands** | 28.0% | 43/153 |
+| **Config Utils** | 21.0% | 27/129 |
+| **Overall** | **72.0%** | **2038/2846** |
+
+### Running Tests
+
+```bash
+
+# Run all tests
+pytest
+
+# Run with coverage
+coverage run -m pytest
+coverage report --include="casman/*"
+
+# Run specific test modules
+pytest tests/test_parts.py -v
+pytest tests/test_cli.py -v
+
+# Quick coverage check script
+./coverage_check.sh
+
+```
+
+### Automated Coverage Tracking
+
+A coverage check script is provided for development workflow:
+
+```bash
+
+# Run coverage analysis and check threshold
+./coverage_check.sh
+
+# The script will:
+
+# 1. Run all tests with coverage
+
+# 2. Display detailed coverage report
+
+# 3. Check against minimum threshold (50%)
+
+# 4. Provide feedback on coverage status
+
+```
+
+The git pre-commit hook can optionally run coverage checks to ensure code quality before commits.

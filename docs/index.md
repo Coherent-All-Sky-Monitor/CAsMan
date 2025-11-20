@@ -4,7 +4,7 @@ Welcome to the CAsMan (CASM Assembly Manager) documentation. This documentation 
 
 ## Getting Started
 
-- [Overview and Quick Start](README.md) - Start here for an introduction to CAsMan
+- [Overview and Quick Start](../README.md) - Start here for an introduction to CAsMan (see root README.md)
 
 - [Migration Guide](migration_guide.md) - **IMPORTANT**: Guide for upgrading from v1.x to v2.0
 
@@ -44,8 +44,6 @@ The following documentation is automatically generated from the source code:
 
 - [Auto-Generated Parts Package](auto-generated/parts.md) - Parts package API from source
 
-- [Auto-Generated Visualization Package](auto-generated/visualization.md) - Visualization package API from source
-
 *Note: Auto-generated docs are created by running `python docs/generate_docs.py` and provide technical API details extracted directly from the source code.*
 
 ### Core Packages (Modularized v2.0)
@@ -64,17 +62,13 @@ CAsMan v2.0 uses a fully modular architecture with focused packages:
 
 - [Barcode Package](barcode_utils.md) - Barcode generation and validation
 
-- [Visualization Package](visualization.md) - ASCII and web visualization
-
 ### Legacy Modules (Compatibility)
 
 These modules maintain backward compatibility:
 
 - [Database](database.md) - Database initialization and utilities
 
-- [Barcode Utils](barcode_utils.md) - Barcode generation and printing  
-
-- [Visualization](visualization.md) - ASCII chain visualization
+- [Barcode Utils](barcode_utils.md) - Barcode generation and printing
 
 - [Configuration](config.md) - Configuration management
 
@@ -194,4 +188,4 @@ CAsMan/
 ├── tests/                 # Unit tests
 └── config.yaml           # Project configuration
 
-```python
+```

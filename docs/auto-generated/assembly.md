@@ -72,7 +72,7 @@ building connection chains, and interactive assembly scanning.
 
 **Signature:** `main()`
 
-Main entry point for the casman-scan command. Launches the interactive assembly scanner.
+Legacy entry point for assembly scanning (deprecated). Use `casman scan connect` for interactive assembly management.
 
 ---
 

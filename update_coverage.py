@@ -12,6 +12,44 @@ import sys
 from typing import Dict, List, Optional, Tuple
 
 
+def get_test_count() -> Optional[int]:
+    """
+    Get the total number of tests that passed.
+
+    Returns
+    -------
+    Optional[int]
+        Number of tests passed, or None if unable to determine
+    """
+    try:
+        # Run pytest with collection only
+        result = subprocess.run(
+            ["pytest", "tests/", "--co", "-q"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        
+        # Parse output lines - each line shows "file.py: N" where N is test count
+        lines = result.stdout.strip().split("\n")
+        total = 0
+        for line in lines:
+            # Look for lines like "tests/test_file.py: 25"
+            if ".py:" in line and line.strip():
+                parts = line.split(":")
+                if len(parts) == 2:
+                    try:
+                        count = int(parts[1].strip())
+                        total += count
+                    except ValueError:
+                        continue
+        
+        return total if total > 0 else None
+    except (subprocess.CalledProcessError, ValueError) as e:
+        print(f"Error getting test count: {e}")
+        return None
+
+
 def get_coverage_data() -> Tuple[List[Dict], Optional[Dict]]:
     """
     Get detailed coverage data from coverage report.
@@ -35,6 +73,15 @@ def get_coverage_data() -> Tuple[List[Dict], Optional[Dict]]:
         - total: Total lines (int)
     """
     try:
+        # First, run tests with coverage to generate fresh data
+        print("Running tests with coverage (this may take a minute)...")
+        subprocess.run(
+            ["coverage", "run", "-m", "pytest", "tests/"],
+            capture_output=True,
+            check=True,
+        )
+        print("Tests completed, generating report...")
+        
         # Run coverage and get report
         result = subprocess.run(
             ["coverage", "report", "--include=casman/*"],
@@ -143,7 +190,7 @@ def update_readme_coverage() -> bool:
 
         new_table = "\n".join(table_lines)
 
-        # Update badge
+        # Update coverage badge
         coverage_pct = overall["coverage"]
         if coverage_pct >= 80:
             color = "green"
@@ -151,17 +198,31 @@ def update_readme_coverage() -> bool:
             color = "yellow"
         else:
             color = "red"
-        new_badge = (
+        new_coverage_badge = (
             f"![Coverage](https://img.shields.io/badge/"
             f"coverage-{coverage_pct:.1f}%25-{color})"
         )
 
-        # Replace badge
+        # Replace coverage badge
         badge_pattern = (
             r"!\[Coverage\]\(https://img\.shields\.io/badge/"
             r"coverage-[\d\.]+%25-\w+\)"
         )
-        content = re.sub(badge_pattern, new_badge, content)
+        content = re.sub(badge_pattern, new_coverage_badge, content)
+        
+        # Update test count badge
+        test_count = get_test_count()
+        if test_count:
+            new_test_badge = (
+                f"![Tests](https://img.shields.io/badge/"
+                f"tests-{test_count}%20passed-brightgreen)"
+            )
+            test_badge_pattern = (
+                r"!\[Tests\]\(https://img\.shields\.io/badge/"
+                r"tests-\d+%20passed-\w+\)"
+            )
+            content = re.sub(test_badge_pattern, new_test_badge, content)
+            print(f"Test badge updated: {test_count} tests")
 
         # Replace table
         table_start = "| Module | Coverage | Lines Covered |"
@@ -184,7 +245,7 @@ def update_readme_coverage() -> bool:
                 with open("README.md", "w", encoding="utf-8") as f:
                     f.write(new_content)
 
-                print(f"✅ README updated with {overall['coverage']:.1f}% coverage")
+                print(f"README updated with {overall['coverage']:.1f}% coverage")
                 return True
 
         print("Could not find coverage table in README")

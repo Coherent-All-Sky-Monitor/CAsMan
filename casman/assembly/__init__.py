@@ -29,9 +29,9 @@ def main():
 
     # Check for help flag
     if len(sys.argv) > 1 and sys.argv[1] in ["--help", "-h", "help"]:
-        print("casman-scan: Interactive Assembly Scanner")
+        print("CAsMan Assembly Scanner (Legacy)")
         print()
-        print("Usage: casman-scan")
+        print("Note: This command is deprecated. Use 'casman scan connect' instead.")
         print()
         print("Description:")
         print("  Launches an interactive command-line interface for scanning")
@@ -55,8 +55,8 @@ def main():
         print("  Type 'quit' at any prompt to exit.")
         print()
         print("Examples:")
-        print("  casman-scan           Start interactive scanner")
-        print("  casman-scan --help    Show this help message")
+        print("  casman scan connect   Start interactive scanner (recommended)")
+        print("  casman scan --help    Show help for scan commands")
         return
 
     # Launch interactive scanner

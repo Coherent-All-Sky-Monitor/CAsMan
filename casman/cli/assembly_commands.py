@@ -74,7 +74,7 @@ def cmd_scan() -> None:
         scan_and_disassemble_interactive()
     elif args.action == "connect":
         # Launch full scanning and assembly workflow
-        print("🔍 Starting Interactive Scanning and Assembly")
+        print("Starting Interactive Scanning and Assembly")
         print("=" * 50)
         print("Features available:")
         print("• USB barcode scanner support")
@@ -94,17 +94,17 @@ def cmd_scan() -> None:
             )
             result = subprocess.run([sys.executable, script_path], check=False)
             if result.returncode != 0:
-                print(f"❌ Scanning process exited with code {result.returncode}")
+                print(f"Scanning process exited with code {result.returncode}")
                 sys.exit(result.returncode)
         except KeyboardInterrupt:
-            print("\n\n⚠️  Scanning interrupted by user")
+            print("\n\nScanning interrupted by user")
             sys.exit(0)
         except (OSError, subprocess.SubprocessError) as e:
-            print(f"\n❌ Error during scanning: {e}")
+            print(f"\nError during scanning: {e}")
             sys.exit(1)
     elif args.action == "disconnect":
         # Launch full disconnection workflow
-        print("🔧 Starting Interactive Disconnection")
+        print("Starting Interactive Disconnection")
         print("=" * 50)
         print("Features available:")
         print("• USB barcode scanner support")
@@ -128,13 +128,13 @@ def cmd_scan() -> None:
             )
             result = subprocess.run([sys.executable, script_path], check=False)
             if result.returncode != 0:
-                print(f"❌ Disconnection process exited with code {result.returncode}")
+                print(f"Disconnection process exited with code {result.returncode}")
                 sys.exit(result.returncode)
         except KeyboardInterrupt:
-            print("\n\n⚠️  Disconnection interrupted by user")
+            print("\n\nDisconnection interrupted by user")
             sys.exit(0)
         except (OSError, subprocess.SubprocessError) as e:
-            print(f"\n❌ Error during disconnection: {e}")
+            print(f"\nError during disconnection: {e}")
             sys.exit(1)
     elif args.action == "remove":
         # Remove part by disconnecting all connections
@@ -143,7 +143,7 @@ def cmd_scan() -> None:
         from datetime import datetime
 
         print("\n" + "=" * 60)
-        print("🗑️  REMOVE PART - Disconnect All Connections")
+        print("REMOVE PART - Disconnect All Connections")
         print("=" * 60)
         print("\nThis will disconnect ALL connections (forward and backward)")
         print("associated with the specified part.\n")
@@ -151,7 +151,7 @@ def cmd_scan() -> None:
         # Get part number
         part_number = input("Enter part number to remove: ").strip()
         if not part_number:
-            print("❌ Error: Part number cannot be empty")
+            print("Error: Part number cannot be empty")
             sys.exit(1)
 
         try:
@@ -177,7 +177,7 @@ def cmd_scan() -> None:
             else:
                 part_type = 'UNKNOWN'
 
-            print(f"\n🔍 Searching for: {part_type} {part_number}")
+            print(f"\nSearching for: {part_type} {part_number}")
 
             # Get all connections using the same logic as web app
             cursor = assembled_conn.execute(
@@ -217,13 +217,13 @@ def cmd_scan() -> None:
             connections = cursor.fetchall()
 
             if not connections:
-                print(f"\n⚠️  No active connections found for {part_number}")
+                print(f"\nNo active connections found for {part_number}")
                 print("Part has no connections to remove.")
                 assembled_conn.close()
                 sys.exit(0)
 
             # Display connections
-            print(f"\n📋 Found {len(connections)} active connection(s):")
+            print(f"\nFound {len(connections)} active connection(s):")
             print("-" * 60)
             for i, conn in enumerate(connections, 1):
                 conn_time = conn['scan_time']
@@ -233,9 +233,9 @@ def cmd_scan() -> None:
             print("-" * 60)
 
             # Confirm removal
-            confirm = input(f"\n⚠️  Disconnect all {len(connections)} connection(s)? (yes/no): ").strip().lower()
+            confirm = input(f"\nDisconnect all {len(connections)} connection(s)? (yes/no): ").strip().lower()
             if confirm not in ['yes', 'y']:
-                print("❌ Removal cancelled")
+                print("Removal cancelled")
                 assembled_conn.close()
                 sys.exit(0)
 
@@ -246,7 +246,7 @@ def cmd_scan() -> None:
             disconnected = 0
             failed = 0
 
-            print("\n🔄 Disconnecting...")
+            print("\nDisconnecting...")
             for conn in connections:
                 try:
                     # Determine which part is which in the connection
@@ -288,14 +288,14 @@ def cmd_scan() -> None:
                     )
                     
                     if success:
-                        print(f"✅ Disconnected: {this_part} ↔ {other_part}")
+                        print(f"Disconnected: {this_part} ↔ {other_part}")
                         disconnected += 1
                     else:
-                        print(f"❌ Failed to disconnect {this_part} ↔ {other_part}")
+                        print(f"Failed to disconnect {this_part} ↔ {other_part}")
                         failed += 1
                         
                 except Exception as e:
-                    print(f"❌ Failed to disconnect {this_part} ↔ {other_part}: {e}")
+                    print(f"Failed to disconnect {this_part} ↔ {other_part}: {e}")
                     failed += 1
 
             # Close connection
@@ -304,12 +304,12 @@ def cmd_scan() -> None:
             # Summary
             print("\n" + "=" * 60)
             if failed == 0:
-                print(f"✅ SUCCESS: All {disconnected} connection(s) removed")
+                print(f"SUCCESS: All {disconnected} connection(s) removed")
                 sys.exit(0)
             else:
-                print(f"⚠️  PARTIAL SUCCESS: {disconnected} disconnected, {failed} failed")
+                print(f"PARTIAL SUCCESS: {disconnected} disconnected, {failed} failed")
                 sys.exit(1)
 
         except Exception as e:
-            print(f"❌ Error removing part: {e}")
+            print(f"Error removing part: {e}")
             sys.exit(1)

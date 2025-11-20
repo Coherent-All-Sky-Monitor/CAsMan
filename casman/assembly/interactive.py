@@ -300,14 +300,14 @@ def scan_and_assemble_interactive() -> None:
             if not is_valid_first:
                 if first_part.startswith("SNAP"):
                     print(
-                        f"❌ Error: Invalid SNAP part format '{first_part}'. Expected format: SNAP<chassis><slot><port> (e.g., SNAP1A00)"
+                        f"Error: Invalid SNAP part format '{first_part}'. Expected format: SNAP<chassis><slot><port> (e.g., SNAP1A00)"
                     )
                 else:
-                    print(f"❌ Error: Part '{first_part}' not found in parts database.")
+                    print(f"Error: Part '{first_part}' not found in parts database.")
                 print("Please check the part number and try again.")
                 continue
 
-            print(f"✅ Valid part: {first_part} ({first_type}, {first_polarization})")
+            print(f"Valid part: {first_part} ({first_type}, {first_polarization})")
 
             # Special handling for BACBOARD -> SNAP connection
             if first_type == "BACBOARD":
@@ -327,9 +327,9 @@ def scan_and_assemble_interactive() -> None:
                         if 1 <= chassis <= 4:
                             break
                         else:
-                            print("❌ Chassis must be between 1 and 4")
+                            print("Chassis must be between 1 and 4")
                     except ValueError:
-                        print("❌ Please enter a valid number")
+                        print("Please enter a valid number")
 
                 if chassis_input.lower() == "quit":
                     break
@@ -343,7 +343,7 @@ def scan_and_assemble_interactive() -> None:
                     if slot in ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"]:
                         break
                     else:
-                        print("❌ Slot must be A through K")
+                        print("Slot must be A through K")
 
                 if slot.lower() == "quit":
                     break
@@ -359,9 +359,9 @@ def scan_and_assemble_interactive() -> None:
                         if 0 <= port <= 11:
                             break
                         else:
-                            print("❌ Port must be between 0 and 11")
+                            print("Port must be between 0 and 11")
                     except ValueError:
-                        print("❌ Please enter a valid number")
+                        print("Please enter a valid number")
 
                 if port_input.lower() == "quit":
                     break
@@ -371,7 +371,7 @@ def scan_and_assemble_interactive() -> None:
                 connected_type = "SNAP"
                 connected_polarization = "N/A"
 
-                print(f"✅ SNAP part formatted: {connected_part}")
+                print(f"SNAP part formatted: {connected_part}")
 
             else:
                 # Normal part scanning for non-BACBOARD parts
@@ -391,17 +391,17 @@ def scan_and_assemble_interactive() -> None:
                 if not is_valid_connected:
                     if connected_part.startswith("SNAP"):
                         print(
-                            f"❌ Error: Invalid SNAP part format '{connected_part}'. Expected format: SNAP<chassis><slot><port> (e.g., SNAP1A00)"
+                            f"Error: Invalid SNAP part format '{connected_part}'. Expected format: SNAP<chassis><slot><port> (e.g., SNAP1A00)"
                         )
                     else:
                         print(
-                            f"❌ Error: Part '{connected_part}' not found in parts database."
+                            f"Error: Part '{connected_part}' not found in parts database."
                         )
                     print("Please check the part number and try again.")
                     continue
 
                 print(
-                    f"✅ Valid part: {connected_part} ({connected_type}, {connected_polarization})"
+                    f"Valid part: {connected_part} ({connected_type}, {connected_polarization})"
                 )
 
             # Validate connection rules
@@ -409,7 +409,7 @@ def scan_and_assemble_interactive() -> None:
                 first_part, first_type, connected_part, connected_type
             )
             if not is_valid_rules:
-                print(f"❌ Error: {rules_error}")
+                print(f"Error: {rules_error}")
                 continue
 
             # Validate chain directionality (first/final part restrictions)
@@ -417,27 +417,27 @@ def scan_and_assemble_interactive() -> None:
                 first_type, "outgoing"
             )
             if not is_valid_outgoing:
-                print(f"❌ Error: {outgoing_error}")
+                print(f"Error: {outgoing_error}")
                 continue
 
             is_valid_incoming, incoming_error = validate_chain_directionality(
                 connected_type, "incoming"
             )
             if not is_valid_incoming:
-                print(f"❌ Error: {incoming_error}")
+                print(f"Error: {incoming_error}")
                 continue
 
             # Check for existing connections to prevent duplicates/branches
             if not check_existing_connections(first_part):
                 print(
-                    f"❌ Error: Part '{first_part}' already has an outgoing connection. Cannot create multiple connections."
+                    f"Error: Part '{first_part}' already has an outgoing connection. Cannot create multiple connections."
                 )
                 continue
 
             # Check target connections (all parts can only have one incoming connection)
             if not check_target_connections(connected_part):
                 print(
-                    f"❌ Error: Part '{connected_part}' already has an incoming connection. Cannot create multiple connections."
+                    f"Error: Part '{connected_part}' already has an incoming connection. Cannot create multiple connections."
                 )
                 continue
 
@@ -461,9 +461,9 @@ def scan_and_assemble_interactive() -> None:
                 )
 
                 if success:
-                    print(f"✅ Connection recorded: {first_part} --> {connected_part}")
+                    print(f"Connection recorded: {first_part} --> {connected_part}")
                 else:
-                    print("❌ Failed to record connection to database")
+                    print("Failed to record connection to database")
                 print()
             except ImportError as e:
                 logger.error("Import error: %s", e)
@@ -568,13 +568,13 @@ def scan_and_disassemble_interactive() -> None:
 
                 if not connections:
                     print(
-                        f"❌ Error: Part '{first_part}' is not connected to anything."
+                        f"Error: Part '{first_part}' is not connected to anything."
                     )
                     print("Cannot disconnect a part that has no connections.")
                     continue
 
                 # Display connections and let user choose
-                print(f"\n📋 Found {len(connections)} connection(s) for {first_part}:")
+                print(f"\nFound {len(connections)} connection(s) for {first_part}:")
                 print("-" * 60)
                 for idx, (part_num, part_type_db, polarization_db, 
                           connected, conn_type, conn_pol, scan_time) in enumerate(connections, 1):
@@ -599,12 +599,12 @@ def scan_and_disassemble_interactive() -> None:
                     choice_idx = int(choice) - 1
                     if not (0 <= choice_idx < len(connections)):
                         print(
-                            f"❌ Invalid selection. Please enter a number between 1 and {len(connections)}."
+                            f"Invalid selection. Please enter a number between 1 and {len(connections)}."
                         )
                         continue
 
                 except ValueError:
-                    print("❌ Invalid input. Please enter a number.")
+                    print("Invalid input. Please enter a number.")
                     continue
 
                 # Get the selected connection details
@@ -629,11 +629,11 @@ def scan_and_disassemble_interactive() -> None:
                     disconnected_type = conn_part_type
                     disconnected_polarization = conn_part_pol
 
-                print(f"✅ Selected: {first_part} -X-> {disconnected_part}")
+                print(f"Selected: {first_part} -X-> {disconnected_part}")
 
             except (sqlite3.Error, ValueError) as e:
                 logger.error("Error checking connections: %s", e)
-                print(f"❌ Error checking connections: {e}")
+                print(f"Error checking connections: {e}")
                 continue
 
             # Record the disconnection to the database
@@ -657,10 +657,10 @@ def scan_and_disassemble_interactive() -> None:
 
                 if success:
                     print(
-                        f"✅ Disconnection recorded: {first_part} -X-> {disconnected_part}"
+                        f"Disconnection recorded: {first_part} -X-> {disconnected_part}"
                     )
                 else:
-                    print("❌ Failed to record disconnection to database")
+                    print("Failed to record disconnection to database")
                 print()
             except ImportError as e:
                 logger.error("Import error: %s", e)

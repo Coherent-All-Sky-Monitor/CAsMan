@@ -98,7 +98,7 @@ gunicorn -w 4 -b 0.0.0.0:5000 "casman.unified_web_app:create_app(enable_scanner=
 # Run visualization only
 gunicorn -w 4 -b 0.0.0.0:5000 "casman.unified_web_app:create_app(enable_scanner=False, enable_visualization=True)"
 
-```python
+```
 
 ## Architecture
 
@@ -121,6 +121,6 @@ The original separate commands still work:
 casman scanner                    # Scanner only (port 5001)
 casman visualize web              # Visualization only (port 5000)
 
-```python
+```
 
 Use `casman web` for the unified interface instead.

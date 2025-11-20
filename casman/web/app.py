@@ -78,7 +78,7 @@ def create_app(enable_scanner: bool = True, enable_visualization: bool = True) -
                 (
                     "Scanner",
                     "/scanner",
-                    "🔍 Connect/Disconnect parts (commissioning & repairs)",
+                    "Connect/Disconnect parts (commissioning & repairs)",
                 )
             )
         if APP_CONFIG["enable_visualization"]:
@@ -86,7 +86,7 @@ def create_app(enable_scanner: bool = True, enable_visualization: bool = True) -
                 (
                     "Visualization",
                     "/visualize",
-                    "📊 View assembly chains and connections",
+                    "View assembly chains and connections",
                 )
             )
 

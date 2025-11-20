@@ -24,16 +24,16 @@ def run_dev_server(
     init_all_databases()
     app = create_app(enable_scanner, enable_visualization)
 
-    logger.info("🚀 Starting CAsMan Web Application (Development Mode)")
-    logger.info(f"📡 Server: http://{host if host != '0.0.0.0' else 'localhost'}:{port}")
+    logger.info("Starting CAsMan Web Application (Development Mode)")
+    logger.info(f"Server: http://{host if host != '0.0.0.0' else 'localhost'}:{port}")
 
     if enable_scanner and enable_visualization:
-        print("✓ Scanner interface: /scanner")
-        print("✓ Visualization interface: /visualize")
+        print("Scanner interface: /scanner")
+        print("Visualization interface: /visualize")
     elif enable_scanner:
-        print("✓ Scanner interface only (commissioning/repairs)")
+        print("Scanner interface only (commissioning/repairs)")
     elif enable_visualization:
-        print("✓ Visualization interface only (view chains)")
+        print("Visualization interface only (view chains)")
 
     print()
     print("Press Ctrl+C to stop")
@@ -52,8 +52,8 @@ def run_production_server(
     try:
         import gunicorn.app.base
     except ImportError:
-        logger.error("❌ Gunicorn is required for production mode")
-        logger.info("💡 Install with: pip install gunicorn")
+        logger.error("Gunicorn is required for production mode")
+        logger.info("Install with: pip install gunicorn")
         sys.exit(1)
 
     init_all_databases()
@@ -83,17 +83,17 @@ def run_production_server(
         "loglevel": "info",
     }
 
-    logger.info("🚀 Starting CAsMan Web Application (Production Mode)")
-    logger.info(f"📡 Server: http://{host if host != '0.0.0.0' else 'localhost'}:{port}")
-    logger.info(f"⚙️  Workers: {workers}")
+    logger.info("Starting CAsMan Web Application (Production Mode)")
+    logger.info(f"Server: http://{host if host != '0.0.0.0' else 'localhost'}:{port}")
+    logger.info(f"Workers: {workers}")
 
     if enable_scanner and enable_visualization:
-        print("✓ Scanner interface: /scanner")
-        print("✓ Visualization interface: /visualize")
+        print("Scanner interface: /scanner")
+        print("Visualization interface: /visualize")
     elif enable_scanner:
-        print("✓ Scanner interface only (commissioning/repairs)")
+        print("Scanner interface only (commissioning/repairs)")
     elif enable_visualization:
-        print("✓ Visualization interface only (view chains)")
+        print("Visualization interface only (view chains)")
 
     print()
     print("Press Ctrl+C to stop")

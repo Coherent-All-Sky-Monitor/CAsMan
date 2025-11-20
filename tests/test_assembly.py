@@ -16,6 +16,8 @@ from casman.assembly.interactive import (
     check_target_connections,
     validate_part_in_database,
     validate_snap_part,
+    scan_and_assemble_interactive,
+    scan_and_disassemble_interactive,
     VALID_NEXT_CONNECTIONS,
 )
 from casman.assembly import main
@@ -730,9 +732,9 @@ class TestAssemblyInteractive:
 
 
 class TestAssemblyMain:
-    """Test main entry point function."""
+    """Test legacy main entry point function."""
 
-    @patch("sys.argv", ["casman-scan", "--help"])
+    @patch("sys.argv", ["casman", "--help"])
     @patch("builtins.print")
     def test_main_help_flag(self, mock_print):
         """Test main function with help flag."""
@@ -740,18 +742,18 @@ class TestAssemblyMain:
 
         # Verify help text was printed
         calls = [str(call) for call in mock_print.call_args_list]
-        assert any("Interactive Assembly Scanner" in str(call) for call in calls)
+        assert any("Assembly Scanner" in str(call) for call in calls)
 
-    @patch("sys.argv", ["casman-scan", "-h"])
+    @patch("sys.argv", ["casman", "-h"])
     @patch("builtins.print")
     def test_main_help_short_flag(self, mock_print):
         """Test main function with short help flag."""
         main()
 
         calls = [str(call) for call in mock_print.call_args_list]
-        assert any("Interactive Assembly Scanner" in str(call) for call in calls)
+        assert any("Assembly Scanner" in str(call) for call in calls)
 
-    @patch("sys.argv", ["casman-scan"])
+    @patch("sys.argv", ["casman"])
     @patch("casman.assembly.scan_and_assemble_interactive")
     def test_main_launches_scanner(self, mock_scanner):
         """Test main function launches interactive scanner."""
@@ -777,6 +779,273 @@ class TestValidNextConnections:
         """Test SNAP (terminal) has no outgoing connections."""
         assert "SNAP" in VALID_NEXT_CONNECTIONS
         assert VALID_NEXT_CONNECTIONS["SNAP"] == []
+
+
+class TestInteractiveAssemblyScanning:
+    """Test interactive assembly scanning workflows."""
+
+    @patch("casman.assembly.interactive.validate_part_in_database")
+    @patch("casman.assembly.interactive.check_existing_connections")
+    @patch("casman.assembly.interactive.check_target_connections")
+    @patch("casman.assembly.connections.record_assembly_connection")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_scan_and_assemble_quit_immediately(
+        self, _mock_print, mock_input, _mock_record, _mock_check_target,
+        _mock_check_existing, _mock_validate
+    ):
+        """Test quitting scanner immediately."""
+        mock_input.side_effect = ["quit"]
+
+        scan_and_assemble_interactive()
+
+        # Should only ask for first part and then quit
+        assert mock_input.call_count == 1
+
+    @patch("casman.assembly.interactive.validate_part_in_database")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_scan_and_assemble_empty_input(
+        self, _mock_print, mock_input, _mock_validate
+    ):
+        """Test handling empty input."""
+        mock_input.side_effect = ["", "quit"]
+
+        scan_and_assemble_interactive()
+
+        # Should ask again after empty input
+        assert mock_input.call_count == 2
+
+    @patch("casman.assembly.interactive.validate_part_in_database")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_scan_and_assemble_invalid_part(
+        self, mock_print, mock_input, mock_validate
+    ):
+        """Test handling invalid part number."""
+        mock_validate.return_value = (False, "", "")
+        mock_input.side_effect = ["INVALID-001", "quit"]
+
+        scan_and_assemble_interactive()
+
+        # Should print error message
+        assert any(
+            "not found" in str(call)
+            for call in mock_print.call_args_list
+        )
+
+    @patch("casman.assembly.interactive.validate_part_in_database")
+    @patch("casman.assembly.interactive.check_existing_connections")
+    @patch("casman.assembly.interactive.validate_connection_rules")
+    @patch("casman.assembly.interactive.validate_chain_directionality")
+    @patch("casman.assembly.interactive.check_target_connections")
+    @patch("casman.assembly.connections.record_assembly_connection")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_scan_and_assemble_successful_connection(
+        self, _mock_print, mock_input, mock_record, mock_check_target,
+        mock_check_dir, mock_check_rules, mock_check_existing, mock_validate
+    ):
+        """Test successful connection recording."""
+        # Setup mocks for successful connection
+        mock_validate.side_effect = [
+            (True, "ANTENNA", "P1"),  # First part
+            (True, "LNA", "P1"),      # Second part
+        ]
+        mock_check_existing.return_value = (True, "", [])
+        mock_check_rules.return_value = (True, "")
+        mock_check_dir.side_effect = [(True, ""), (True, "")]
+        mock_check_target.return_value = (True, "")
+        
+        mock_input.side_effect = ["ANT-P1-00001", "LNA-P1-00001", "quit"]
+
+        scan_and_assemble_interactive()
+
+        # Should record the connection
+        mock_record.assert_called_once()
+
+    @patch("casman.assembly.interactive.validate_part_in_database")
+    @patch("casman.assembly.interactive.check_existing_connections")
+    @patch("casman.assembly.connections.record_assembly_connection")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_scan_and_assemble_existing_connection(
+        self, _mock_print, mock_input, _mock_record, mock_check_existing, mock_validate
+    ):
+        """Test handling existing connection error - function continues without crashing."""
+        mock_validate.return_value = (True, "ANTENNA", "P1")
+        mock_check_existing.return_value = (
+            False,
+            "Part already connects to another part",
+            [("LNA-P1-00001", "LNA")]
+        )
+        
+        mock_input.side_effect = ["ANT-P1-00001", "quit"]
+
+        # Should not crash when handling existing connection
+        scan_and_assemble_interactive()
+        
+        # Test passes if no exception is raised
+        assert mock_input.called
+
+    @patch("casman.assembly.interactive.validate_part_in_database")
+    @patch("casman.assembly.interactive.check_existing_connections")
+    @patch("casman.assembly.interactive.validate_chain_directionality")
+    @patch("casman.assembly.connections.record_assembly_connection")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_scan_and_assemble_directionality_error(
+        self, _mock_print, mock_input, _mock_record, mock_check_dir, mock_check_existing, mock_validate
+    ):
+        """Test handling directionality validation error - function continues without crashing."""
+        mock_validate.return_value = (True, "SNAP", "N/A")
+        mock_check_existing.return_value = (True, "", [])
+        mock_check_dir.return_value = (False, "SNAP cannot make outgoing connections")
+        
+        mock_input.side_effect = ["SNAP1A00", "quit"]
+
+        # Should not crash when handling directionality error
+        scan_and_assemble_interactive()
+        
+        # Test passes if no exception is raised  
+        assert mock_input.called
+
+    @patch("casman.assembly.interactive.validate_part_in_database")
+    @patch("casman.assembly.interactive.check_existing_connections")
+    @patch("casman.assembly.interactive.validate_chain_directionality")
+    @patch("casman.assembly.interactive.validate_connection_rules")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_scan_and_assemble_connection_rules_error(
+        self, mock_print, mock_input, mock_check_rules, mock_check_dir,
+        mock_check_existing, mock_validate
+    ):
+        """Test handling connection rules validation error."""
+        mock_validate.side_effect = [
+            (True, "ANTENNA", "P1"),
+            (True, "SNAP", "N/A"),
+        ]
+        mock_check_existing.return_value = (True, "", [])
+        mock_check_dir.return_value = (True, "")
+        mock_check_rules.return_value = (False, "ANTENNA can only connect to LNA")
+        
+        mock_input.side_effect = ["ANT-P1-00001", "SNAP1A00", "quit"]
+
+        scan_and_assemble_interactive()
+
+        # Should print connection rules error
+        assert any(
+            "can only connect to" in str(call)
+            for call in mock_print.call_args_list
+        )
+
+
+class TestInteractiveDisassemblyScanning:
+    """Test interactive disassembly scanning workflows."""
+
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_scan_and_disassemble_quit_immediately(self, _mock_print, mock_input):
+        """Test quitting disassembly scanner immediately."""
+        mock_input.side_effect = ["quit"]
+
+        scan_and_disassemble_interactive()
+
+        assert mock_input.call_count == 1
+
+    @patch("casman.assembly.interactive.validate_part_in_database")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_scan_and_disassemble_empty_input(
+        self, _mock_print, mock_input, _mock_validate
+    ):
+        """Test handling empty input in disassembly."""
+        mock_input.side_effect = ["", "quit"]
+
+        scan_and_disassemble_interactive()
+
+        assert mock_input.call_count == 2
+
+    @patch("casman.assembly.interactive.get_config")
+    @patch("casman.assembly.interactive.sqlite3.connect")
+    @patch("casman.assembly.connections.record_assembly_disconnection")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_scan_and_disassemble_invalid_part(
+        self, _mock_print, mock_input, _mock_record, mock_connect, mock_config
+    ):
+        """Test handling part with no connections in disassembly."""
+        mock_config.return_value = "test.db"
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = []  # No connections
+        mock_conn.cursor.return_value = mock_cursor
+        mock_connect.return_value = mock_conn
+        
+        mock_input.side_effect = ["INVALID-001", "quit"]
+
+        # Should not crash when part has no connections
+        scan_and_disassemble_interactive()
+        
+        # Verify database was queried
+        mock_connect.assert_called()
+
+    @patch("casman.assembly.interactive.get_config")
+    @patch("casman.assembly.interactive.sqlite3.connect")
+    @patch("casman.assembly.connections.record_assembly_disconnection")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_scan_and_disassemble_no_connection(
+        self, _mock_print, mock_input, _mock_record, mock_connect, mock_config
+    ):
+        """Test disassembly when part has no connection - function handles gracefully."""
+        mock_config.return_value = "test.db"
+        
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = []  # No connections found
+        mock_conn.cursor.return_value = mock_cursor
+        mock_connect.return_value = mock_conn
+        
+        mock_input.side_effect = ["ANT-P1-00001", "quit"]
+
+        # Should handle no connections gracefully without crashing
+        scan_and_disassemble_interactive()
+        
+        # Verify database was queried for connections
+        mock_cursor.fetchall.assert_called()
+
+    @patch("casman.assembly.interactive.validate_part_in_database")
+    @patch("casman.assembly.interactive.get_config")
+    @patch("casman.assembly.interactive.sqlite3.connect")
+    @patch("casman.assembly.connections.record_assembly_disconnection")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_scan_and_disassemble_successful(
+        self, _mock_print, mock_input, mock_record, mock_connect,
+        mock_config, mock_validate
+    ):
+        """Test successful disassembly."""
+        mock_validate.return_value = (True, "ANTENNA", "P1")
+        mock_config.return_value = "test.db"
+        mock_record.return_value = True
+        
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        # fetchall returns list of tuples for connections
+        mock_cursor.fetchall.return_value = [
+            ("ANT-P1-00001", "ANTENNA", "P1", "LNA-P1-00001", "LNA", "P1", "2025-01-01")
+        ]
+        mock_conn.cursor.return_value = mock_cursor
+        mock_connect.return_value = mock_conn
+        
+        # User enters part, selects connection 1, then quits
+        mock_input.side_effect = ["ANT-P1-00001", "1", "quit"]
+
+        scan_and_disassemble_interactive()
+
+        # Should record the disconnection
+        mock_record.assert_called_once()
 
     def test_each_part_has_one_next(self):
         """Test each non-terminal part connects to exactly one next part."""

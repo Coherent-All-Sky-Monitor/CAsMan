@@ -334,3 +334,213 @@ class TestDatabaseConnection:
         
         assert db_path == "/project/root/database/test.db"
         mock_find_root.assert_called_once()
+
+
+class TestDatabaseMigrations:
+    """Test database migration functionality."""
+
+    def test_database_migrator_initialization(self):
+        """Test DatabaseMigrator initialization."""
+        from casman.database.migrations import DatabaseMigrator
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            migrator = DatabaseMigrator("test.db", temp_dir)
+            assert migrator.db_name == "test.db"
+            assert migrator.db_dir == temp_dir
+            assert "test.db" in migrator.db_path
+
+    def test_get_schema_version_no_table(self):
+        """Test getting schema version when table doesn't exist."""
+        from casman.database.migrations import DatabaseMigrator
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create empty database
+            db_path = os.path.join(temp_dir, "test.db")
+            conn = sqlite3.connect(db_path)
+            conn.close()
+
+            migrator = DatabaseMigrator("test.db", temp_dir)
+            version = migrator.get_schema_version()
+            assert version == 0
+
+    def test_get_schema_version_with_table(self):
+        """Test getting schema version when table exists."""
+        from casman.database.migrations import DatabaseMigrator
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create database with schema_version table
+            db_path = os.path.join(temp_dir, "test.db")
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            c.execute(
+                """CREATE TABLE schema_version (
+                version INTEGER PRIMARY KEY,
+                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )"""
+            )
+            c.execute("INSERT INTO schema_version (version) VALUES (3)")
+            conn.commit()
+            conn.close()
+
+            migrator = DatabaseMigrator("test.db", temp_dir)
+            version = migrator.get_schema_version()
+            assert version == 3
+
+    def test_set_schema_version(self):
+        """Test setting schema version."""
+        from casman.database.migrations import DatabaseMigrator
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create empty database
+            db_path = os.path.join(temp_dir, "test.db")
+            conn = sqlite3.connect(db_path)
+            conn.close()
+
+            migrator = DatabaseMigrator("test.db", temp_dir)
+            migrator.set_schema_version(5)
+
+            # Verify version was set
+            version = migrator.get_schema_version()
+            assert version == 5
+
+    def test_execute_migration_success(self):
+        """Test successful migration execution."""
+        from casman.database.migrations import DatabaseMigrator
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create database with a table
+            db_path = os.path.join(temp_dir, "test.db")
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            c.execute("CREATE TABLE test_table (id INTEGER, name TEXT)")
+            conn.commit()
+            conn.close()
+
+            migrator = DatabaseMigrator("test.db", temp_dir)
+            
+            # Execute migration to add a column
+            sql = "ALTER TABLE test_table ADD COLUMN email TEXT"
+            migrator.execute_migration(sql, 1)
+
+            # Verify migration succeeded
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            c.execute("PRAGMA table_info(test_table)")
+            columns = c.fetchall()
+            conn.close()
+
+            column_names = [col[1] for col in columns]
+            assert "email" in column_names
+            assert migrator.get_schema_version() == 1
+
+    def test_execute_migration_failure(self):
+        """Test migration failure and rollback."""
+        from casman.database.migrations import DatabaseMigrator
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create empty database
+            db_path = os.path.join(temp_dir, "test.db")
+            conn = sqlite3.connect(db_path)
+            conn.close()
+
+            migrator = DatabaseMigrator("test.db", temp_dir)
+            
+            # Try to execute invalid SQL
+            invalid_sql = "ALTER TABLE nonexistent_table ADD COLUMN test TEXT"
+            
+            try:
+                migrator.execute_migration(invalid_sql, 1)
+                assert False, "Should have raised RuntimeError"
+            except RuntimeError as e:
+                assert "Migration failed" in str(e)
+                # Verify version wasn't updated
+                assert migrator.get_schema_version() == 0
+
+    def test_get_table_info(self):
+        """Test getting table information."""
+        from casman.database.migrations import get_table_info
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create database with a table
+            db_path = os.path.join(temp_dir, "test.db")
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            c.execute(
+                """CREATE TABLE test_table (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                email TEXT DEFAULT 'test@example.com'
+            )"""
+            )
+            conn.commit()
+            conn.close()
+
+            info = get_table_info("test.db", "test_table", temp_dir)
+            
+            assert len(info) == 3
+            assert info[0]["name"] == "id"
+            assert info[0]["pk"] is True
+            assert info[1]["name"] == "name"
+            assert info[1]["notnull"] is True
+            assert info[2]["name"] == "email"
+            assert info[2]["default_value"] is not None
+
+    def test_backup_database(self):
+        """Test database backup creation."""
+        from casman.database.migrations import backup_database
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create database with some data
+            db_path = os.path.join(temp_dir, "test.db")
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            c.execute("CREATE TABLE test (id INTEGER, data TEXT)")
+            c.execute("INSERT INTO test VALUES (1, 'test data')")
+            conn.commit()
+            conn.close()
+
+            # Create backup
+            backup_path = backup_database("test.db", "backup", temp_dir)
+            
+            assert os.path.exists(backup_path)
+            assert "backup" in backup_path
+            
+            # Verify backup has same data
+            conn = sqlite3.connect(backup_path)
+            c = conn.cursor()
+            c.execute("SELECT * FROM test")
+            data = c.fetchall()
+            conn.close()
+            
+            assert len(data) == 1
+            assert data[0] == (1, "test data")
+
+    def test_check_database_integrity_valid(self):
+        """Test integrity check on valid database."""
+        from casman.database.migrations import check_database_integrity
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create valid database
+            db_path = os.path.join(temp_dir, "test.db")
+            conn = sqlite3.connect(db_path)
+            c = conn.cursor()
+            c.execute("CREATE TABLE test (id INTEGER, data TEXT)")
+            c.execute("INSERT INTO test VALUES (1, 'test')")
+            conn.commit()
+            conn.close()
+
+            is_valid = check_database_integrity("test.db", temp_dir)
+            assert is_valid is True
+
+    def test_check_database_integrity_empty(self):
+        """Test integrity check on empty database."""
+        from casman.database.migrations import check_database_integrity
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Create empty database
+            db_path = os.path.join(temp_dir, "test.db")
+            conn = sqlite3.connect(db_path)
+            conn.close()
+
+            is_valid = check_database_integrity("test.db", temp_dir)
+            assert is_valid is True

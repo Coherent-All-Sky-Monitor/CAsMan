@@ -186,7 +186,7 @@ def validate_part():
 
     # Get existing connections for this part
     existing = get_existing_connections(part_number)
-    logger.info(f"Validating part {part_number}, found {len(existing)} active connections")
+    logger.info("Validating part %s, found %d active connections", part_number, len(existing))
 
     if part_number.startswith("SNAP"):
         if validate_snap_part(part_number):
@@ -203,14 +203,14 @@ def validate_part():
             return jsonify(
                 {
                     "success": False,
-                    "error": f"Invalid SNAP format. Expected SNAP<chassis 1-4><slot A-K><port 00-11>",
+                    "error": "Invalid SNAP format. Expected SNAP<chassis 1-4><slot A-K><port 00-11>",
                 }
             )
 
     part_details = get_part_details(part_number)
     if part_details:
         part_type, polarization = part_details
-        logger.info(f"Valid part: {part_number} ({part_type}, pol={polarization})")
+        logger.info("Valid part: %s (%s, pol=%s)", part_number, part_type, polarization)
         return jsonify(
             {
                 "success": True,
@@ -221,7 +221,7 @@ def validate_part():
             }
         )
     else:
-        logger.warning(f"Part validation failed: {part_number} not found in database")
+        logger.warning("Part validation failed: %s not found in database", part_number)
         return jsonify(
             {"success": False, "error": f"Part {part_number} not found in database"}
         )
@@ -419,7 +419,7 @@ def record_connection():
         )
 
         if success:
-            logger.info(f"Connection recorded: {data['part_number']} → {data['connected_to']}")
+            logger.info("Connection recorded: %s → %s", data['part_number'], data['connected_to'])
             return jsonify(
                 {
                     "success": True,
@@ -427,7 +427,7 @@ def record_connection():
                 }
             )
         else:
-            logger.error(f"Failed to record connection: {data['part_number']} → {data['connected_to']}")
+            logger.error("Failed to record connection: %s → %s", data['part_number'], data['connected_to'])
             return jsonify({"success": False, "error": "Failed to record connection"})
 
     except Exception as e:
@@ -455,7 +455,7 @@ def record_disconnection():
         )
 
         if success:
-            logger.info(f"Disconnection recorded: {data['part_number']} -X-> {data['connected_to']}")
+            logger.info("Disconnection recorded: %s -X-> %s", data['part_number'], data['connected_to'])
             return jsonify(
                 {
                     "success": True,
@@ -463,7 +463,7 @@ def record_disconnection():
                 }
             )
         else:
-            logger.error(f"Failed to record disconnection: {data['part_number']} -X-> {data['connected_to']}")
+            logger.error("Failed to record disconnection: %s -X-> %s", data['part_number'], data['connected_to'])
             return jsonify(
                 {"success": False, "error": "Failed to record disconnection"}
             )
@@ -495,7 +495,7 @@ def add_parts():
         
         new_parts = generate_part_numbers(part_type, count, polarization)
         
-        logger.info(f"Created {len(new_parts)} new {part_type} parts with polarization {polarization}")
+        logger.info("Created %d new %s parts with polarization %s", len(new_parts), part_type, polarization)
         
         return jsonify({
             "success": True,
@@ -506,7 +506,7 @@ def add_parts():
         })
         
     except Exception as e:
-        logger.error(f"Error creating parts: {e}")
+        logger.error("Error creating parts: %s", e)
         return jsonify({"success": False, "error": str(e)})
 
 
@@ -578,7 +578,7 @@ def get_part_history():
                     "timestamp": row[6]
                 })
             
-            logger.info(f"Retrieved {len(history)} history records for part {part_number}")
+            logger.info("Retrieved %d history records for part %s", len(history), part_number)
             return jsonify({
                 "success": True,
                 "part_number": part_number,
@@ -586,5 +586,5 @@ def get_part_history():
             })
             
     except sqlite3.Error as e:
-        logger.error(f"Database error getting part history for {part_number}: {e}")
+        logger.error("Database error getting part history for %s: %s", part_number, e)
         return jsonify({"success": False, "error": str(e)})

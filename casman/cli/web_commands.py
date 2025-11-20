@@ -116,7 +116,7 @@ Examples:
 
         # Validate that at least one interface is enabled
         if not enable_scanner and not enable_visualization:
-            print("❌ Error: At least one interface must be enabled!")
+            print("Error: At least one interface must be enabled!")
             print("   Remove conflicting flags or check your config.yaml")
             sys.exit(1)
 
@@ -148,11 +148,11 @@ Examples:
             )
 
     except ImportError as e:
-        print(f"❌ Web application not available: {e}")
-        print("💡 Make sure Flask is installed: pip install flask")
+        print(f"Web application not available: {e}")
+        print("Make sure Flask is installed: pip install flask")
         sys.exit(1)
     except KeyboardInterrupt:
-        print("\n🛑 Web server stopped by user")
+        print("\nWeb server stopped by user")
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
         sys.exit(1)

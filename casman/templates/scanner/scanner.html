@@ -352,17 +352,17 @@
     </div>
     <div class="toolbar-spacer"></div>
     
-    <h1>🔍 CAsMan - Part Scanner</h1>
+    <h1>CAsMan - Part Scanner</h1>
     <p>Web-based interface for connecting and disconnecting parts</p>
     
     <!-- Step 1: Choose Action -->
     <div id="step-action" class="section">
         <h2>Step 1: Choose Action</h2>
         <div class="button-grid">
-            <button onclick="selectAction('connect')">🔗 CONNECT Parts</button>
-            <button onclick="selectAction('disconnect')">❌ DISCONNECT Parts</button>
-            <button onclick="selectAction('remove')">🗑️ REMOVE Part</button>
-            <button onclick="selectAction('history')">📋 Part History</button>
+            <button onclick="selectAction('connect')">CONNECT Parts</button>
+            <button onclick="selectAction('disconnect')">DISCONNECT Parts</button>
+            <button onclick="selectAction('remove')">REMOVE Part</button>
+            <button onclick="selectAction('history')">Part History</button>
         </div>
     </div>
     
@@ -371,7 +371,7 @@
         <h2>Step 2: Choose Input Method</h2>
         <div id="action-display" class="status-info status-message"></div>
         <div class="button-grid">
-            <button onclick="selectMethod('barcode')">📷 Barcode Reader</button>
+            <button onclick="selectMethod('barcode')">Barcode Reader</button>
             <button onclick="selectMethod('manual')">⌨️ Manual Entry</button>
         </div>
         <div class="nav-buttons">
@@ -391,7 +391,7 @@
         <div class="nav-buttons">
             <button onclick="goToStep('method')">← Back</button>
             <button onclick="switchToManualEntry()">⌨️ Manual Entry</button>
-            <button onclick="resetScanner()">🔄 Reset</button>
+            <button onclick="resetScanner()">Reset</button>
         </div>
     </div>
     
@@ -409,8 +409,8 @@
         <div id="coax-type-selection" class="input-group hidden">
             <label>Select Coaxial Cable Type:</label>
             <div class="button-grid">
-                <button onclick="selectCoaxType('COAXSHORT')" style="padding: 20px; font-size: 18px; font-weight: bold;">📏 COAXSHORT</button>
-                <button onclick="selectCoaxType('COAXLONG')" style="padding: 20px; font-size: 18px; font-weight: bold;">📏 COAXLONG</button>
+                <button onclick="selectCoaxType('COAXSHORT')" style="padding: 20px; font-size: 18px; font-weight: bold;">COAXSHORT</button>
+                <button onclick="selectCoaxType('COAXLONG')" style="padding: 20px; font-size: 18px; font-weight: bold;">COAXLONG</button>
             </div>
         </div>
         
@@ -431,8 +431,8 @@
         <div id="manual-status"></div>
         <div class="nav-buttons">
             <button onclick="goToStep('method')">← Back</button>
-            <button onclick="switchToBarcodeEntry()">📷 Scan Barcode</button>
-            <button onclick="resetScanner()">🔄 Reset</button>
+            <button onclick="switchToBarcodeEntry()">Scan Barcode</button>
+            <button onclick="resetScanner()">Reset</button>
         </div>
     </div>
     
@@ -508,7 +508,7 @@
         <div id="confirm-details" class="part-display"></div>
         <div class="nav-buttons">
             <button onclick="cancelOperation()">← Cancel</button>
-            <button onclick="confirmOperation()">✓ Confirm</button>
+            <button onclick="confirmOperation()">Confirm</button>
         </div>
     </div>
     
@@ -518,7 +518,7 @@
         <div id="result-message" class="status-message"></div>
         <div class="nav-buttons">
             <button onclick="continueScanning()">▶️ Continue <span id="continue-action-text"></span></button>
-            <button onclick="resetScanner()">🔄 Start Over</button>
+            <button onclick="resetScanner()">Start Over</button>
         </div>
     </div>
 
@@ -526,9 +526,9 @@
     <!-- Step 2r: Remove - Choose Input Method -->
     <div id="step-remove-method" class="section hidden">
         <h2>Step 2: Choose Input Method</h2>
-        <p style="margin: 10px 0; color: #ff6600;"><strong>⚠️ Warning:</strong> This will disconnect ALL connections to and from the selected part.</p>
+        <p style="margin: 10px 0; color: #ff6600;"><strong>Warning:</strong> This will disconnect ALL connections to and from the selected part.</p>
         <div class="button-grid">
-            <button onclick="selectRemoveInputMethod('barcode')">📷 Barcode Reader</button>
+            <button onclick="selectRemoveInputMethod('barcode')">Barcode Reader</button>
             <button onclick="selectRemoveInputMethod('manual')">⌨️ Manual Entry</button>
         </div>
         <div class="nav-buttons">
@@ -539,7 +539,7 @@
     <!-- Step 3r: Remove - Barcode Input -->
     <div id="step-remove-barcode" class="section hidden">
         <h2>Remove Part - Barcode Input</h2>
-        <p style="margin: 10px 0; color: #ff6600;"><strong>⚠️ Warning:</strong> This will disconnect ALL connections to and from the scanned part.</p>
+        <p style="margin: 10px 0; color: #ff6600;"><strong>Warning:</strong> This will disconnect ALL connections to and from the scanned part.</p>
         <div class="input-group">
             <label for="remove-barcode-input">Scan or Type Part Number:</label>
             <input type="text" id="remove-barcode-input" placeholder="Scan barcode..." autofocus>
@@ -548,14 +548,14 @@
         <div class="nav-buttons">
             <button onclick="goToStep('remove-method')">← Back</button>
             <button onclick="switchToRemoveManual()">⌨️ Manual Entry</button>
-            <button onclick="resetScanner()">🔄 Reset</button>
+            <button onclick="resetScanner()">Reset</button>
         </div>
     </div>
     
     <!-- Step 3r: Remove - Manual Entry -->
     <div id="step-remove-manual" class="section hidden">
         <h2>Remove Part - Manual Entry</h2>
-        <p style="margin: 10px 0; color: #ff6600;"><strong>⚠️ Warning:</strong> This will disconnect ALL connections to and from the selected part.</p>
+        <p style="margin: 10px 0; color: #ff6600;"><strong>Warning:</strong> This will disconnect ALL connections to and from the selected part.</p>
         
         <div class="input-group">
             <label>Select Part Type:</label>
@@ -573,14 +573,14 @@
         <div id="remove-number" class="input-group hidden">
             <label for="remove-part-number-input">Enter Part Number:</label>
             <input type="number" id="remove-part-number-input" placeholder="Enter number..." min="1" inputmode="numeric" pattern="[0-9]*">
-            <button onclick="submitRemovePart()" style="margin-top: 10px; width: 100%; padding: 15px;">🗑️ Remove Part</button>
+            <button onclick="submitRemovePart()" style="margin-top: 10px; width: 100%; padding: 15px;">Remove Part</button>
         </div>
         
         <div id="remove-manual-status"></div>
         <div class="nav-buttons">
             <button onclick="goToStep('remove-method')">← Back</button>
-            <button onclick="switchToRemoveBarcode()">📷 Scan Barcode</button>
-            <button onclick="resetScanner()">🔄 Reset</button>
+            <button onclick="switchToRemoveBarcode()">Scan Barcode</button>
+            <button onclick="resetScanner()">Reset</button>
         </div>
     </div>
     
@@ -591,7 +591,7 @@
         <div id="remove-connections-display" style="margin: 20px 0;"></div>
         <div class="nav-buttons">
             <button onclick="cancelRemoval()">← Cancel</button>
-            <button onclick="confirmRemovePart()" id="confirm-remove-btn" style="background-color: #ff6600; color: white; font-weight: bold;">🗑️ Confirm Removal</button>
+            <button onclick="confirmRemovePart()" id="confirm-remove-btn" style="background-color: #ff6600; color: white; font-weight: bold;">Confirm Removal</button>
         </div>
     </div>
     
@@ -601,7 +601,7 @@
         <div id="remove-results" class="status-message"></div>
         <div class="nav-buttons">
             <button onclick="resetScanner()">← Back to Menu</button>
-            <button onclick="selectAction('remove')">🗑️ Remove Another Part</button>
+            <button onclick="selectAction('remove')">Remove Another Part</button>
         </div>
     </div>
 
@@ -622,7 +622,7 @@
         <div id="history-text-input" class="input-section hidden">
             <label for="history-part-input">Enter Part Number:</label>
             <input type="text" id="history-part-input" placeholder="e.g., BAC00001P1, SNAP1A00" style="font-size: 18px; padding: 10px; width: 100%; margin: 10px 0;">
-            <button onclick="fetchPartHistory()" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 10px;">📋 View History</button>
+            <button onclick="fetchPartHistory()" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 10px;">View History</button>
             <button onclick="selectHistoryMethod('choose')" class="btn btn-secondary" style="width: 100%; margin-top: 10px;">← Change Method</button>
         </div>
         
@@ -649,7 +649,7 @@
                     <strong>Preview:</strong> <span id="history-part-preview">-</span>
                 </div>
                 
-                <button onclick="fetchPartHistoryFromBuilder()" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 10px;">📋 View History</button>
+                <button onclick="fetchPartHistoryFromBuilder()" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 10px;">View History</button>
             </div>
             
             <button onclick="selectHistoryMethod('choose')" class="btn btn-secondary" style="width: 100%; margin-top: 10px;">← Change Method</button>
@@ -827,14 +827,14 @@
             
             if (state.action === 'connect') {
                 if (!state.firstPart) {
-                    instructions.innerHTML = '📋 Scan FIRST part (source of connection)<br><small>Note: After LNA, you\'ll need to manually enter COAX parts (no barcodes)</small>';
+                    instructions.innerHTML = 'Scan FIRST part (source of connection)<br><small>Note: After LNA, you\'ll need to manually enter COAX parts (no barcodes)</small>';
                 } else {
                     const nextPartType = getNextPartInChain(state.firstPart.part_type);
                     let extraInfo = '';
                     if (nextPartType === 'COAXSHORT' || nextPartType === 'COAXLONG') {
-                        extraInfo = '<br>⚠️ COAX parts have no barcode - will switch to manual entry';
+                        extraInfo = '<br>COAX parts have no barcode - will switch to manual entry';
                     } else if (nextPartType === 'BACBOARD') {
-                        extraInfo = '<br>💡 Can scan barcode OR use manual entry button';
+                        extraInfo = '<br>Can scan barcode OR use manual entry button';
                     }
                     instructions.innerHTML = `
                         <strong>Just scanned:</strong> ${state.firstPart.part_number}<br>
@@ -843,7 +843,7 @@
                     `;
                 }
             } else {
-                instructions.textContent = '📋 Scan part to disconnect';
+                instructions.textContent = 'Scan part to disconnect';
             }
             
             input.value = '';
@@ -894,7 +894,7 @@
                     
                     handlePartScanned(partInfo);
                 } else {
-                    statusDiv.innerHTML = `<div class="status-error status-message">❌ ${result.error}</div>`;
+                    statusDiv.innerHTML = `<div class="status-error status-message">${result.error}</div>`;
                     setTimeout(() => {
                         statusDiv.innerHTML = '';
                         document.getElementById('barcode-input').value = '';
@@ -906,7 +906,7 @@
                 if (errorMsg.includes('Failed to fetch') || errorMsg.includes('Load failed') || errorMsg.includes('NetworkError')) {
                     errorMsg = 'Cannot connect to server. Check network connection and server URL.';
                 }
-                statusDiv.innerHTML = `<div class="status-error status-message">❌ ${errorMsg}</div>`;
+                statusDiv.innerHTML = `<div class="status-error status-message">${errorMsg}</div>`;
             }
         }
         
@@ -976,7 +976,7 @@
             instructionsDiv.innerHTML = `
                 <strong>Just scanned:</strong> ${state.firstPart.part_number} (${state.firstPart.part_type})<br>
                 <strong>Next:</strong> ${expectedCoaxType}<br>
-                ⚠️ ${expectedCoaxType} parts have no barcode - manual entry required
+                ${expectedCoaxType} parts have no barcode - manual entry required
             `;
             
             // Hide part type selection and show coax type selection
@@ -1116,14 +1116,14 @@
                     
                     handlePartScanned(partInfo);
                 } else {
-                    statusDiv.innerHTML = `<div class="status-error status-message">❌ ${result.error}</div>`;
+                    statusDiv.innerHTML = `<div class="status-error status-message">${result.error}</div>`;
                 }
             } catch (error) {
                 let errorMsg = error.message;
                 if (errorMsg.includes('Failed to fetch') || errorMsg.includes('Load failed') || errorMsg.includes('NetworkError')) {
                     errorMsg = 'Cannot connect to server. Check network connection and server URL.';
                 }
-                statusDiv.innerHTML = `<div class="status-error status-message">❌ ${errorMsg}</div>`;
+                statusDiv.innerHTML = `<div class="status-error status-message">${errorMsg}</div>`;
             }
         }
         
@@ -1164,7 +1164,7 @@
                     // If part already has outgoing connection, cannot connect another part to it
                     if (hasOutgoingConnection) {
                         setTimeout(() => {
-                            statusDiv.innerHTML = `<div class="status-error status-message">❌ ${partInfo.part_number} already has an outgoing connection. Cannot add another connection.</div>`;
+                            statusDiv.innerHTML = `<div class="status-error status-message">${partInfo.part_number} already has an outgoing connection. Cannot add another connection.</div>`;
                             setTimeout(() => {
                                 state.firstPart = null;
                                 statusDiv.innerHTML = '';
@@ -1178,7 +1178,7 @@
                         return;
                     }
                 } else {
-                    statusDiv.innerHTML = `<div class="status-success status-message">✓ Part ${partInfo.part_number} found in database</div>`;
+                    statusDiv.innerHTML = `<div class="status-success status-message">Part ${partInfo.part_number} found in database</div>`;
                 }
                 
                 // If first part is LNA, automatically go to coax manual entry (no barcode)
@@ -1205,7 +1205,7 @@
                 // If first part is COAXLONG, give option to scan or manually enter BACBOARD
                 if (partInfo.part_type === 'COAXLONG') {
                     setTimeout(() => {
-                        statusDiv.innerHTML = '<div class="status-info status-message">📋 Next: BACBOARD<br>Choose to scan barcode or enter manually</div>';
+                        statusDiv.innerHTML = '<div class="status-info status-message">Next: BACBOARD<br>Choose to scan barcode or enter manually</div>';
                         // Stay in current method (user can switch using buttons)
                         if (state.method === 'barcode') {
                             setupBarcodeInput();
@@ -1262,7 +1262,7 @@
                 }
                 
                 if (alreadyConnected) {
-                    statusDiv.innerHTML = `<div class="status-error status-message">❌ ${state.firstPart.part_number} is already connected to ${partInfo.part_number}</div>`;
+                    statusDiv.innerHTML = `<div class="status-error status-message">${state.firstPart.part_number} is already connected to ${partInfo.part_number}</div>`;
                     setTimeout(() => {
                         // Reset to scan second part again
                         state.secondPart = null;
@@ -1274,7 +1274,7 @@
                         }
                     }, 3000);
                 } else if (hasIncomingConnection) {
-                    statusDiv.innerHTML = `<div class="status-error status-message">❌ ${partInfo.part_number} already has an incoming connection from another part. Cannot add another connection.</div>`;
+                    statusDiv.innerHTML = `<div class="status-error status-message">${partInfo.part_number} already has an incoming connection from another part. Cannot add another connection.</div>`;
                     setTimeout(() => {
                         // Reset to scan second part again
                         state.secondPart = null;
@@ -1286,7 +1286,7 @@
                         }
                     }, 3000);
                 } else {
-                    statusDiv.innerHTML = `<div class="status-success status-message">✓ Part ${partInfo.part_number} found in database</div>`;
+                    statusDiv.innerHTML = `<div class="status-success status-message">Part ${partInfo.part_number} found in database</div>`;
                     setTimeout(() => {
                         showConfirmation();
                     }, 1000);
@@ -1301,7 +1301,7 @@
             const statusDiv = state.method === 'barcode' ? 
                 document.getElementById('barcode-status') : 
                 document.getElementById('manual-status');
-            statusDiv.innerHTML = `<div class="status-success status-message">✓ Part ${partInfo.part_number} found in database</div>`;
+            statusDiv.innerHTML = `<div class="status-success status-message">Part ${partInfo.part_number} found in database</div>`;
             
             // Get existing connections
             try {
@@ -1482,10 +1482,10 @@
                         }
                     }
                 } else {
-                    statusDiv.innerHTML = `<div class="status-error">❌ ${result.error}</div>`;
+                    statusDiv.innerHTML = `<div class="status-error">${result.error}</div>`;
                 }
             } catch (error) {
-                statusDiv.innerHTML = `<div class="status-error">❌ Error checking ports: ${error.message}</div>`;
+                statusDiv.innerHTML = `<div class="status-error">Error checking ports: ${error.message}</div>`;
             }
         }
         
@@ -1502,7 +1502,7 @@
             if (isDisconnectMode) {
                 // Disconnect mode: check if port is available (greyed out)
                 if (clickedButton.classList.contains('port-available')) {
-                    statusDiv.innerHTML = `<div class="status-error">❌ Port ${port} has no connection to disconnect</div>`;
+                    statusDiv.innerHTML = `<div class="status-error">Port ${port} has no connection to disconnect</div>`;
                     setTimeout(() => {
                         statusDiv.innerHTML = `<div class="status-info">Selected: Chassis ${state.snapChassis}, Slot ${state.snapSlot}<br><small>Please select a connected port</small></div>`;
                     }, 3000);
@@ -1513,7 +1513,7 @@
                 if (clickedButton.classList.contains('port-occupied')) {
                     const connectedTo = clickedButton.getAttribute('data-occupied');
                     const portNum = clickedButton.getAttribute('data-port');
-                    statusDiv.innerHTML = `<div class="status-error">❌ Port ${portNum} already connected to ${connectedTo}</div>`;
+                    statusDiv.innerHTML = `<div class="status-error">Port ${portNum} already connected to ${connectedTo}</div>`;
                     setTimeout(() => {
                         statusDiv.innerHTML = `<div class="status-info">Selected: Chassis ${state.snapChassis}, Slot ${state.snapSlot}<br><small>Please select an available port</small></div>`;
                     }, 3000);
@@ -1570,7 +1570,7 @@
                         }, 0);
                     } else {
                         // Connect mode: proceed as normal
-                        statusDiv.innerHTML = `<div class="status-success">✓ SNAP Part: ${result.snap_part}</div>`;
+                        statusDiv.innerHTML = `<div class="status-success">SNAP Part: ${result.snap_part}</div>`;
                         
                         // Set as second part
                         state.secondPart = {
@@ -1585,10 +1585,10 @@
                         }, 1000);
                     }
                 } else {
-                    statusDiv.innerHTML = `<div class="status-error">❌ ${result.error}</div>`;
+                    statusDiv.innerHTML = `<div class="status-error">${result.error}</div>`;
                 }
             } catch (error) {
-                statusDiv.innerHTML = `<div class="status-error">❌ Error: ${error.message}</div>`;
+                statusDiv.innerHTML = `<div class="status-error">Error: ${error.message}</div>`;
             }
         }
         
@@ -1649,12 +1649,12 @@
                     document.getElementById('step-snap-selection').classList.add('hidden');
                     document.getElementById('result-message').innerHTML = `
                         <div class="status-success status-message">
-                            ✓ Successfully disconnected ${snapPart} from ${connectedTo}
+                            Successfully disconnected ${snapPart} from ${connectedTo}
                         </div>`;
                     document.getElementById('continue-action-text').textContent = 'Disconnecting';
                     goToStep('result');
                 } else {
-                    statusDiv.innerHTML = `<div class="status-error">❌ ${result.error}</div>`;
+                    statusDiv.innerHTML = `<div class="status-error">${result.error}</div>`;
                     // Re-enable button on error
                     clickedButton.disabled = false;
                     clickedButton.style.opacity = '1';
@@ -1662,7 +1662,7 @@
                 }
             } catch (error) {
                 console.error('Disconnection error:', error);
-                statusDiv.innerHTML = `<div class="status-error">❌ Error: ${error.message}</div>`;
+                statusDiv.innerHTML = `<div class="status-error">Error: ${error.message}</div>`;
                 // Re-enable button on error
                 clickedButton.disabled = false;
                 clickedButton.style.opacity = '1';
@@ -1687,7 +1687,7 @@
             const partNumber = partInput.value.trim().toUpperCase();
             
             if (!partNumber) {
-                document.getElementById('history-results').innerHTML = '<div class="status-error">❌ Please enter a part number</div>';
+                document.getElementById('history-results').innerHTML = '<div class="status-error">Please enter a part number</div>';
                 return;
             }
             
@@ -1811,7 +1811,7 @@
         function fetchPartHistoryFromBuilder() {
             if (!selectedHistoryAbbrev) {
                 document.getElementById('history-results').innerHTML = 
-                    '<div class="status-error">❌ Please select a part type first</div>';
+                    '<div class="status-error">Please select a part type first</div>';
                 return;
             }
             
@@ -1819,7 +1819,7 @@
             
             if (!numberInput) {
                 document.getElementById('history-results').innerHTML = 
-                    '<div class="status-error">❌ Please enter a part number</div>';
+                    '<div class="status-error">Please enter a part number</div>';
                 return;
             }
             
@@ -1852,7 +1852,7 @@
                 if (result.success && result.history.length > 0) {
                     let tableHTML = `
                         <div class="status-success">
-                            <h3>📋 History for ${result.part_number}</h3>
+                            <h3>History for ${result.part_number}</h3>
                             <p>Found ${result.history.length} record(s)</p>
                             <table style="width: 100%; margin-top: 15px; border-collapse: collapse; text-align: left;">
                                 <thead>
@@ -1869,7 +1869,7 @@
                         const otherPart = record.part_number === partNumber ? record.connected_to : record.part_number;
                         const otherPartType = record.part_number === partNumber ? record.connected_to_type : record.part_type;
                         
-                        const statusIcon = record.status === 'connected' ? '🔗' : '❌';
+                        const statusIcon = record.status === 'connected' ? '[C]' : '[D]';
                         const statusText = record.status === 'connected' ? 'Connected' : 'Disconnected';
                         const rowColor = record.status === 'connected' ? '#e8f5e9' : '#ffebee';
                         
@@ -1890,10 +1890,10 @@
                 } else if (result.success && result.history.length === 0) {
                     resultsDiv.innerHTML = `<div class="status-info">ℹ️ No connection history found for ${partNumber}</div>`;
                 } else {
-                    resultsDiv.innerHTML = `<div class="status-error">❌ ${result.error}</div>`;
+                    resultsDiv.innerHTML = `<div class="status-error">${result.error}</div>`;
                 }
             } catch (error) {
-                resultsDiv.innerHTML = `<div class="status-error">❌ Error: ${error.message}</div>`;
+                resultsDiv.innerHTML = `<div class="status-error">Error: ${error.message}</div>`;
             }
         }
         
@@ -2005,7 +2005,7 @@
             
             if (!number) {
                 document.getElementById('remove-manual-status').innerHTML = 
-                    '<div class="status-error">❌ Please enter a part number</div>';
+                    '<div class="status-error">Please enter a part number</div>';
                 return;
             }
             
@@ -2043,7 +2043,7 @@
                 const validateResult = await validateResponse.json();
                 
                 if (!validateResult.success) {
-                    statusDiv.innerHTML = `<div class="status-error">❌ ${validateResult.error}</div>`;
+                    statusDiv.innerHTML = `<div class="status-error">${validateResult.error}</div>`;
                     return;
                 }
                 
@@ -2057,7 +2057,7 @@
                 const connectionsResult = await connectionsResponse.json();
                 
                 if (!connectionsResult.success) {
-                    statusDiv.innerHTML = `<div class="status-error">❌ ${connectionsResult.error}</div>`;
+                    statusDiv.innerHTML = `<div class="status-error">${connectionsResult.error}</div>`;
                     return;
                 }
                 
@@ -2073,7 +2073,7 @@
                 showRemoveConfirmation();
                 
             } catch (error) {
-                statusDiv.innerHTML = `<div class="status-error">❌ Error: ${error.message}</div>`;
+                statusDiv.innerHTML = `<div class="status-error">Error: ${error.message}</div>`;
             }
         }
         
@@ -2104,7 +2104,7 @@
             const connectionsDiv = document.getElementById('remove-connections-display');
             let html = `
                 <div class="status-info" style="background-color: #fff3cd; border-color: #ffc107;">
-                    <h3>⚠️ Warning</h3>
+                    <h3>Warning</h3>
                     <p><strong>${state.removeConnections.length} connection(s) will be disconnected:</strong></p>
                     <ul style="text-align: left; margin: 10px 20px;">`;
             
@@ -2124,7 +2124,7 @@
             // Reset the confirm button to its initial state
             const confirmButton = document.getElementById('confirm-remove-btn');
             confirmButton.disabled = false;
-            confirmButton.textContent = '🗑️ Confirm Removal';
+            confirmButton.textContent = 'Confirm Removal';
             
             goToStep('remove-confirm');
         }
@@ -2149,7 +2149,7 @@
                     // No connections to disconnect
                     resultsDiv.innerHTML = `
                         <div class="status-success">
-                            <h3>✓ Removal Complete</h3>
+                            <h3>Removal Complete</h3>
                             <p><strong>${state.removePart.part_number}</strong> had no active connections.</p>
                         </div>`;
                     goToStep('remove-result');
@@ -2186,14 +2186,14 @@
                 if (errors.length === 0) {
                     resultsDiv.innerHTML = `
                         <div class="status-success">
-                            <h3>✓ Part Removed Successfully</h3>
+                            <h3>Part Removed Successfully</h3>
                             <p><strong>${state.removePart.part_number}</strong> has been removed.</p>
                             <p>Disconnected ${disconnectedCount} connection(s).</p>
                         </div>`;
                 } else {
                     resultsDiv.innerHTML = `
                         <div class="status-error">
-                            <h3>⚠️ Partial Success</h3>
+                            <h3>Partial Success</h3>
                             <p>Disconnected ${disconnectedCount} of ${state.removeConnections.length} connection(s).</p>
                             <p><strong>Errors:</strong></p>
                             <ul style="text-align: left; margin: 10px 20px;">
@@ -2205,7 +2205,7 @@
                 goToStep('remove-result');
                 
             } catch (error) {
-                resultsDiv.innerHTML = `<div class="status-error">❌ Error: ${error.message}</div>`;
+                resultsDiv.innerHTML = `<div class="status-error">Error: ${error.message}</div>`;
                 goToStep('remove-result');
             }
         }
@@ -2390,12 +2390,12 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    resultDiv.innerHTML = `<div class="status-success status-message">✓ ${result.message}</div>`;
+                    resultDiv.innerHTML = `<div class="status-success status-message">${result.message}</div>`;
                 } else {
-                    resultDiv.innerHTML = `<div class="status-error status-message">❌ ${result.error}</div>`;
+                    resultDiv.innerHTML = `<div class="status-error status-message">${result.error}</div>`;
                 }
             } catch (error) {
-                resultDiv.innerHTML = `<div class="status-error status-message">❌ Error: ${error.message}</div>`;
+                resultDiv.innerHTML = `<div class="status-error status-message">Error: ${error.message}</div>`;
             }
         }
     </script>

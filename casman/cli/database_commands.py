@@ -369,9 +369,9 @@ def cmd_database_print(parser: argparse.ArgumentParser, remaining_args: list) ->
 
     assembled_db_path = get_config("CASMAN_ASSEMBLED_DB", "database/assembled_casm.db")
     if assembled_db_path is None:
-        print("❌ Error: Could not determine path to assembled_casm.db")
+        print("Error: Could not determine path to assembled_casm.db")
         sys.exit(1)
 
-    print("📋 Assembly Database Contents:")
+    print("Assembly Database Contents:")
     print("=" * 50)
     print_db_schema(str(assembled_db_path))

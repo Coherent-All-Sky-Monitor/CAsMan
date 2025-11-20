@@ -803,3 +803,239 @@ class TestSearchPartsExtended:
         
         assert len(results) == 1
         mock_search.assert_called_once_with(limit=5, db_dir="/custom/path")
+
+
+class TestPartsInteractive:
+    """Test interactive parts management functions."""
+
+    @patch("casman.parts.interactive.read_parts")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_display_parts_all_types(self, _mock_print, mock_input, mock_read):
+        """Test displaying all parts."""
+        mock_input.side_effect = ["0", ""]  # Type=ALL, Polarization=ALL
+        mock_read.return_value = [
+            (1, "ANT00001P1", "ANTENNA", "P1", "2025-01-01", "2025-01-01")
+        ]
+
+        from casman.parts.interactive import display_parts_interactive
+        display_parts_interactive()
+
+        mock_read.assert_called_once_with(None, None)
+
+    @patch("casman.parts.interactive.read_parts")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_display_parts_by_type_number(self, _mock_print, mock_input, mock_read):
+        """Test displaying parts by type number."""
+        mock_input.side_effect = ["1", "1"]  # Type=1 (ANTENNA), Polarization=1
+        mock_read.return_value = [
+            (1, "ANT00001P1", "ANTENNA", "P1", "2025-01-01", "2025-01-01")
+        ]
+
+        from casman.parts.interactive import display_parts_interactive
+        display_parts_interactive()
+
+        mock_read.assert_called_once_with("ANTENNA", "1")
+
+    @patch("casman.parts.interactive.read_parts")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_display_parts_by_alias(self, _mock_print, mock_input, mock_read):
+        """Test displaying parts by alias."""
+        mock_input.side_effect = ["ANT", ""]  # Type=ANT alias, Polarization=ALL
+        mock_read.return_value = []
+
+        from casman.parts.interactive import display_parts_interactive
+        display_parts_interactive()
+
+        mock_read.assert_called_once_with("ANTENNA", None)
+
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_display_parts_invalid_type(self, mock_print, mock_input):
+        """Test handling invalid part type selection."""
+        mock_input.side_effect = ["99"]  # Invalid type number
+
+        from casman.parts.interactive import display_parts_interactive
+        display_parts_interactive()
+
+        assert any(
+            "Invalid selection" in str(call)
+            for call in mock_print.call_args_list
+        )
+
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_display_parts_invalid_input(self, mock_print, mock_input):
+        """Test handling invalid input format."""
+        mock_input.side_effect = ["invalid"]  # Invalid input
+
+        from casman.parts.interactive import display_parts_interactive
+        display_parts_interactive()
+
+        assert any(
+            "Invalid input" in str(call)
+            for call in mock_print.call_args_list
+        )
+
+    @patch("casman.parts.interactive.read_parts")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_display_parts_no_results(self, mock_print, mock_input, mock_read):
+        """Test displaying message when no parts found."""
+        mock_input.side_effect = ["1", "1"]
+        mock_read.return_value = []
+
+        from casman.parts.interactive import display_parts_interactive
+        display_parts_interactive()
+
+        assert any(
+            "No parts found" in str(call)
+            for call in mock_print.call_args_list
+        )
+
+    @patch("casman.parts.interactive.generate_part_numbers")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_add_parts_single_type(self, mock_print, mock_input, mock_generate):
+        """Test adding parts for single type."""
+        mock_input.side_effect = ["1", "5", "1"]  # Type=ANTENNA, Count=5, Pol=1
+        mock_generate.return_value = ["ANT-P1-00001", "ANT-P1-00002", "ANT-P1-00003", "ANT-P1-00004", "ANT-P1-00005"]
+
+        from casman.parts.interactive import add_parts_interactive
+        add_parts_interactive()
+
+        mock_generate.assert_called_once()
+        assert any(
+            "Successfully created" in str(call)
+            for call in mock_print.call_args_list
+        )
+
+    @patch("casman.parts.interactive.generate_part_numbers")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_add_parts_all_types(self, mock_print, mock_input, mock_generate):
+        """Test adding parts for all types."""
+        mock_input.side_effect = ["0", "3", "1"]  # Type=ALL, Count=3, Pol=1
+        mock_generate.return_value = ["PART-P1-00001", "PART-P1-00002", "PART-P1-00003"]
+
+        from casman.parts.interactive import add_parts_interactive
+        add_parts_interactive()
+
+        # Should call generate for each type (excluding SNAP)
+        assert mock_generate.call_count == 5  # 6 types - 1 SNAP
+
+    @patch("casman.parts.interactive.generate_part_numbers")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_add_parts_by_alias(self, _mock_print, mock_input, mock_generate):
+        """Test adding parts using alias."""
+        mock_input.side_effect = ["LNA", "2", "2"]  # Type=LNA alias, Count=2, Pol=2
+        mock_generate.return_value = ["LNA-P2-00001", "LNA-P2-00002"]
+
+        from casman.parts.interactive import add_parts_interactive
+        add_parts_interactive()
+
+        mock_generate.assert_called_once()
+
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_add_parts_invalid_type(self, mock_print, mock_input):
+        """Test handling invalid type selection."""
+        mock_input.side_effect = ["99"]  # Invalid type
+
+        from casman.parts.interactive import add_parts_interactive
+        add_parts_interactive()
+
+        assert any(
+            "Invalid selection" in str(call)
+            for call in mock_print.call_args_list
+        )
+
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_add_parts_invalid_count_zero(self, mock_print, mock_input):
+        """Test handling zero count."""
+        mock_input.side_effect = ["1", "0"]  # Type=ANTENNA, Count=0
+
+        from casman.parts.interactive import add_parts_interactive
+        add_parts_interactive()
+
+        assert any(
+            "must be greater than 0" in str(call)
+            for call in mock_print.call_args_list
+        )
+
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_add_parts_invalid_count_negative(self, mock_print, mock_input):
+        """Test handling negative count."""
+        mock_input.side_effect = ["1", "-5"]  # Type=ANTENNA, Count=-5
+
+        from casman.parts.interactive import add_parts_interactive
+        add_parts_interactive()
+
+        assert any(
+            "must be greater than 0" in str(call)
+            for call in mock_print.call_args_list
+        )
+
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_add_parts_invalid_count_format(self, mock_print, mock_input):
+        """Test handling non-numeric count."""
+        mock_input.side_effect = ["1", "abc"]  # Type=ANTENNA, Count=invalid
+
+        from casman.parts.interactive import add_parts_interactive
+        add_parts_interactive()
+
+        assert any(
+            "Invalid input" in str(call)
+            for call in mock_print.call_args_list
+        )
+
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_add_parts_invalid_polarization(self, mock_print, mock_input):
+        """Test handling invalid polarization."""
+        mock_input.side_effect = ["1", "5", "3"]  # Pol=3 (invalid)
+
+        from casman.parts.interactive import add_parts_interactive
+        add_parts_interactive()
+
+        assert any(
+            "Invalid polarization" in str(call)
+            for call in mock_print.call_args_list
+        )
+
+    @patch("casman.parts.interactive.generate_part_numbers")
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_add_parts_database_error(self, mock_print, mock_input, mock_generate):
+        """Test handling database error during part generation."""
+        mock_input.side_effect = ["1", "5", "1"]
+        mock_generate.side_effect = Exception("Database error")
+
+        from casman.parts.interactive import add_parts_interactive
+        
+        # The function doesn't catch exceptions, so we expect it to propagate
+        try:
+            add_parts_interactive()
+            assert False, "Expected exception to be raised"
+        except Exception as e:
+            assert "Database error" in str(e)
+
+    @patch("builtins.input")
+    @patch("builtins.print")
+    def test_add_parts_main_function(self, mock_print, mock_input):
+        """Test main function for parts CLI."""
+        mock_input.side_effect = ["3"]  # Invalid choice
+
+        from casman.parts.interactive import main
+        main()
+
+        assert any(
+            "Invalid choice" in str(call)
+            for call in mock_print.call_args_list
+        )

@@ -16,8 +16,6 @@ This section contains detailed documentation for all CAsMan modules.
 
 - [Parts](parts.md)
 
-- [Visualization](visualization.md)
-
 ## Command Line Interface
 
 - [CLI Commands](cli.md)
