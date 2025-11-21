@@ -11,7 +11,7 @@ import os
 from PIL import Image
 from PIL.Image import Resampling
 
-from casman.config.core import get_config
+from casman.config import get_config
 
 
 def arrange_barcodes_in_pdf(directory, output_pdf):

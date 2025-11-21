@@ -15,6 +15,11 @@ from casman.database.initialization import init_assembled_db, init_parts_db
 @pytest.fixture(autouse=True)
 def set_casman_db_env_vars(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Robustly isolate both parts and assembled DBs for every test."""
+    # Use test_db directory for all test databases
+    test_db_dir = os.path.join(os.path.dirname(__file__), "..", "test_db")
+    os.makedirs(test_db_dir, exist_ok=True)
+    
+    # Create unique temp subdirectory for this test
     temp_dir = str(tmp_path)
     parts_db = os.path.join(temp_dir, "parts.db")
     assembled_db = os.path.join(temp_dir, "assembled_casm.db")
@@ -30,14 +35,11 @@ def set_casman_db_env_vars(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> N
     monkeypatch.setenv("CASMAN_PARTS_DB", parts_db)
     monkeypatch.setenv("CASMAN_ASSEMBLED_DB", assembled_db)
     monkeypatch.setenv("CASMAN_DATABASE_DIR", temp_dir)
-
-    # Force config manager to reload with new environment variables
-    from casman.config.core import get_config_manager
-
-    config_manager = get_config_manager()
-    config_manager.reload()
-    monkeypatch.setenv("CASMAN_PARTS_DB", parts_db)
-    monkeypatch.setenv("CASMAN_ASSEMBLED_DB", assembled_db)
+    
+    # Also redirect barcode directory to temp
+    barcode_test_dir = os.path.join(temp_dir, "barcodes")
+    os.makedirs(barcode_test_dir, exist_ok=True)
+    monkeypatch.setenv("CASMAN_BARCODE_DIR", barcode_test_dir)
 
 
 @pytest.fixture

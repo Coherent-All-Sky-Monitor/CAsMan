@@ -9,9 +9,10 @@ import os
 import sqlite3
 from typing import Dict, List, Optional, Tuple
 
-from flask import Blueprint, request, render_template_string, send_from_directory
+from flask import (Blueprint, render_template_string, request,
+                   send_from_directory)
 
-from casman.config.core import get_config
+from casman.config import get_config
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,9 @@ visualize_bp = Blueprint(
     __name__,
     url_prefix="/visualize",
     template_folder=os.path.join(os.path.dirname(__file__), "..", "templates"),
-    static_folder=os.path.join(os.path.dirname(__file__), "..", "..", "scripts", "static"),
+    static_folder=os.path.join(
+        os.path.dirname(__file__), "..", "..", "scripts", "static"
+    ),
 )
 
 
@@ -276,7 +279,9 @@ def format_display_data(
 @visualize_bp.route("/static/<path:filename>")
 def visualize_static(filename):
     """Serve static files for visualization (fonts, etc.)."""
-    static_dir = os.path.join(os.path.dirname(__file__), "..", "..", "scripts", "static")
+    static_dir = os.path.join(
+        os.path.dirname(__file__), "..", "..", "scripts", "static"
+    )
     return send_from_directory(static_dir, filename)
 
 

@@ -13,14 +13,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from casman.visualization.core import (
-    format_ascii_chains,
-    get_chain_summary,
-    get_duplicate_connections,
-    _calculate_chain_length,
-    main as core_main,
-)
 from casman.visualization import main as package_main
+from casman.visualization.core import (_calculate_chain_length,
+                                       format_ascii_chains, get_chain_summary,
+                                       get_duplicate_connections)
+from casman.visualization.core import main as core_main
 
 
 class TestFormatAsciiChains:
@@ -204,9 +201,7 @@ class TestGetDuplicateConnections:
 
     @patch("casman.database.connection.get_database_path")
     @patch("sqlite3.connect")
-    def test_get_duplicate_connections_no_duplicates(
-        self, mock_connect, mock_get_path
-    ):
+    def test_get_duplicate_connections_no_duplicates(self, mock_connect, mock_get_path):
         """Test when no duplicate connections exist."""
         mock_get_path.return_value = "test.db"
         mock_conn = MagicMock()

@@ -11,7 +11,7 @@ import sys
 
 import argcomplete
 
-from ..config.core import get_config
+from ..config import get_config
 
 
 def cmd_database() -> None:
@@ -142,9 +142,10 @@ def cmd_database_clear(parser: argparse.ArgumentParser, remaining_args: list) ->
     args = parser.parse_args(remaining_args)
 
     # Import database functions directly
-    from ..database.connection import get_database_path
-    import sqlite3
     import os
+    import sqlite3
+
+    from ..database.connection import get_database_path
 
     def print_stop_sign() -> None:
         """Print a full color enhanced ASCII stop sign to the terminal."""
@@ -281,8 +282,8 @@ def cmd_database_print(parser: argparse.ArgumentParser, remaining_args: list) ->
     parser.parse_args(remaining_args)
 
     # Print database function
-    import sqlite3
     import os
+    import sqlite3
 
     def print_db_schema(db_path: str) -> None:
         """Print all entries from each table in the SQLite database at db_path."""

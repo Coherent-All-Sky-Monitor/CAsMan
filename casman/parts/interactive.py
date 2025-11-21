@@ -9,28 +9,32 @@ from casman.parts.generation import generate_part_numbers
 from casman.parts.types import load_part_types
 
 PART_TYPES = load_part_types()
+# Terminal type is the last in the chain (highest key number)
+TERMINAL_TYPE_KEY = max(PART_TYPES.keys())
 
 
 def display_parts_interactive() -> None:
     """Interactive function to display parts with user input."""
     print("Select part type (or alias):")
-    # Show all part types except SNAP (type 6)
+    # Show all part types except terminal type
     for key, (name, abbrev) in PART_TYPES.items():
-        if key != 6:  # Exclude SNAP
+        if key != TERMINAL_TYPE_KEY:  # Exclude terminal type
             print(f"{key}: {name} (alias: {abbrev})")
     print("0: ALL (show all part types)")
     type_input = input("Enter the number or alias for the part type: ").strip().upper()
     if type_input == "0":
         part_type = None
-    elif type_input in (abbrev for key, (_, abbrev) in PART_TYPES.items() if key != 6):
+    elif type_input in (
+        abbrev for key, (_, abbrev) in PART_TYPES.items() if key != TERMINAL_TYPE_KEY
+    ):
         for key, (name, abbrev) in PART_TYPES.items():
-            if key != 6 and type_input == abbrev:
+            if key != TERMINAL_TYPE_KEY and type_input == abbrev:
                 part_type = name
                 break
     else:
         try:
             type_selection = int(type_input)
-            if type_selection in PART_TYPES and type_selection != 6:
+            if type_selection in PART_TYPES and type_selection != TERMINAL_TYPE_KEY:
                 part_type = PART_TYPES[type_selection][0]
             else:
                 print("Invalid selection. Please enter a valid number or alias.")
@@ -105,9 +109,9 @@ def display_parts_interactive() -> None:
 def add_parts_interactive() -> None:
     """Interactive function to add new parts."""
     print("Select part type (or alias):")
-    # Show all part types except SNAP (type 6)
+    # Show all part types except terminal type
     for key, (name, abbrev) in PART_TYPES.items():
-        if key != 6:  # Exclude SNAP
+        if key != TERMINAL_TYPE_KEY:  # Exclude terminal type
             print(f"{key}: {name} (alias: {abbrev})")
     print("0: ALL (add parts for all types)")
 
@@ -117,16 +121,20 @@ def add_parts_interactive() -> None:
 
     # Handle ALL option
     if type_input == "0":
-        part_types_to_add = [name for key, (name, _) in PART_TYPES.items() if key != 6]
-    elif type_input in (abbrev for key, (_, abbrev) in PART_TYPES.items() if key != 6):
+        part_types_to_add = [
+            name for key, (name, _) in PART_TYPES.items() if key != TERMINAL_TYPE_KEY
+        ]
+    elif type_input in (
+        abbrev for key, (_, abbrev) in PART_TYPES.items() if key != TERMINAL_TYPE_KEY
+    ):
         for key, (name, abbrev) in PART_TYPES.items():
-            if key != 6 and type_input == abbrev:
+            if key != TERMINAL_TYPE_KEY and type_input == abbrev:
                 part_types_to_add = [name]
                 break
     else:
         try:
             type_selection = int(type_input)
-            if type_selection in PART_TYPES and type_selection != 6:
+            if type_selection in PART_TYPES and type_selection != TERMINAL_TYPE_KEY:
                 part_types_to_add = [PART_TYPES[type_selection][0]]
             else:
                 print("Invalid selection. Please enter a valid number or alias.")

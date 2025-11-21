@@ -1,35 +1,17 @@
-"""
-Configuration system for CAsMan.
+"""Configuration system for CAsMan.
 
-This package provides comprehensive configuration management with support for:
-- YAML and JSON configuration files
+Provides simple configuration management with:
+- YAML configuration file loading
 - Environment variable overrides
-- Schema validation
-- Runtime configuration updates
-- Environment-specific settings
 """
 
-# Import enhanced configuration system
-from .core import (
-    ConfigManager,
-    get_config as get_config_enhanced,
-    get_config_manager,
-    load_config as load_config_enhanced,
-    reload_config,
-    set_config,
-    validate_config,
-)
-from .environments import EnvironmentConfig
-from .schema import ConfigSchema
-from .utils import merge_configs, resolve_config_path
-
-# Import legacy configuration functions for backward compatibility
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
+
 import yaml
 
-# Legacy configuration variables and functions
+# Configuration variables
 _CONFIG_PATH = os.path.join(Path(__file__).parent.parent.parent, "config.yaml")
 
 
@@ -44,47 +26,38 @@ except Exception:
     _CONFIG = {}
 
 
-def get_config(key: str, default: Optional[str] = None) -> Optional[str]:
+def get_config(key: str, default: Any = None) -> Any:
     """
-    Get a configuration value by key, checking environment variables first, then enhanced config, then config file (unified function).
+    Get a configuration value by key, checking environment variables first, then config file.
+
+    Supports dot notation for nested values (e.g., 'web_app.dev.port').
 
     Args:
-        key (str): The config key (e.g., 'CASMAN_PARTS_DB').
-        default (str | None): Default value if not found.
+        key (str): The config key (e.g., 'CASMAN_PARTS_DB' or 'web_app.dev.port').
+        default (Any): Default value if not found.
 
     Returns:
-        str | None: Value from environment variables, or runtime config, or config.yaml, or default.
+        Any: Value from environment variables, or config.yaml, or default.
     """
-    # First check environment variables directly (for test isolation and
-    # runtime overrides)
+    # First check environment variables directly (for test isolation and runtime overrides)
     if key in os.environ:
         return os.environ[key]
 
-    # Then try the enhanced configuration system (for runtime set values)
-    try:
-        enhanced_value = get_config_enhanced(key, None)
-        if enhanced_value is not None:
-            return enhanced_value
-    except (AttributeError, KeyError, TypeError):
-        pass
+    # Support dot notation for nested config values
+    if "." in key:
+        keys = key.split(".")
+        value = _CONFIG
+        for k in keys:
+            if isinstance(value, dict) and k in value:
+                value = value[k]
+            else:
+                return default
+        return value
 
-    # Fall back to config file
+    # Fall back to config file for simple keys
     return _CONFIG.get(key, default)
 
 
 __all__ = [
-    # Enhanced configuration system
-    "ConfigManager",
-    "EnvironmentConfig",
-    "ConfigSchema",
-    "get_config_enhanced",
-    "get_config_manager",
-    "load_config_enhanced",
-    "merge_configs",
-    "reload_config",
-    "resolve_config_path",
-    "set_config",
-    "validate_config",
-    # Legacy functions (backward compatibility)
     "get_config",
 ]

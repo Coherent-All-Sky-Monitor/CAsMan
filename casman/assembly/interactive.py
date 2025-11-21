@@ -8,7 +8,7 @@ and assembling parts.
 import logging
 import sqlite3
 
-from casman.config.core import get_config
+from casman.config import get_config
 from casman.parts.types import load_part_types
 
 logger = logging.getLogger(__name__)
@@ -141,7 +141,7 @@ def check_existing_connections(part_number: str) -> tuple[bool, str, list]:
 
         return True, "", []
 
-    except (sqlite3.Error, OSError, IOError) as e:
+    except (sqlite3.Error, OSError, IOError, ValueError) as e:
         logger.error("Error checking existing connections for %s: %s", part_number, e)
         return False, f"Database error: {e}", []
 
@@ -181,7 +181,7 @@ def check_target_connections(connected_part: str) -> tuple[bool, str]:
 
         return True, ""
 
-    except (sqlite3.Error, OSError, IOError) as e:
+    except (sqlite3.Error, OSError, IOError, ValueError) as e:
         logger.error("Error checking target connections for %s: %s", connected_part, e)
         return False, f"Database error: {e}"
 
@@ -220,7 +220,7 @@ def validate_part_in_database(part_number: str) -> tuple[bool, str, str]:
             return True, part_type or "UNKNOWN", polarization or "X"
         else:
             return False, "", ""
-    except (sqlite3.Error, OSError, IOError) as e:
+    except (sqlite3.Error, OSError, IOError, ValueError) as e:
         logger.error("Error validating part %s: %s", part_number, e)
         return False, "", ""
 
@@ -444,6 +444,7 @@ def scan_and_assemble_interactive() -> None:
             # Record the connection to the database
             try:
                 from datetime import datetime
+
                 from .connections import record_assembly_connection
 
                 # Generate current timestamp
@@ -567,17 +568,22 @@ def scan_and_disassemble_interactive() -> None:
                 conn.close()
 
                 if not connections:
-                    print(
-                        f"Error: Part '{first_part}' is not connected to anything."
-                    )
+                    print(f"Error: Part '{first_part}' is not connected to anything.")
                     print("Cannot disconnect a part that has no connections.")
                     continue
 
                 # Display connections and let user choose
                 print(f"\nFound {len(connections)} connection(s) for {first_part}:")
                 print("-" * 60)
-                for idx, (part_num, part_type_db, polarization_db, 
-                          connected, conn_type, conn_pol, scan_time) in enumerate(connections, 1):
+                for idx, (
+                    part_num,
+                    part_type_db,
+                    polarization_db,
+                    connected,
+                    conn_type,
+                    conn_pol,
+                    scan_time,
+                ) in enumerate(connections, 1):
                     if part_num == first_part:
                         print(
                             f"{idx}. {part_num} --> {connected} ({conn_type}) [Scanned: {scan_time}]"
@@ -609,8 +615,15 @@ def scan_and_disassemble_interactive() -> None:
 
                 # Get the selected connection details
                 selected_connection = connections[choice_idx]
-                (conn_part_num, conn_part_type, conn_part_pol, 
-                 conn_connected_to, conn_connected_type, conn_connected_pol, _) = selected_connection
+                (
+                    conn_part_num,
+                    conn_part_type,
+                    conn_part_pol,
+                    conn_connected_to,
+                    conn_connected_type,
+                    conn_connected_pol,
+                    _,
+                ) = selected_connection
 
                 # Determine which part is which: first_part should be source, other is target
                 # The selected connection could have first_part as either source or target
@@ -639,6 +652,7 @@ def scan_and_disassemble_interactive() -> None:
             # Record the disconnection to the database
             try:
                 from datetime import datetime
+
                 from .connections import record_assembly_disconnection
 
                 # Generate current timestamp

@@ -65,11 +65,11 @@ def check_part_already_scanned(part_number: str, db_dir: Optional[str] = None) -
                 ORDER BY id DESC 
                 LIMIT 1
                 """,
-                (part_number, part_number)
+                (part_number, part_number),
             )
             result = cursor.fetchone()
             # Part is "already scanned" only if most recent status is 'connected'
-            return result is not None and result[0] == 'connected'
+            return result is not None and result[0] == "connected"
     except (sqlite3.Error, OSError):
         return False
 

@@ -1,40 +1,13 @@
 """
 Database connection utilities for CAsMan.
 
-This module provides utilities for database path resolution and
-project root detection.
+This module provides utilities for database path resolution.
 """
 
 import os
 from typing import Optional
 
-from casman.config.core import get_config
-
-
-def find_project_root() -> str:
-    """
-    Find the project root directory by looking for casman package or pyproject.toml.
-
-    Returns
-    -------
-    str
-        Absolute path to the project root directory.
-    """
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-
-    # Go up directories until we find the project root
-    while current_dir != os.path.dirname(current_dir):  # Stop at filesystem root
-        # Check for project indicators
-        if (
-            os.path.exists(os.path.join(current_dir, "pyproject.toml"))
-            or os.path.exists(os.path.join(current_dir, "casman"))
-            and os.path.exists(os.path.join(current_dir, "database"))
-        ):
-            return current_dir
-        current_dir = os.path.dirname(current_dir)
-
-    # Fallback to current working directory
-    return os.getcwd()
+from casman.config import get_config
 
 
 def get_database_path(db_name: str, db_dir: Optional[str] = None) -> str:
@@ -54,12 +27,6 @@ def get_database_path(db_name: str, db_dir: Optional[str] = None) -> str:
         Full path to the database file.
     """
 
-    """
-    Returns
-    -------
-    str
-        Full path to the database file.
-    """
     # If db_dir is explicitly provided, use it directly (for tests and custom
     # setups)
     if db_dir is not None:
@@ -75,8 +42,18 @@ def get_database_path(db_name: str, db_dir: Optional[str] = None) -> str:
         if config_path is not None:
             return str(config_path)
 
-    # Default to project root database directory
-    project_root = find_project_root()
-    db_dir = os.path.join(project_root, "database")
+    # Default to project root database directory (find by going up from __file__)
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    while current_dir != os.path.dirname(current_dir):  # Stop at filesystem root
+        if (
+            os.path.exists(os.path.join(current_dir, "pyproject.toml"))
+            or os.path.exists(os.path.join(current_dir, "casman"))
+            and os.path.exists(os.path.join(current_dir, "database"))
+        ):
+            db_dir = os.path.join(current_dir, "database")
+            return os.path.join(db_dir, db_name)
+        current_dir = os.path.dirname(current_dir)
 
+    # Fallback to cwd/database
+    db_dir = os.path.join(os.getcwd(), "database")
     return os.path.join(db_dir, db_name)

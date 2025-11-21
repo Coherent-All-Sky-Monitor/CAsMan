@@ -346,9 +346,7 @@ casman/
 ├── barcode/             # Barcode modules
 │   ├── __init__.py
 │   ├── generation.py   # Barcode generation
-│   ├── operations.py   # Barcode operations
-│   ├── printing.py     # Print page generation
-│   └── validation.py   # Barcode validation
+│   └── printing.py     # Print page generation
 ├── config.py            # Configuration handling (legacy)
 └── config/              # Configuration modules
     ├── __init__.py
@@ -548,7 +546,7 @@ casman web --port 8080               # Custom port
 
 ## Testing & Coverage
 
-![Tests](https://img.shields.io/badge/tests-414%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-72.0%25-yellow)
+![Tests](https://img.shields.io/badge/tests-432%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-87.0%25-green)
 
 
 | Module | Coverage | Lines Covered |
@@ -557,11 +555,10 @@ casman web --port 8080               # Custom port
 | **Assembly __Init__** | 100.0% | 40/40 |
 | **Assembly Connections** | 100.0% | 24/24 |
 | **Assembly Data** | 100.0% | 15/15 |
-| **Barcode __Init__** | 100.0% | 5/5 |
+| **Barcode __Init__** | 100.0% | 3/3 |
 | **Cli __Init__** | 100.0% | 11/11 |
-| **Database __Init__** | 100.0% | 5/5 |
-| **Database Migrations** | 100.0% | 63/63 |
-| **Database Operations** | 100.0% | 53/53 |
+| **Database __Init__** | 100.0% | 4/4 |
+| **Database Operations** | 100.0% | 31/31 |
 | **Parts __Init__** | 100.0% | 10/10 |
 | **Parts Db** | 100.0% | 4/4 |
 | **Parts Search** | 100.0% | 65/65 |
@@ -571,34 +568,28 @@ casman web --port 8080               # Custom port
 | **Parts Part** | 98.0% | 60/61 |
 | **Visualization Core** | 97.0% | 106/109 |
 | **Parts Validation** | 96.0% | 51/53 |
-| **Config Schema** | 95.0% | 20/21 |
+| **Visualization __Init__** | 95.0% | 18/19 |
 | **Web App** | 95.0% | 37/39 |
-| **Visualization __Init__** | 94.0% | 17/18 |
 | **Web Visualize** | 94.0% | 110/117 |
-| **Parts Generation** | 93.0% | 55/59 |
-| **Database Connection** | 92.0% | 22/24 |
-| **Parts Interactive** | 92.0% | 110/120 |
-| **Cli Utils** | 91.0% | 29/32 |
-| **Barcode Operations** | 86.0% | 94/109 |
-| **Web Scanner** | 86.0% | 190/222 |
-| **Barcode Generation** | 81.0% | 38/47 |
-| **Database Initialization** | 81.0% | 35/43 |
+| **Parts Interactive** | 92.0% | 111/121 |
+| **Parts Generation** | 91.0% | 59/65 |
+| **Barcode Generation** | 90.0% | 84/93 |
+| **Cli Utils** | 88.0% | 28/32 |
+| **Database Initialization** | 88.0% | 38/43 |
+| **Barcode Printing** | 86.0% | 90/105 |
+| **Web Scanner** | 86.0% | 199/232 |
+| **Assembly Interactive** | 85.0% | 279/330 |
+| **Config __Init__** | 85.0% | 22/26 |
 | **Cli Web_Commands** | 80.0% | 44/55 |
 | **Web Server** | 76.0% | 41/54 |
-| **Config __Init__** | 75.0% | 21/28 |
 | **Cli Barcode_Commands** | 73.0% | 22/30 |
-| **Cli Main** | 72.0% | 56/78 |
+| **Cli Main** | 73.0% | 57/78 |
 | **Cli Visualization_Commands** | 68.0% | 23/34 |
-| **Config Core** | 63.0% | 74/117 |
-| **Config Environments** | 59.0% | 45/76 |
-| **Assembly Interactive** | 58.0% | 188/324 |
-| **Barcode Printing** | 53.0% | 39/74 |
-| **Cli Parts_Commands** | 40.0% | 25/63 |
-| **Barcode Validation** | 30.0% | 11/37 |
-| **Cli Assembly_Commands** | 30.0% | 49/163 |
-| **Cli Database_Commands** | 28.0% | 43/153 |
-| **Config Utils** | 21.0% | 27/129 |
-| **Overall** | **72.0%** | **2038/2846** |
+| **Cli Database_Commands** | 66.0% | 101/153 |
+| **Cli Parts_Commands** | 66.0% | 51/77 |
+| **Database Connection** | 64.0% | 14/22 |
+| **Cli Assembly_Commands** | 61.0% | 99/163 |
+| **Overall** | **85.0%** | **2012/2380** |
 
 ### Running Tests
 
@@ -620,25 +611,3 @@ pytest tests/test_cli.py -v
 
 ```
 
-### Automated Coverage Tracking
-
-A coverage check script is provided for development workflow:
-
-```bash
-
-# Run coverage analysis and check threshold
-./coverage_check.sh
-
-# The script will:
-
-# 1. Run all tests with coverage
-
-# 2. Display detailed coverage report
-
-# 3. Check against minimum threshold (50%)
-
-# 4. Provide feedback on coverage status
-
-```
-
-The git pre-commit hook can optionally run coverage checks to ensure code quality before commits.

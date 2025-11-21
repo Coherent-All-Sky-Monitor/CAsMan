@@ -1,379 +1,319 @@
-"""Simplified tests for CAsMan barcode functionality."""
+"""Comprehensive tests for CAsMan barcode functionality."""
 
 import os
 import tempfile
-from unittest.mock import Mock, patch, ANY, MagicMock
+from pathlib import Path
+from unittest.mock import MagicMock, Mock, call, patch
 
+import pytest
 from PIL import Image
 
-from casman.barcode.generation import (
-    generate_barcode,
-    generate_barcode_range,
-    get_supported_barcode_formats,
-    validate_barcode_format,
-)
-from casman.barcode.validation import (
-    is_valid_barcode_format,
-)
-from casman.barcode.printing import (
-    optimize_page_layout,
-    calculate_printing_cost,
-    generate_print_summary,
-)
-from casman.barcode.operations import (
-    validate_barcode_file,
-    get_directory_statistics,
-    cleanup_invalid_barcodes,
-    arrange_barcodes_in_pdf,
-)
+from casman.barcode.generation import generate_barcode, generate_coax_label
+from casman.barcode.printing import generate_barcode_printpages
 
 
 class TestBarcodeGeneration:
     """Test barcode generation functions."""
 
+    @pytest.fixture
+    def temp_output_dir(self):
+        """Create a temporary output directory for tests."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            yield tmpdir
+
+    @patch("casman.barcode.generation.get_config")
+    @patch("casman.barcode.generation.Image.open")
+    @patch("casman.barcode.generation.os.path.exists")
+    @patch("casman.barcode.generation.os.remove")
     @patch("casman.barcode.generation.os.makedirs")
     @patch("casman.barcode.generation.barcode.get")
-    def test_generate_barcode_success(self, mock_barcode_get, _):
-        """Test successful barcode generation."""
+    def test_generate_barcode_success(
+        self,
+        mock_barcode_get,
+        mock_makedirs,
+        mock_remove,
+        mock_exists,
+        mock_image_open,
+        mock_get_config,
+    ):
+        """Test successful barcode generation for standard part type."""
+        # Setup mocks
+        mock_get_config.side_effect = lambda key, default: {
+            "barcode.width_inches": 1.2,
+            "barcode.height_inches": 0.75,
+            "barcode.page.dpi": 300,
+        }.get(key, default)
+
         mock_barcode_instance = Mock()
         mock_barcode_get.return_value = mock_barcode_instance
+
+        # Mock PIL Image operations
+        mock_img = MagicMock()
+        mock_resized = MagicMock()
+        mock_img.resize.return_value = mock_resized
+        mock_image_open.return_value.__enter__.return_value = mock_img
+
+        mock_exists.return_value = True
 
         result = generate_barcode("ANT00001P1", "ANTENNA")
 
         assert "ANT00001P1.png" in result
         mock_barcode_get.assert_called_once()
         mock_barcode_instance.save.assert_called_once()
+        mock_img.resize.assert_called_once_with((360, 225), Image.Resampling.LANCZOS)
+        mock_resized.save.assert_called_once()
 
+    @patch("casman.barcode.generation.get_config")
+    @patch("casman.barcode.generation.Image.open")
+    @patch("casman.barcode.generation.os.path.exists")
+    @patch("casman.barcode.generation.os.remove")
     @patch("casman.barcode.generation.os.makedirs")
     @patch("casman.barcode.generation.barcode.get")
-    def test_generate_barcode_custom_format(self, mock_barcode_get, _):
-        """Test barcode generation with custom format."""
+    def test_generate_barcode_coax_dimensions(
+        self,
+        mock_barcode_get,
+        mock_makedirs,
+        mock_remove,
+        mock_exists,
+        mock_image_open,
+        mock_get_config,
+    ):
+        """Test barcode generation uses coax dimensions for coax part types."""
+        # Setup mocks for coax dimensions
+        mock_get_config.side_effect = lambda key, default: {
+            "barcode.coax.width_inches": 1.0,
+            "barcode.coax.height_inches": 0.34,
+            "barcode.page.dpi": 300,
+        }.get(key, default)
+
         mock_barcode_instance = Mock()
         mock_barcode_get.return_value = mock_barcode_instance
+
+        mock_img = MagicMock()
+        mock_resized = MagicMock()
+        mock_img.resize.return_value = mock_resized
+        mock_image_open.return_value.__enter__.return_value = mock_img
+
+        mock_exists.return_value = True
+
+        result = generate_barcode("CXS00001P1", "COAXSHORT")
+
+        assert "CXS00001P1.png" in result
+        # Verify coax dimensions: 1.0" × 0.34" at 300 DPI = 300 × 102 pixels
+        mock_img.resize.assert_called_once_with((300, 102), Image.Resampling.LANCZOS)
+
+    @patch("casman.barcode.generation.get_config")
+    @patch("casman.barcode.generation.Image.open")
+    @patch("casman.barcode.generation.os.path.exists")
+    @patch("casman.barcode.generation.os.remove")
+    @patch("casman.barcode.generation.os.makedirs")
+    @patch("casman.barcode.generation.barcode.get")
+    def test_generate_barcode_custom_format(
+        self,
+        mock_barcode_get,
+        mock_makedirs,
+        mock_remove,
+        mock_exists,
+        mock_image_open,
+        mock_get_config,
+    ):
+        """Test barcode generation with custom format."""
+        mock_get_config.side_effect = lambda key, default: {
+            "barcode.width_inches": 1.2,
+            "barcode.height_inches": 0.75,
+            "barcode.page.dpi": 300,
+        }.get(key, default)
+
+        mock_barcode_instance = Mock()
+        mock_barcode_get.return_value = mock_barcode_instance
+
+        mock_img = MagicMock()
+        mock_resized = MagicMock()
+        mock_img.resize.return_value = mock_resized
+        mock_image_open.return_value.__enter__.return_value = mock_img
+
+        mock_exists.return_value = True
 
         result = generate_barcode("LNA00001P1", "LNA", barcode_format="code39")
 
         assert "LNA00001P1.png" in result
-        mock_barcode_get.assert_called_with("code39", "LNA00001P1", writer=ANY)
+        mock_barcode_get.assert_called_once()
+        args = mock_barcode_get.call_args[0]
+        assert args[0] == "code39"
+        assert args[1] == "LNA00001P1"
 
-    @patch("casman.barcode.generation.generate_barcode")
-    def test_generate_barcode_range(self, mock_generate):
-        """Test generating range of barcodes."""
-        mock_generate.return_value = "path/to/barcode.png"
+    @patch("casman.barcode.generation.get_config")
+    @patch("casman.barcode.generation.os.makedirs")
+    @patch("casman.barcode.generation.barcode.get")
+    def test_generate_barcode_error_handling(
+        self, mock_barcode_get, mock_makedirs, mock_get_config
+    ):
+        """Test error handling in barcode generation."""
+        mock_get_config.side_effect = lambda key, default: {
+            "barcode.width_inches": 1.2,
+            "barcode.height_inches": 0.75,
+            "barcode.page.dpi": 300,
+        }.get(key, default)
 
-        results = generate_barcode_range("ANTENNA", 1, 3)
+        mock_barcode_get.side_effect = Exception("Barcode generation failed")
 
-        assert len(results) == 3
-        assert mock_generate.call_count == 3
-
-    def test_get_supported_barcode_formats(self):
-        """Test retrieving supported barcode formats."""
-        formats = get_supported_barcode_formats()
-        assert isinstance(formats, list)
-        assert len(formats) > 0
-        assert "code128" in formats
-
-    def test_validate_barcode_format(self):
-        """Test barcode format validation."""
-        assert validate_barcode_format("code128")
-        assert validate_barcode_format("code39")
-        assert not validate_barcode_format("invalid_format")
+        with pytest.raises(ValueError, match="Failed to generate barcode"):
+            generate_barcode("BAD00001P1", "BADTYPE")
 
 
-class TestBarcodeValidation:
-    """Test barcode validation functions."""
+class TestCoaxLabelGeneration:
+    """Test coax label generation functions."""
 
-    def test_is_valid_barcode_format(self):
-        """Test validation of barcode formats."""
-        assert is_valid_barcode_format("code128")
-        assert is_valid_barcode_format("code39")
-        assert not is_valid_barcode_format("")
-        assert not is_valid_barcode_format(None)
-
-    def test_validate_part_number_format(self):
-        """Test validation of barcode formats."""
-        # Valid formats
-        assert validate_barcode_format("code128")
-        assert validate_barcode_format("code39")
-        assert validate_barcode_format("ean13")
-
-        # Invalid formats
-        assert not validate_barcode_format("invalid_format")
-        assert not validate_barcode_format("")
-        assert not validate_barcode_format("code93")  # Not in supported list
-
-
-class TestBarcodePrinting:
-    """Test barcode printing and layout functions."""
-
-    def test_optimize_page_layout_basic(self):
-        """Test basic page layout optimization."""
-        layout = optimize_page_layout(15)
-        assert isinstance(layout, tuple)
-        assert len(layout) == 2
-        assert layout[0] > 0
-        assert layout[1] > 0
-
-    def test_optimize_page_layout_single_barcode(self):
-        """Test layout optimization for single barcode."""
-        layout = optimize_page_layout(1)
-        assert layout[0] >= 1
-        assert layout[1] >= 1
-
-    def test_optimize_page_layout_large_batch(self):
-        """Test layout optimization for large batch."""
-        layout = optimize_page_layout(100)
-        columns, rows = layout
-        assert columns * rows >= 1
-        assert columns >= 1
-        assert rows >= 1
-
-    def test_calculate_printing_cost(self):
-        """Test printing cost calculation."""
-        cost_info = calculate_printing_cost(50, cost_per_page=0.10)
-
-        assert "num_barcodes" in cost_info
-        assert cost_info["num_barcodes"] == 50
-        assert "total_cost" in cost_info
-        assert cost_info["total_cost"] >= 0
-        assert "pages_needed" in cost_info
-        assert cost_info["pages_needed"] > 0
-
-    def test_calculate_printing_cost_zero_barcodes(self):
-        """Test cost calculation with single barcode."""
-        cost_info = calculate_printing_cost(1)
-        assert cost_info["num_barcodes"] == 1
-        assert cost_info["pages_needed"] >= 1
-        assert cost_info["cost_per_barcode"] > 0
-
-    def test_generate_print_summary(self):
-        """Test print summary generation."""
-        summary = generate_print_summary("ANTENNA", 1, 50)
-
-        assert "part_type" in summary
-        assert summary["part_type"] == "ANTENNA"
-        assert "total_barcodes" in summary
-        assert summary["total_barcodes"] == 50
-        assert "recommended_layout" in summary
-        assert "printing_info" in summary
-
-
-class TestBarcodeOperations:
-    """Test barcode file operations."""
-
-    def test_validate_barcode_file_nonexistent(self):
-        """Test validation of nonexistent file."""
-        is_valid, error = validate_barcode_file("/nonexistent/path/file.png")
-        assert not is_valid
-        assert "does not exist" in error
-
-    def test_validate_barcode_file_valid(self):
-        """Test validation of valid barcode image."""
+    @pytest.fixture
+    def temp_output_dir(self):
+        """Create a temporary output directory for tests."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            # Create a valid test image
-            img_path = os.path.join(tmpdir, "test_barcode.png")
-            img = Image.new("RGB", (200, 100), color="white")
-            img.save(img_path)
+            yield tmpdir
 
-            is_valid, error = validate_barcode_file(img_path)
-            assert is_valid
-            assert error is None
+    def test_generate_coax_label_coaxshort(self, temp_output_dir):
+        """Test coax label generation for COAXSHORT - integration test."""
+        result = generate_coax_label("CXS00001P1", "COAXSHORT", temp_output_dir)
 
-    def test_validate_barcode_file_too_small(self):
-        """Test validation rejects images that are too small."""
+        assert os.path.exists(result)
+        assert "CXS00001P1.png" in result
+
+        # Verify image was created and has reasonable properties
+        img = Image.open(result)
+        assert img.size[0] > 0  # Has width
+        assert img.size[1] > 0  # Has height
+
+    def test_generate_coax_label_coaxlong(self, temp_output_dir):
+        """Test coax label generation for COAXLONG - integration test."""
+        result = generate_coax_label("CXL00001P1", "COAXLONG", temp_output_dir)
+
+        assert os.path.exists(result)
+        assert "CXL00001P1.png" in result
+
+        # Verify image was created
+        img = Image.open(result)
+        assert img.size[0] > 0
+        assert img.size[1] > 0
+
+    def test_generate_coax_label_invalid_part_type(self, temp_output_dir):
+        """Test coax label generation with invalid part type."""
+        with pytest.raises(ValueError, match="not supported"):
+            generate_coax_label("ANT00001P1", "ANTENNA", temp_output_dir)
+
+    def test_generate_coax_label_with_custom_output_dir(self, temp_output_dir):
+        """Test coax label generation with custom output directory."""
+        custom_dir = os.path.join(temp_output_dir, "custom")
+        result = generate_coax_label("CXS00003P1", "COAXSHORT", custom_dir)
+
+        assert os.path.exists(result)
+        assert "custom" in result
+        assert "CXS00003P1.png" in result
+
+
+class TestBarcodeIntegration:
+    """Integration tests for barcode/coax features."""
+
+    def test_coax_dimensions_used_for_barcode(self):
+        """Test that COAXSHORT uses coax dimensions for classic barcodes."""
+        # This is tested via the generate_barcode function detecting coax type
         with tempfile.TemporaryDirectory() as tmpdir:
-            img_path = os.path.join(tmpdir, "tiny.png")
-            img = Image.new("RGB", (5, 5), color="white")
-            img.save(img_path)
+            result = generate_barcode("CXS00010P1", "COAXSHORT", tmpdir)
 
-            is_valid, error = validate_barcode_file(img_path)
-            assert not is_valid
-            assert "too small" in error
+            assert os.path.exists(result)
+            img = Image.open(result)
+            # Should use coax dimensions (1.0" × 0.34" = 300 × 102 at 300 DPI)
+            assert img.size == (300, 102)
 
-    def test_validate_barcode_file_too_large(self):
-        """Test validation rejects images that are too large."""
+    def test_coaxlong_dimensions_used_for_barcode(self):
+        """Test that COAXLONG also uses coax dimensions for classic barcodes."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            img_path = os.path.join(tmpdir, "huge.png")
-            img = Image.new("RGB", (6000, 3000), color="white")
-            img.save(img_path)
+            result = generate_barcode("CXL00010P1", "COAXLONG", tmpdir)
 
-            is_valid, error = validate_barcode_file(img_path)
-            assert not is_valid
-            assert "unusually large" in error
+            assert os.path.exists(result)
+            img = Image.open(result)
+            # Should use coax dimensions
+            assert img.size == (300, 102)
 
-    def test_validate_barcode_file_unusual_aspect_ratio(self):
-        """Test validation rejects images with unusual aspect ratios."""
+    def test_standard_part_uses_standard_dimensions(self):
+        """Test that non-coax parts use standard barcode dimensions."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            img_path = os.path.join(tmpdir, "tall.png")
-            # Very tall image (aspect ratio < 0.5)
-            img = Image.new("RGB", (100, 300), color="white")
-            img.save(img_path)
+            result = generate_barcode("ANT00010P1", "ANTENNA", tmpdir)
 
-            is_valid, error = validate_barcode_file(img_path)
-            assert not is_valid
-            assert "aspect ratio" in error.lower()
+            assert os.path.exists(result)
+            img = Image.open(result)
+            # Should use standard dimensions (1.2" × 0.75" = 360 × 225 at 300 DPI)
+            assert img.size == (360, 225)
 
-    def test_validate_barcode_file_invalid_image(self):
-        """Test validation of corrupted/invalid image file."""
+    def test_generate_barcode_with_custom_output_dir(self):
+        """Test barcode generation with custom output directory."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            img_path = os.path.join(tmpdir, "invalid.png")
-            # Write non-image data
-            with open(img_path, "w") as f:
-                f.write("Not an image file")
+            custom_dir = os.path.join(tmpdir, "custom_barcodes")
+            result = generate_barcode("LNA00001P1", "LNA", custom_dir)
 
-            is_valid, error = validate_barcode_file(img_path)
-            assert not is_valid
-            assert error is not None
+            assert os.path.exists(result)
+            assert "custom_barcodes" in result
+            assert "LNA00001P1.png" in result
 
-    def test_get_directory_statistics_nonexistent(self):
-        """Test statistics for nonexistent directory."""
-        stats = get_directory_statistics("/nonexistent/directory")
-        assert stats["total_files"] == 0
-        assert stats["valid_barcodes"] == 0
-        assert stats["invalid_files"] == 0
-
-    def test_get_directory_statistics_empty(self):
-        """Test statistics for empty directory."""
+    def test_multiple_coax_labels_same_directory(self):
+        """Test generating multiple coax labels in the same directory."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            stats = get_directory_statistics(tmpdir)
-            assert stats["total_files"] == 0
-            assert stats["valid_barcodes"] == 0
-            assert stats["png_files"] == 0
-            assert stats["jpg_files"] == 0
+            result1 = generate_coax_label("CXS00001P1", "COAXSHORT", tmpdir)
+            result2 = generate_coax_label("CXS00002P1", "COAXSHORT", tmpdir)
+            result3 = generate_coax_label("CXS00001P2", "COAXSHORT", tmpdir)
 
-    def test_get_directory_statistics_with_files(self):
-        """Test statistics for directory with mixed files."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # Create valid PNG barcode
-            png_path = os.path.join(tmpdir, "barcode1.png")
-            img = Image.new("RGB", (200, 100), color="white")
-            img.save(png_path)
+            assert os.path.exists(result1)
+            assert os.path.exists(result2)
+            assert os.path.exists(result3)
+            assert result1 != result2 != result3
 
-            # Create valid JPG barcode
-            jpg_path = os.path.join(tmpdir, "barcode2.jpg")
-            img = Image.new("RGB", (200, 100), color="white")
-            img.save(jpg_path)
 
-            # Create invalid file (too small)
-            invalid_path = os.path.join(tmpdir, "invalid.png")
-            img = Image.new("RGB", (5, 5), color="white")
-            img.save(invalid_path)
+class TestBarcodePrintPages:
+    """Test barcode print pages functionality."""
 
-            # Create text file
-            txt_path = os.path.join(tmpdir, "readme.txt")
-            with open(txt_path, "w") as f:
-                f.write("Test")
+    def test_generate_printpages_invalid_range(self):
+        """Test that invalid number ranges are rejected."""
+        with pytest.raises(ValueError, match="Start number must be less than"):
+            generate_barcode_printpages("ANTENNA", 10, 5)
 
-            stats = get_directory_statistics(tmpdir)
-            assert stats["total_files"] == 4
-            assert stats["png_files"] == 2
-            assert stats["jpg_files"] == 1
-            assert stats["other_files"] == 1
-            assert stats["valid_barcodes"] == 2
-            assert stats["invalid_files"] == 2
+    def test_generate_printpages_creates_pdf(self):
+        """Test PDF generation for a small range."""
+        # Function returns None but creates PDF file
+        generate_barcode_printpages("ANTENNA", 1, 2)
 
-    def test_cleanup_invalid_barcodes_dry_run(self):
-        """Test cleanup in dry-run mode."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # Create valid barcode
-            valid_path = os.path.join(tmpdir, "valid.png")
-            img = Image.new("RGB", (200, 100), color="white")
-            img.save(valid_path)
+        # Check that PDF was created in test barcode directory
+        test_barcode_dir = os.environ.get("CASMAN_BARCODE_DIR")
+        if test_barcode_dir:
+            pdf_path = os.path.join(test_barcode_dir, "ANTENNA_00001_00002.pdf")
+        else:
+            # Fallback for when not using test isolation
+            pdf_path = os.path.join(
+                os.path.dirname(__file__), "..", "barcodes", "ANTENNA_00001_00002.pdf"
+            )
+        assert os.path.exists(pdf_path), f"PDF not found at {pdf_path}"
 
-            # Create invalid barcode
-            invalid_path = os.path.join(tmpdir, "invalid.png")
-            img = Image.new("RGB", (5, 5), color="white")
-            img.save(invalid_path)
+    def test_generate_printpages_coaxshort(self):
+        """Test PDF generation for COAXSHORT with text labels."""
+        generate_barcode_printpages("COAXSHORT", 1, 2)
 
-            # Dry run should identify but not delete
-            deleted = cleanup_invalid_barcodes(tmpdir, dry_run=True)
-            assert len(deleted) == 1
-            assert invalid_path in deleted
-            assert os.path.exists(invalid_path)  # File still exists
-            assert os.path.exists(valid_path)
+        # Check that PDF was created in test barcode directory
+        test_barcode_dir = os.environ.get("CASMAN_BARCODE_DIR")
+        if test_barcode_dir:
+            pdf_path = os.path.join(test_barcode_dir, "COAXSHORT_00001_00002.pdf")
+        else:
+            pdf_path = os.path.join(
+                os.path.dirname(__file__), "..", "barcodes", "COAXSHORT_00001_00002.pdf"
+            )
+        assert os.path.exists(pdf_path), f"PDF not found at {pdf_path}"
 
-    def test_cleanup_invalid_barcodes_real_deletion(self):
-        """Test cleanup with actual file deletion."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # Create valid barcode
-            valid_path = os.path.join(tmpdir, "valid.png")
-            img = Image.new("RGB", (200, 100), color="white")
-            img.save(valid_path)
+    def test_generate_printpages_single_number(self):
+        """Test PDF generation for a single part number."""
+        generate_barcode_printpages("LNA", 1, 1)
 
-            # Create invalid barcode
-            invalid_path = os.path.join(tmpdir, "invalid.png")
-            img = Image.new("RGB", (5, 5), color="white")
-            img.save(invalid_path)
-
-            # Real deletion
-            deleted = cleanup_invalid_barcodes(tmpdir, dry_run=False)
-            assert len(deleted) == 1
-            assert invalid_path in deleted
-            assert not os.path.exists(invalid_path)  # File deleted
-            assert os.path.exists(valid_path)  # Valid file remains
-
-    def test_cleanup_invalid_barcodes_nonexistent_directory(self):
-        """Test cleanup on nonexistent directory."""
-        deleted = cleanup_invalid_barcodes("/nonexistent/directory")
-        assert len(deleted) == 0
-
-    @patch("casman.barcode.operations.get_config")
-    def test_arrange_barcodes_in_pdf_nonexistent_directory(self, mock_config):
-        """Test PDF arrangement with nonexistent directory."""
-        mock_config.side_effect = lambda key, default: default
-
-        with tempfile.TemporaryDirectory() as tmpdir:
-            output_pdf = os.path.join(tmpdir, "output.pdf")
-            
-            try:
-                arrange_barcodes_in_pdf("/nonexistent/directory", output_pdf)
-                assert False, "Should have raised ValueError"
-            except ValueError as e:
-                assert "does not exist" in str(e)
-
-    @patch("casman.barcode.operations.get_config")
-    def test_arrange_barcodes_in_pdf_no_valid_images(self, mock_config):
-        """Test PDF arrangement with no valid images."""
-        mock_config.side_effect = lambda key, default: default
-
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # Create directory with no valid images
-            input_dir = os.path.join(tmpdir, "input")
-            os.makedirs(input_dir)
-            
-            # Create invalid file
-            with open(os.path.join(input_dir, "test.txt"), "w") as f:
-                f.write("Not an image")
-
-            output_pdf = os.path.join(tmpdir, "output.pdf")
-            
-            try:
-                arrange_barcodes_in_pdf(input_dir, output_pdf)
-                assert False, "Should have raised ValueError"
-            except ValueError as e:
-                assert "No valid barcode images" in str(e)
-
-    @patch("casman.barcode.operations.get_config")
-    def test_arrange_barcodes_in_pdf_success(self, mock_config):
-        """Test successful PDF arrangement."""
-        mock_config.side_effect = lambda key, default: default
-
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # Create input directory with valid barcodes
-            input_dir = os.path.join(tmpdir, "input")
-            os.makedirs(input_dir)
-            
-            # Create valid barcode images
-            for i in range(3):
-                img_path = os.path.join(input_dir, f"barcode{i}.png")
-                img = Image.new("RGB", (300, 100), color="white")
-                img.save(img_path)
-
-            output_pdf = os.path.join(tmpdir, "output.pdf")
-            
-            # Should not raise exception
-            arrange_barcodes_in_pdf(input_dir, output_pdf)
-            
-            # PDF should be created
-            assert os.path.exists(output_pdf)
-            assert os.path.getsize(output_pdf) > 0
+        # Check that PDF was created in test barcode directory
+        test_barcode_dir = os.environ.get("CASMAN_BARCODE_DIR")
+        if test_barcode_dir:
+            pdf_path = os.path.join(test_barcode_dir, "LNA_00001_00001.pdf")
+        else:
+            pdf_path = os.path.join(
+                os.path.dirname(__file__), "..", "barcodes", "LNA_00001_00001.pdf"
+            )
+        assert os.path.exists(pdf_path), f"PDF not found at {pdf_path}"

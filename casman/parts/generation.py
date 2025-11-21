@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from casman.barcode import generate_barcode
+from casman.config import get_config
 from casman.database.connection import get_database_path
 from casman.database.initialization import init_parts_db
 
@@ -71,10 +72,10 @@ def generate_part_numbers(
             # Parse part number format: ANT00011P1
             # Extract the numeric portion between abbreviation and 'P'
             # Find where 'P' appears (e.g., P1 or P2)
-            p_index = last_part_number.rfind('P')
+            p_index = last_part_number.rfind("P")
             if p_index > 0:
                 # Extract the numeric part before 'P'
-                numeric_part = last_part_number[len(part_abbrev):p_index]
+                numeric_part = last_part_number[len(part_abbrev) : p_index]
                 last_number = int(numeric_part)
             else:
                 last_number = 0
@@ -86,6 +87,11 @@ def generate_part_numbers(
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Check if this is a coax cable part type and if it should use text labels
+    is_coax = part_type.upper() in ["COAXSHORT", "COAXLONG"]
+    use_barcode_for_coax = get_config("barcode.coax.use_barcode", False)
+
     for i in range(count):
         part_number = f"{part_abbrev}{last_number + i + 1:05d}P{polarization}"
         c.execute(
@@ -93,7 +99,15 @@ def generate_part_numbers(
             "VALUES (?, ?, ?, ?, ?)",
             (part_number, part_type, polarization, current_time, current_time),
         )
-        generate_barcode(part_number, part_type)
+
+        # Generate appropriate label based on part type and config
+        if is_coax and not use_barcode_for_coax:
+            from casman.barcode.generation import generate_coax_label
+
+            generate_coax_label(part_number, part_type)
+        else:
+            generate_barcode(part_number, part_type)
+
         new_part_numbers.append(part_number)
     conn.commit()
     conn.close()

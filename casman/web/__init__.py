@@ -4,7 +4,7 @@ Web application module for CAsMan.
 Provides Flask-based web interfaces for scanner and visualization.
 """
 
-from .app import create_app, configure_apps
+from .app import configure_apps, create_app
 from .scanner import scanner_bp
 from .server import run_dev_server, run_production_server
 from .visualize import visualize_bp

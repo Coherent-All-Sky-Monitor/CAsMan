@@ -37,17 +37,30 @@ def get_coverage():
 def get_test_count():
     """Get total number of tests."""
     try:
-        # Run pytest in collect-only mode to count tests
+        # Run pytest with collection only
         result = subprocess.run(
-            ["pytest", "--collect-only", "-q"],
+            ["pytest", "tests/", "--co", "-q"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             encoding="utf-8",
             check=True,
         )
-        # Each collected test is printed on its own line; count lines
-        test_lines = [line for line in result.stdout.splitlines() if line.strip()]
-        return str(len(test_lines))
+        
+        # Parse output lines - each line shows "file.py: N" where N is test count
+        lines = result.stdout.strip().split("\n")
+        total = 0
+        for line in lines:
+            # Look for lines like "tests/test_file.py: 25"
+            if ".py:" in line and line.strip():
+                parts = line.split(":")
+                if len(parts) == 2:
+                    try:
+                        count = int(parts[1].strip())
+                        total += count
+                    except ValueError:
+                        continue
+        
+        return str(total) if total > 0 else "0"
     except Exception:
         return "0"
 

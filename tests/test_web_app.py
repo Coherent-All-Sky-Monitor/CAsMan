@@ -5,30 +5,27 @@ Tests for CAsMan web application factory and configuration.
 import os
 import sqlite3
 import tempfile
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from flask import Flask
 
-from casman.web.app import (
-    create_app,
-    configure_apps,
-    APP_CONFIG,
-)
+from casman.web.app import APP_CONFIG, configure_apps, create_app
 
 
 @pytest.fixture
 def temp_db():
     """Create temporary database for testing."""
-    with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         db_path = f.name
-    
+
     # Initialize database
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    
+
     # Create assembly table
-    cursor.execute('''
+    cursor.execute(
+        """
         CREATE TABLE IF NOT EXISTS assembly (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             part_number TEXT NOT NULL,
@@ -39,13 +36,14 @@ def temp_db():
             connected_scan_time TEXT,
             connection_status TEXT DEFAULT 'connected'
         )
-    ''')
-    
+    """
+    )
+
     conn.commit()
     conn.close()
-    
+
     yield db_path
-    
+
     # Cleanup
     os.unlink(db_path)
 
@@ -113,14 +111,14 @@ class TestAppCreation:
         app = create_app()
         assert app.static_folder is not None
 
-    @patch('casman.web.app.HAS_CORS', True)
-    @patch('casman.web.app.CORS')
+    @patch("casman.web.app.HAS_CORS", True)
+    @patch("casman.web.app.CORS")
     def test_create_app_with_cors(self, mock_cors):
         """Test app creation with CORS enabled."""
         app = create_app()
         mock_cors.assert_called_once_with(app)
 
-    @patch('casman.web.app.HAS_CORS', False)
+    @patch("casman.web.app.HAS_CORS", False)
     def test_create_app_without_cors(self):
         """Test app creation without CORS available."""
         app = create_app()
@@ -131,7 +129,7 @@ class TestAppCreation:
         """Test home route with both apps enabled."""
         app = create_app(enable_scanner=True, enable_visualization=True)
         client = app.test_client()
-        response = client.get('/')
+        response = client.get("/")
         # Should show home page with both links
         assert response.status_code == 200
 
@@ -139,24 +137,24 @@ class TestAppCreation:
         """Test home route with scanner only - should redirect."""
         app = create_app(enable_scanner=True, enable_visualization=False)
         client = app.test_client()
-        response = client.get('/')
+        response = client.get("/")
         # Should redirect to scanner
         assert response.status_code == 302
-        assert '/scanner' in response.location
+        assert "/scanner" in response.location
 
     def test_home_route_visualization_only(self):
         """Test home route with visualization only - should redirect."""
         app = create_app(enable_scanner=False, enable_visualization=True)
         client = app.test_client()
-        response = client.get('/')
+        response = client.get("/")
         # Should redirect to visualize
         assert response.status_code == 302
-        assert '/visualize' in response.location
+        assert "/visualize" in response.location
 
     def test_jinja_env_format_display_data(self):
         """Test that format_display_data is added to jinja environment."""
         app = create_app(enable_visualization=True)
-        assert 'format_display_data' in app.jinja_env.globals
+        assert "format_display_data" in app.jinja_env.globals
 
 
 class TestAppIntegration:
@@ -166,41 +164,43 @@ class TestAppIntegration:
         """Test that app can be created and accessed without errors."""
         app = create_app()
         client = app.test_client()
-        
+
         # Test home page
-        response = client.get('/')
+        response = client.get("/")
         assert response.status_code == 200
-        
+
         # Test scanner index
-        response = client.get('/scanner/')
+        response = client.get("/scanner/")
         assert response.status_code == 200
-        
+
         # Test visualize index with mocked database
-        with patch('casman.web.visualize.get_config', return_value=temp_db):
-            with patch('casman.web.visualize.load_viz_template', 
-                      return_value='<html>Test</html>'):
-                response = client.get('/visualize/')
+        with patch("casman.web.visualize.get_config", return_value=temp_db):
+            with patch(
+                "casman.web.visualize.load_viz_template",
+                return_value="<html>Test</html>",
+            ):
+                response = client.get("/visualize/")
                 assert response.status_code == 200
 
     def test_scanner_routes_registered(self):
         """Test that all scanner routes are registered."""
         app = create_app(enable_scanner=True)
-        
+
         # Get all registered routes
         routes = [str(rule) for rule in app.url_map.iter_rules()]
-        
+
         # Check key scanner routes are present
-        assert any('/scanner/' in route for route in routes)
-        assert any('/scanner/api/validate-part' in route for route in routes)
-        assert any('/scanner/api/record-connection' in route for route in routes)
+        assert any("/scanner/" in route for route in routes)
+        assert any("/scanner/api/validate-part" in route for route in routes)
+        assert any("/scanner/api/record-connection" in route for route in routes)
 
     def test_visualize_routes_registered(self):
         """Test that all visualize routes are registered."""
         app = create_app(enable_visualization=True)
-        
+
         # Get all registered routes
         routes = [str(rule) for rule in app.url_map.iter_rules()]
-        
+
         # Check key visualize routes are present
-        assert any('/visualize/' in route for route in routes)
-        assert any('/visualize/chains' in route for route in routes)
+        assert any("/visualize/" in route for route in routes)
+        assert any("/visualize/chains" in route for route in routes)

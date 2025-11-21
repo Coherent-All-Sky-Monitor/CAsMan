@@ -11,11 +11,13 @@ CAsMan is organized into focused, modular packages:
 | Package | Purpose |
 |---------|---------|
 | `casman.assembly` | Assembly management and connection tracking |
+| `casman.barcode` | Barcode generation, validation, and printing |
 | `casman.cli` | Command-line interface |
 | `casman.config` | Configuration management |
 | `casman.database` | Database operations |
 | `casman.parts` | Part management and validation |
 | `casman.visualization` | ASCII visualization |
+| `casman.web` | Web application interfaces (scanner and visualization) |
 
 ## Import Guide
 
@@ -27,6 +29,16 @@ from casman.assembly import function_name
 
 # Import entire package
 from casman import assembly
+```
+
+### Barcode Package
+
+```python
+# Import specific functions
+from casman.barcode import function_name
+
+# Import entire package
+from casman import barcode
 ```
 
 ### Cli Package
@@ -77,4 +89,14 @@ from casman.visualization import function_name
 
 # Import entire package
 from casman import visualization
+```
+
+### Web Package
+
+```python
+# Import specific functions
+from casman.web import function_name
+
+# Import entire package
+from casman import web
 ```

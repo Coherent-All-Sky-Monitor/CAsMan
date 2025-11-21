@@ -21,8 +21,8 @@ except ImportError:
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S',
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger(__name__)
 
@@ -47,9 +47,7 @@ def create_app(enable_scanner: bool = True, enable_visualization: bool = True) -
 
     app = Flask(
         __name__,
-        template_folder=os.path.join(
-            os.path.dirname(__file__), "..", "templates"
-        ),
+        template_folder=os.path.join(os.path.dirname(__file__), "..", "templates"),
         static_folder=os.path.join(os.path.dirname(__file__), "..", "static"),
     )
 

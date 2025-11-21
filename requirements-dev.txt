@@ -1,9 +1,24 @@
 # Development requirements for CAsMan
+
+# Testing
 pytest
 pytest-cov
+coverage
+
+# Code quality and formatting
 flake8
 black
+isort
+pylint
+
+# Type checking
 mypy
+
+# Git hooks
 pre-commit
+
+# Documentation
 pydoc-markdown
+
+# Shell completion
 argcomplete

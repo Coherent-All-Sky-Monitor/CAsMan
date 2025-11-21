@@ -209,3 +209,18 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# CAsMan specific
+# Database files (except template/initial databases)
+database/parts.db
+database/assembled_casm.db
+*.db-journal
+*.db-wal
+
+# Test artifacts - tests should not create files in root
+test.db
+test_db.db
+
+# Barcode files (generated, not tracked)
+barcodes/*/
+!barcodes/.gitkeep

@@ -3,12 +3,13 @@ Parts-related CLI commands for CAsMan.
 """
 
 import argparse
-import sys
 import shutil
+import sys
 
-from casman.database.operations import get_parts_by_criteria
 from casman.database.initialization import init_all_databases
-from casman.parts.interactive import add_parts_interactive, display_parts_interactive
+from casman.database.operations import get_parts_by_criteria
+from casman.parts.interactive import (add_parts_interactive,
+                                      display_parts_interactive)
 
 
 def cmd_parts() -> None:
@@ -46,14 +47,23 @@ def cmd_parts() -> None:
     part_types_list = ", ".join(
         [name for _, (name, _) in sorted(load_part_types().items())]
     )
-    parser.add_argument("--type", help=f"Filter parts by type ({part_types_list})")
     parser.add_argument(
-        "--polarization", help="Filter parts by polarization (e.g., 1, 2)"
+        "--type", help=f"Filter parts by type ({part_types_list}) - for list action"
+    )
+    parser.add_argument(
+        "--polarization", type=int, help="Filter/specify polarization (1 or 2)"
     )
     parser.add_argument(
         "--all",
         action="store_true",
         help="Print all parts in the database (ignores filters)",
+    )
+    parser.add_argument(
+        "--part-type",
+        help=f"Part type for adding parts ({part_types_list}) - for add action",
+    )
+    parser.add_argument(
+        "--count", type=int, help="Number of parts to add - for add action"
     )
 
     # Check if help is requested or no arguments provided
@@ -133,4 +143,25 @@ def cmd_parts() -> None:
         else:
             display_parts_interactive()
     elif args.action == "add":
-        add_parts_interactive()
+        # Check if non-interactive mode (all required args provided)
+        if args.part_type and args.count and args.polarization:
+            # Non-interactive mode: add parts directly
+            from casman.parts.generation import generate_part_numbers
+
+            try:
+                new_parts = generate_part_numbers(
+                    args.part_type, args.count, str(args.polarization)
+                )
+                print(f"Successfully added {len(new_parts)} part(s):")
+                for part_number in new_parts:
+                    print(f"  - {part_number}")
+            except ValueError as e:
+                print(f"Error adding parts: {e}")
+        else:
+            # Interactive mode
+            if args.part_type or args.count or args.polarization:
+                print(
+                    "Warning: For non-interactive add, you must provide --part-type, --count, AND --polarization"
+                )
+                print("Switching to interactive mode...\n")
+            add_parts_interactive()

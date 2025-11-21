@@ -69,7 +69,8 @@ def cmd_scan() -> None:
         scan_and_assemble_interactive()
     elif args.action == "disconnection":
         # Launch interactive disconnection scanner
-        from casman.assembly.interactive import scan_and_disassemble_interactive
+        from casman.assembly.interactive import \
+            scan_and_disassemble_interactive
 
         scan_and_disassemble_interactive()
     elif args.action == "connect":
@@ -85,8 +86,8 @@ def cmd_scan() -> None:
         print()
 
         # Import and run the scan script
-        import subprocess
         import os
+        import subprocess
 
         try:
             script_path = os.path.join(
@@ -115,8 +116,8 @@ def cmd_scan() -> None:
         print()
 
         # Import and run the disconnection script
-        import subprocess
         import os
+        import subprocess
 
         try:
             script_path = os.path.join(
@@ -138,9 +139,10 @@ def cmd_scan() -> None:
             sys.exit(1)
     elif args.action == "remove":
         # Remove part by disconnecting all connections
-        from casman.database.connection import get_database_path
         import sqlite3
         from datetime import datetime
+
+        from casman.database.connection import get_database_path
 
         print("\n" + "=" * 60)
         print("REMOVE PART - Disconnect All Connections")
@@ -157,25 +159,25 @@ def cmd_scan() -> None:
         try:
             # Connect to assembled database
             assembled_db = get_database_path("assembled_casm.db", None)
-            
+
             assembled_conn = sqlite3.connect(assembled_db)
             assembled_conn.row_factory = sqlite3.Row
 
             # Infer part type from part number
-            if part_number.startswith('SNAP'):
-                part_type = 'SNAP'
-            elif part_number.startswith('ANT'):
-                part_type = 'ANTENNA'
-            elif part_number.startswith('LNA'):
-                part_type = 'LNA'
-            elif part_number.startswith('CXS'):
-                part_type = 'COAXSHORT'
-            elif part_number.startswith('CXL'):
-                part_type = 'COAXLONG'
-            elif part_number.startswith('BAC'):
-                part_type = 'BACBOARD'
+            if part_number.startswith("SNAP"):
+                part_type = "SNAP"
+            elif part_number.startswith("ANT"):
+                part_type = "ANTENNA"
+            elif part_number.startswith("LNA"):
+                part_type = "LNA"
+            elif part_number.startswith("CXS"):
+                part_type = "COAXSHORT"
+            elif part_number.startswith("CXL"):
+                part_type = "COAXLONG"
+            elif part_number.startswith("BAC"):
+                part_type = "BACBOARD"
             else:
-                part_type = 'UNKNOWN'
+                part_type = "UNKNOWN"
 
             print(f"\nSearching for: {part_type} {part_number}")
 
@@ -213,7 +215,7 @@ def cmd_scan() -> None:
                 """,
                 (part_number, part_number),
             )
-            
+
             connections = cursor.fetchall()
 
             if not connections:
@@ -226,22 +228,31 @@ def cmd_scan() -> None:
             print(f"\nFound {len(connections)} active connection(s):")
             print("-" * 60)
             for i, conn in enumerate(connections, 1):
-                conn_time = conn['scan_time']
-                other_part = conn['connected_to'] if conn['part_number'] == part_number else conn['part_number']
+                conn_time = conn["scan_time"]
+                other_part = (
+                    conn["connected_to"]
+                    if conn["part_number"] == part_number
+                    else conn["part_number"]
+                )
                 print(f"{i}. {part_number} ↔ {other_part}")
                 print(f"   Connected: {conn_time}")
             print("-" * 60)
 
             # Confirm removal
-            confirm = input(f"\nDisconnect all {len(connections)} connection(s)? (yes/no): ").strip().lower()
-            if confirm not in ['yes', 'y']:
+            confirm = (
+                input(f"\nDisconnect all {len(connections)} connection(s)? (yes/no): ")
+                .strip()
+                .lower()
+            )
+            if confirm not in ["yes", "y"]:
                 print("Removal cancelled")
                 assembled_conn.close()
                 sys.exit(0)
 
             # Disconnect all connections using the proper API
-            from casman.assembly.connections import record_assembly_disconnection
-            
+            from casman.assembly.connections import \
+                record_assembly_disconnection
+
             disconnect_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             disconnected = 0
             failed = 0
@@ -250,31 +261,31 @@ def cmd_scan() -> None:
             for conn in connections:
                 try:
                     # Determine which part is which in the connection
-                    if conn['part_number'] == part_number:
+                    if conn["part_number"] == part_number:
                         this_part = part_number
                         this_type = part_type
-                        other_part = conn['connected_to']
-                        other_type = conn['connected_to_type']
+                        other_part = conn["connected_to"]
+                        other_type = conn["connected_to_type"]
                     else:
                         this_part = part_number
                         this_type = part_type
-                        other_part = conn['part_number']
+                        other_part = conn["part_number"]
                         # Infer the other part's type from its part number
-                        if other_part.startswith('SNAP'):
-                            other_type = 'SNAP'
-                        elif other_part.startswith('ANT'):
-                            other_type = 'ANTENNA'
-                        elif other_part.startswith('LNA'):
-                            other_type = 'LNA'
-                        elif other_part.startswith('CXS'):
-                            other_type = 'COAXSHORT'
-                        elif other_part.startsWith('CXL'):
-                            other_type = 'COAXLONG'
-                        elif other_part.startswith('BAC'):
-                            other_type = 'BACBOARD'
+                        if other_part.startswith("SNAP"):
+                            other_type = "SNAP"
+                        elif other_part.startswith("ANT"):
+                            other_type = "ANTENNA"
+                        elif other_part.startswith("LNA"):
+                            other_type = "LNA"
+                        elif other_part.startswith("CXS"):
+                            other_type = "COAXSHORT"
+                        elif other_part.startsWith("CXL"):
+                            other_type = "COAXLONG"
+                        elif other_part.startswith("BAC"):
+                            other_type = "BACBOARD"
                         else:
-                            other_type = 'UNKNOWN'
-                    
+                            other_type = "UNKNOWN"
+
                     # Record disconnection (polarization not critical for removal)
                     success = record_assembly_disconnection(
                         part_number=this_part,
@@ -286,14 +297,14 @@ def cmd_scan() -> None:
                         connected_polarization="X",
                         connected_scan_time=disconnect_time,
                     )
-                    
+
                     if success:
                         print(f"Disconnected: {this_part} ↔ {other_part}")
                         disconnected += 1
                     else:
                         print(f"Failed to disconnect {this_part} ↔ {other_part}")
                         failed += 1
-                        
+
                 except Exception as e:
                     print(f"Failed to disconnect {this_part} ↔ {other_part}: {e}")
                     failed += 1

@@ -710,8 +710,12 @@
             goToStep('barcode');
         }
         
-        // Part types from server
+        // Part types and configuration from server
         const partTypes = {{ part_types | tojson }};
+        const connectionChain = {{ connection_chain | tojson }};
+        const partPrefixes = {{ part_prefixes | tojson }};
+        const coaxTypes = {{ coax_types | tojson }};
+        const terminalType = {{ terminal_type | tojson }};
         
         // Navigation functions
         function goToStep(step) {
@@ -861,14 +865,8 @@
         
         // Determine next part type in the connection chain
         function getNextPartInChain(currentType) {
-            const chain = {
-                'ANTENNA': 'LNA',
-                'LNA': 'COAXSHORT',
-                'COAXSHORT': 'COAXLONG',
-                'COAXLONG': 'BACBOARD',
-                'BACBOARD': 'SNAP'
-            };
-            return chain[currentType] || 'SNAP';
+            // Use the connection chain from server config
+            return connectionChain[currentType] || partTypes[partTypes.length - 1];
         }
         
         async function processBarcodeInput(partNumber) {
@@ -944,8 +942,8 @@
                 const nextType = getNextPartInChain(state.firstPart.part_type);
                 availableTypes = [nextType];
             } else if (state.action === 'connect' && !state.firstPart) {
-                // In connect mode without first part, exclude SNAP (terminal connection)
-                availableTypes = partTypes.filter(type => type !== 'SNAP');
+                // In connect mode without first part, exclude terminal type (terminal connection)
+                availableTypes = partTypes.filter(type => type !== terminalType);
             }
             // In disconnect mode, show all types including SNAP
             
@@ -1039,20 +1037,21 @@
             });
             event.target.classList.add('button-selected');
             
-            if (type === 'SNAP') {
-                // SNAP parts use the crate/slot/port selection interface
-                // Hide manual entry and show SNAP selection
+            if (type === terminalType) {
+                // Terminal type (e.g., SNAP) uses special selection interface
+                // Hide manual entry and show terminal selection
                 document.getElementById('step-manual').classList.add('hidden');
                 document.getElementById('step-snap-selection').classList.remove('hidden');
                 
                 // Update display based on mode
                 const displayDiv = document.getElementById('bacboard-display');
                 if (state.action === 'disconnect') {
-                    displayDiv.innerHTML = '<div class="part-display"><strong>Selecting SNAP part to disconnect</strong></div>';
+                    displayDiv.innerHTML = `<div class="part-display"><strong>Selecting ${terminalType} part to disconnect</strong></div>`;
                 } else {
-                    displayDiv.innerHTML = '<div class="part-display">BACBOARD not scanned - Direct SNAP selection</div>';
+                    const prevType = Object.keys(connectionChain).find(key => connectionChain[key] === terminalType) || 'previous';
+                    displayDiv.innerHTML = `<div class="part-display">${prevType} not scanned - Direct ${terminalType} selection</div>`;
                 }
-            } else if (type === 'COAXSHORT' || type === 'COAXLONG') {
+            } else if (coaxTypes.includes(type)) {
                 // Coax cables go through special selection
                 selectCoaxType(type);
             } else {
@@ -1085,13 +1084,12 @@
             // SNAP parts now use the dedicated crate/slot/port selection interface
             // This function only handles regular parts
             let partNumber;
-            const prefix = {
-                'ANTENNA': 'ANT',
-                'LNA': 'LNA',
-                'COAXSHORT': 'CXS',
-                'COAXLONG': 'CXL',
-                'BACBOARD': 'BAC'
-            }[state.manualPartType];
+            // Use the prefix mapping from server config
+            const prefix = partPrefixes[state.manualPartType];
+            if (!prefix) {
+                statusDiv.innerHTML = '<div class="status-error status-message">Invalid part type</div>';
+                return;
+            }
             partNumber = `${prefix}${String(partNum).padStart(5, '0')}P${state.manualPolarization}`;
             
             const statusDiv = document.getElementById('manual-status');
@@ -1181,31 +1179,32 @@
                     statusDiv.innerHTML = `<div class="status-success status-message">Part ${partInfo.part_number} found in database</div>`;
                 }
                 
-                // If first part is LNA, automatically go to coax manual entry (no barcode)
-                if (partInfo.part_type === 'LNA') {
+                // If first part connects to a coax type, go to coax manual entry (no barcode)
+                const nextType = connectionChain[partInfo.part_type];
+                if (nextType && coaxTypes.includes(nextType)) {
                     setTimeout(() => {
                         statusDiv.innerHTML = '';
                         state.method = 'manual';
                         // Show coax selection directly
-                        promptForCoaxEntry('COAXSHORT');
+                        promptForCoaxEntry(nextType);
                     }, 1500);
                     return;
                 }
                 
-                // If first part is COAXSHORT, prompt for COAXLONG
-                if (partInfo.part_type === 'COAXSHORT') {
+                // If current part is a coax type and next is also coax, prompt for next coax
+                if (coaxTypes.includes(partInfo.part_type) && nextType && coaxTypes.includes(nextType)) {
                     setTimeout(() => {
                         statusDiv.innerHTML = '';
                         state.method = 'manual';
-                        promptForCoaxEntry('COAXLONG');
+                        promptForCoaxEntry(nextType);
                     }, 1500);
                     return;
                 }
                 
-                // If first part is COAXLONG, give option to scan or manually enter BACBOARD
-                if (partInfo.part_type === 'COAXLONG') {
+                // If current part is a coax and next is not coax, allow scan or manual entry
+                if (coaxTypes.includes(partInfo.part_type) && nextType && !coaxTypes.includes(nextType)) {
                     setTimeout(() => {
-                        statusDiv.innerHTML = '<div class="status-info status-message">Next: BACBOARD<br>Choose to scan barcode or enter manually</div>';
+                        statusDiv.innerHTML = `<div class="status-info status-message">Next: ${nextType}<br>Choose to scan barcode or enter manually</div>`;
                         // Stay in current method (user can switch using buttons)
                         if (state.method === 'barcode') {
                             setupBarcodeInput();
@@ -1216,8 +1215,8 @@
                     return;
                 }
                 
-                // If first part is BACBOARD, show SNAP crate/slot selection
-                if (partInfo.part_type === 'BACBOARD') {
+                // If next part is the terminal type, show special selection interface
+                if (nextType === terminalType) {
                     setTimeout(() => {
                         showSnapSelection();
                     }, 1500);
@@ -1241,6 +1240,23 @@
                 const statusDiv = state.method === 'barcode' ?
                     document.getElementById('barcode-status') :
                     document.getElementById('manual-status');
+                
+                // Validate polarization match (SNAP excluded)
+                if (state.firstPart.part_type !== 'SNAP' && partInfo.part_type !== 'SNAP') {
+                    if (state.firstPart.polarization !== partInfo.polarization) {
+                        statusDiv.innerHTML = `<div class="status-error status-message">Polarization mismatch! ${state.firstPart.part_type} is P${state.firstPart.polarization} but ${partInfo.part_type} is P${partInfo.polarization}. Parts must have matching polarization.</div>`;
+                        setTimeout(() => {
+                            state.secondPart = null;
+                            statusDiv.innerHTML = '';
+                            if (state.method === 'barcode') {
+                                setupBarcodeInput();
+                            } else if (state.method === 'manual') {
+                                setupManualEntry();
+                            }
+                        }, 4000);
+                        return;  // Stop here, don't proceed to confirmation
+                    }
+                }
                 
                 // Check if this connection already exists (bidirectional)
                 let alreadyConnected = false;

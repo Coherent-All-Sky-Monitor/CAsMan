@@ -9,12 +9,8 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 from .types import load_part_types
-from .validation import (
-    get_part_info,
-    validate_part_number,
-    validate_part_type,
-    validate_polarization,
-)
+from .validation import (get_part_info, validate_part_number,
+                         validate_part_type, validate_polarization)
 
 # Load part types for reference
 PART_TYPES = load_part_types()

@@ -1,15 +1,17 @@
 """
 Barcode generation utilities for CAsMan.
 
-This module provides functions for generating individual and batch barcodes
-with various formats and customization options.
+This module provides functions for generating barcode images for parts.
 """
 
 import os
-from typing import Dict, List, Optional
+from typing import Optional
 
 import barcode
 from barcode.writer import ImageWriter
+from PIL import Image, ImageDraw, ImageFont
+
+from casman.config import get_config
 
 
 def generate_barcode(
@@ -46,9 +48,14 @@ def generate_barcode(
     """
     # Determine output directory
     if output_dir is None:
-        barcode_dir = os.path.join(
-            os.path.dirname(__file__), "..", "..", "barcodes", part_type
-        )
+        # Check for test environment variable first
+        env_barcode_dir = os.environ.get("CASMAN_BARCODE_DIR")
+        if env_barcode_dir:
+            barcode_dir = os.path.join(env_barcode_dir, part_type)
+        else:
+            barcode_dir = os.path.join(
+                os.path.dirname(__file__), "..", "..", "barcodes", part_type
+            )
     else:
         barcode_dir = os.path.join(output_dir, part_type)
 
@@ -57,160 +64,187 @@ def generate_barcode(
         os.makedirs(barcode_dir)
 
     try:
-        # Generate the barcode
-        barcode_generator = barcode.get(
-            barcode_format, part_number, writer=ImageWriter()
-        )
-        barcode_path = os.path.join(barcode_dir, f"{part_number}")
-        barcode_generator.save(barcode_path)
+        # Check if this is a coax part type that should use coax dimensions
+        is_coax = part_type.upper() in ["COAXSHORT", "COAXLONG"]
 
-        return f"{barcode_path}.png"  # ImageWriter adds .png extension
+        # Get barcode dimensions from config (in inches)
+        if is_coax:
+            # Use coax-specific dimensions for coax cables
+            width_inches = get_config("barcode.coax.width_inches", 1.0)
+            height_inches = get_config("barcode.coax.height_inches", 0.34)
+        else:
+            # Use standard barcode dimensions for other part types
+            width_inches = get_config("barcode.width_inches", 2.0)
+            height_inches = get_config("barcode.height_inches", 0.7)
+
+        dpi = get_config("barcode.page.dpi", 300)
+
+        # Convert inches to pixels for final image size
+        target_width = int(width_inches * dpi)
+        target_height = int(height_inches * dpi)
+
+        # Generate the barcode with ImageWriter
+        writer = ImageWriter()
+        barcode_generator = barcode.get(barcode_format, part_number, writer=writer)
+
+        # Save to temporary location first
+        temp_path = os.path.join(barcode_dir, f"{part_number}_temp")
+        barcode_generator.save(temp_path)
+
+        # Open the generated image and resize to exact dimensions
+        temp_image_path = f"{temp_path}.png"
+        with Image.open(temp_image_path) as img:
+            # Resize to exact target dimensions (this includes the barcode + text)
+            resized_img = img.resize(
+                (target_width, target_height), Image.Resampling.LANCZOS
+            )
+
+            # Save with final name
+            final_path = os.path.join(barcode_dir, f"{part_number}.png")
+            resized_img.save(final_path)
+
+        # Clean up temporary file
+        if os.path.exists(temp_image_path):
+            os.remove(temp_image_path)
+
+        return final_path
 
     except Exception as e:
         raise ValueError(f"Failed to generate barcode for {part_number}: {e}")
 
 
-def generate_multiple_barcodes(
-    part_numbers: List[str],
+def generate_coax_label(
+    part_number: str,
     part_type: str,
     output_dir: Optional[str] = None,
-    barcode_format: str = "code128",
-) -> Dict[str, str]:
+) -> str:
     """
-    Generate barcodes for multiple part numbers.
+    Generate a text-based label for coax cables (no barcode).
+
+    Used for thin cables (COAXSHORT/LMR95 and COAXLONG/LMR195) where barcodes
+    are difficult to scan. Creates a label with text on multiple lines that
+    fits the cable diameter.
 
     Parameters
     ----------
-    part_numbers : List[str]
-        List of part numbers to generate barcodes for.
+    part_number : str
+        The part number to print on the label.
     part_type : str
-        The part type for all parts.
+        The part type (used for directory organization and diameter selection).
     output_dir : str, optional
-        Custom output directory.
-    barcode_format : str, optional
-        Barcode format to use.
+        Custom output directory. If not provided, uses default barcodes structure.
 
     Returns
     -------
-    Dict[str, str]
-        Dictionary mapping part numbers to their barcode file paths.
-        Failed generations will have empty string as value.
-    """
-    results = {}
-
-    for part_number in part_numbers:
-        try:
-            barcode_path = generate_barcode(
-                part_number, part_type, output_dir, barcode_format
-            )
-            results[part_number] = barcode_path
-        except (ValueError, OSError) as e:
-            print(f"Warning: Failed to generate barcode for {part_number}: {e}")
-            results[part_number] = ""
-
-    return results
-
-
-def generate_barcode_range(
-    part_type: str,
-    start_number: int,
-    end_number: int,
-    prefix: Optional[str] = None,
-    output_dir: Optional[str] = None,
-) -> Dict[str, str]:
-    """
-    Generate barcodes for a range of part numbers.
-
-    Parameters
-    ----------
-    part_type : str
-        The part type to generate barcodes for.
-    start_number : int
-        Starting part number.
-    end_number : int
-        Ending part number (inclusive).
-    prefix : str, optional
-        Custom prefix for part numbers. If not provided, derives from part type.
-    output_dir : str, optional
-        Custom output directory.
-
-    Returns
-    -------
-    Dict[str, str]
-        Dictionary mapping part numbers to their barcode file paths.
+    str
+        Path to the generated label image.
 
     Raises
     ------
     ValueError
-        If start_number > end_number or if part_type is unknown.
+        If the part type is not recognized or label generation fails.
     """
-    if start_number > end_number:
-        raise ValueError("Start number must be less than or equal to end number")
+    # Determine output directory
+    if output_dir is None:
+        # Check for test environment variable first
+        env_barcode_dir = os.environ.get("CASMAN_BARCODE_DIR")
+        if env_barcode_dir:
+            label_dir = os.path.join(env_barcode_dir, part_type)
+        else:
+            label_dir = os.path.join(
+                os.path.dirname(__file__), "..", "..", "barcodes", part_type
+            )
+    else:
+        label_dir = os.path.join(output_dir, part_type)
 
-    # Get prefix if not provided
-    if prefix is None:
-        # Import here to avoid circular imports
-        from casman.parts.types import load_part_types
+    # Create the label directory if it doesn't exist
+    if not os.path.exists(label_dir):
+        os.makedirs(label_dir)
 
-        PART_TYPES = load_part_types()
+    try:
+        # Get coax label settings from config
+        dpi = get_config("barcode.page.dpi", 300)
+        bg_color = get_config("barcode.coax.background_color", "white")
+        text_color = get_config("barcode.coax.text_color", "black")
 
-        part_abbrev = None
-        for _, (full_name, abbrev) in PART_TYPES.items():
-            if full_name.upper() == part_type.upper():
-                part_abbrev = abbrev
-                break
+        # Get coax-specific label dimensions from config
+        label_width_inches = get_config("barcode.coax.width_inches", 1.0)
+        label_height_inches = get_config("barcode.coax.height_inches", 0.34)
 
-        if not part_abbrev:
-            raise ValueError(f"Unknown part type: {part_type}")
+        # Convert to pixels
+        label_width_pixels = int(label_width_inches * dpi)
+        label_height_pixels = int(label_height_inches * dpi)
 
-        prefix = part_abbrev
+        # Determine cable diameter and calculate repetitions based on part type
+        if part_type.upper() == "COAXSHORT":
+            cable_diameter = get_config("barcode.coax.lmr95_diameter", 0.141)
+            # Number of repetitions = height_inches / (0.9 * cable_diameter)
+            num_repetitions = int(label_height_inches / (0.9 * cable_diameter))
+        elif part_type.upper() == "COAXLONG":
+            cable_diameter = get_config("barcode.coax.lmr195_diameter", 0.233)
+            # Number of repetitions = height_inches / (0.9 * cable_diameter)
+            num_repetitions = int(label_height_inches / (0.9 * cable_diameter))
+        else:
+            raise ValueError(
+                f"Coax label generation not supported for part type: {part_type}"
+            )
 
-    # Generate part numbers in new format: {PREFIX}{NUMBER}P{POLARIZATION}
-    # Default to polarization 1
-    part_numbers = [f"{prefix}{i:05d}P1" for i in range(start_number, end_number + 1)]
+        # Ensure at least one repetition
+        num_repetitions = max(1, num_repetitions)
 
-    return generate_multiple_barcodes(part_numbers, part_type, output_dir)
+        # Create image
+        img = Image.new("RGB", (label_width_pixels, label_height_pixels), bg_color)
+        draw = ImageDraw.Draw(img)
 
+        # Validate dimensions
+        if label_height_pixels <= 0:
+            raise ValueError(f"Invalid label height: {label_height_pixels} pixels")
+        if label_width_pixels <= 0:
+            raise ValueError(f"Invalid label width: {label_width_pixels} pixels")
 
-def get_supported_barcode_formats() -> List[str]:
-    """
-    Get list of supported barcode formats.
+        # Repeat the same part number multiple times on the label
+        # Number of repetitions calculated based on height / (0.9 * cable_diameter)
+        lines = [part_number] * num_repetitions
 
-    Returns
-    -------
-    List[str]
-        List of supported barcode format names.
-    """
-    return [
-        "code128",
-        "code39",
-        "ean8",
-        "ean13",
-        "ean",
-        "gtin",
-        "isbn",
-        "isbn10",
-        "isbn13",
-        "issn",
-        "jan",
-        "pzn",
-        "upc",
-        "upca",
-    ]
+        # Calculate font size to fit all repetitions
+        # Divide height by number of lines, with some padding
+        line_height = label_height_pixels / (len(lines) + 0.5)
+        font_size = max(
+            8, int(line_height * 0.7)
+        )  # 70% of line height for font, minimum 8
 
+        # Try to load a font, fall back to default if not available
+        try:
+            font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", font_size)
+        except (OSError, IOError):
+            try:
+                font = ImageFont.truetype("arial.ttf", font_size)
+            except (OSError, IOError):
+                # Use default font
+                font = ImageFont.load_default()
 
-def validate_barcode_format(barcode_format: str) -> bool:
-    """
-    Validate if a barcode format is supported.
+        # Draw each line of text, centered
+        y_offset = label_height_pixels * 0.1  # Start with 10% padding
+        for line in lines:
+            # Get text bounding box for centering
+            bbox = draw.textbbox((0, 0), line, font=font)
+            text_width = bbox[2] - bbox[0]
+            text_height = bbox[3] - bbox[1]
 
-    Parameters
-    ----------
-    barcode_format : str
-        The barcode format to validate.
+            # Center horizontally
+            x = (label_width_pixels - text_width) / 2
 
-    Returns
-    -------
-    bool
-        True if format is supported, False otherwise.
-    """
-    return barcode_format.lower() in get_supported_barcode_formats()
+            # Draw text
+            draw.text((x, y_offset), line, fill=text_color, font=font)
+
+            # Move to next line
+            y_offset += text_height + (label_height_pixels * 0.05)  # 5% spacing
+
+        # Save the label
+        final_path = os.path.join(label_dir, f"{part_number}.png")
+        img.save(final_path)
+
+        return final_path
+
+    except Exception as e:
+        raise ValueError(f"Failed to generate coax label for {part_number}: {e}")

@@ -75,6 +75,7 @@ def validate_snap_part(snap_str: str) -> bool:
         True if valid format, False otherwise.
     """
     import re
+
     # Format: SNAP<chassis 1-4><slot A-K><port 00-11>
     pattern = r"^SNAP[1-4][A-K](0[0-9]|1[01])$"
     return bool(re.match(pattern, snap_str))

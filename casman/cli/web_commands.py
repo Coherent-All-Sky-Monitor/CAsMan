@@ -92,7 +92,7 @@ Examples:
     args = parser.parse_args(sys.argv[2:])  # Skip 'casman web'
 
     try:
-        from casman.config.core import get_config
+        from casman.config import get_config
         from casman.web import run_dev_server, run_production_server
 
         # Determine which interfaces to enable

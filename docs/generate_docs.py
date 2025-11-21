@@ -13,10 +13,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Union
 import sys
 
-from casman.config.utils import setup_logging
-
-# Configure logging from config
-setup_logging()
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(levelname)s: %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 # Add the project root to the path so we can import casman
@@ -419,7 +420,16 @@ class DocumentationGenerator:
         logger.info("Starting documentation generation...")
 
         # Generate package documentation
-        packages = ["assembly", "cli", "config", "database", "parts", "visualization"]
+        packages = [
+            "assembly",
+            "barcode",
+            "cli",
+            "config",
+            "database",
+            "parts",
+            "visualization",
+            "web",
+        ]
         for package_name in packages:
             self._generate_package_docs(package_name)
 
@@ -549,11 +559,13 @@ class DocumentationGenerator:
         # Add package summaries
         packages = {
             "assembly": "Assembly management and connection tracking",
+            "barcode": "Barcode generation, validation, and printing",
             "cli": "Command-line interface",
             "config": "Configuration management",
             "database": "Database operations",
             "parts": "Part management and validation",
             "visualization": "ASCII visualization",
+            "web": "Web application interfaces (scanner and visualization)",
         }
 
         lines.extend(

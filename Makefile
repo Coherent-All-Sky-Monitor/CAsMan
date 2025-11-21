@@ -93,6 +93,29 @@ dev: clean lint test update-docs
 release-prep: clean test update-docs
 	@echo "✅ Ready for release"
 
+# Service management (Linux systemd only)
+install-service:
+	@echo "Installing CAsMan as a systemd service..."
+	sudo bash scripts/install_service.sh
+
+uninstall-service:
+	@echo "Uninstalling CAsMan systemd service..."
+	sudo bash scripts/uninstall_service.sh
+
+update-service:
+	@echo "Updating CAsMan service..."
+	sudo bash scripts/update_service.sh
+
+check-service:
+	@echo "Checking CAsMan service health..."
+	bash scripts/check_service.sh
+
+service-status:
+	sudo systemctl status casman-web.service
+
+service-logs:
+	sudo journalctl -u casman-web.service -f
+
 # Help target
 help:
 	@echo "Available targets:"
@@ -111,4 +134,10 @@ help:
 	@echo "  dev-setup      - Set up development environment"
 	@echo "  dev            - Full development check (clean, lint, test, docs)"
 	@echo "  troubleshoot   - Run installation diagnostics"
+	@echo "  install-service    - Install as systemd service (Linux only)"
+	@echo "  uninstall-service  - Remove systemd service"
+	@echo "  update-service     - Update running service"
+	@echo "  check-service      - Health check for service"
+	@echo "  service-status     - Show service status"
+	@echo "  service-logs       - Follow service logs"
 	@echo "  help           - Show this help message"

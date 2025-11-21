@@ -11,24 +11,13 @@ from .db import read_parts
 from .generation import generate_part_numbers, get_last_part_number
 from .interactive import add_parts_interactive, display_parts_interactive
 from .part import Part, create_part
-from .search import (
-    find_part,
-    get_all_parts,
-    get_part_statistics,
-    get_recent_parts,
-    search_by_prefix,
-    search_parts,
-)
-
+from .search import (find_part, get_all_parts, get_part_statistics,
+                     get_recent_parts, search_by_prefix, search_parts)
 # Import core functionality from submodules
 from .types import load_part_types
-from .validation import (
-    get_part_info,
-    normalize_part_number,
-    validate_part_number,
-    validate_part_type,
-    validate_polarization,
-)
+from .validation import (get_part_info, normalize_part_number,
+                         validate_part_number, validate_part_type,
+                         validate_polarization)
 
 # Create PART_TYPES at module level for backward compatibility
 PART_TYPES = load_part_types()

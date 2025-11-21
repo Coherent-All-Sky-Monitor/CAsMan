@@ -114,6 +114,7 @@ def get_duplicate_connections(
         for parts that appear multiple times in the database.
     """
     import sqlite3
+
     from casman.database.connection import get_database_path
 
     try:

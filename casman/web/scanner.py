@@ -12,10 +12,8 @@ from typing import Dict, List, Optional, Tuple
 
 from flask import Blueprint, jsonify, render_template, request
 
-from casman.assembly.connections import (
-    record_assembly_connection,
-    record_assembly_disconnection,
-)
+from casman.assembly.connections import (record_assembly_connection,
+                                         record_assembly_disconnection)
 from casman.database.connection import get_database_path
 from casman.parts.types import load_part_types
 
@@ -70,8 +68,8 @@ def validate_snap_part(part_number: str) -> bool:
 
 def validate_connection_sequence(first_type: str, second_type: str) -> tuple[bool, str]:
     """Validate that connection follows the proper chain sequence."""
-    # Define the valid chain sequence
-    VALID_CHAIN = ["ANTENNA", "LNA", "COAXSHORT", "COAXLONG", "BACBOARD", "SNAP"]
+    # Build valid chain from config (sorted by key order)
+    VALID_CHAIN = [name for _, (name, _) in sorted(PART_TYPES.items())]
 
     try:
         first_idx = VALID_CHAIN.index(first_type)
@@ -114,7 +112,7 @@ def get_existing_connections(part_number: str) -> List[Dict]:
         db_path = get_database_path("assembled_casm.db", None)
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
-            
+
             # Normalize part pairs to handle bidirectional connections
             # (A,B) and (B,A) should be treated as the same connection
             cursor.execute(
@@ -172,7 +170,27 @@ def get_existing_connections(part_number: str) -> List[Dict]:
 @scanner_bp.route("/")
 def scanner_index():
     """Render the scanner interface."""
-    return render_template("scanner.html", part_types=ALL_PART_TYPES)
+    # Build connection chain (part type -> next part type)
+    sorted_types = [name for _, (name, _) in sorted(PART_TYPES.items())]
+    connection_chain = {
+        sorted_types[i]: sorted_types[i + 1] for i in range(len(sorted_types) - 1)
+    }
+
+    # Build prefix mapping (part type -> abbreviation)
+    part_prefixes = {name: abbrev for _, (name, abbrev) in PART_TYPES.items()}
+
+    # Identify coax types (contain 'COAX' in name) and terminal type (last in chain)
+    coax_types = [name for name in sorted_types if "COAX" in name.upper()]
+    terminal_type = sorted_types[-1] if sorted_types else None
+
+    return render_template(
+        "scanner.html",
+        part_types=ALL_PART_TYPES,
+        connection_chain=connection_chain,
+        part_prefixes=part_prefixes,
+        coax_types=coax_types,
+        terminal_type=terminal_type,
+    )
 
 
 @scanner_bp.route("/api/validate-part", methods=["POST"])
@@ -186,7 +204,9 @@ def validate_part():
 
     # Get existing connections for this part
     existing = get_existing_connections(part_number)
-    logger.info("Validating part %s, found %d active connections", part_number, len(existing))
+    logger.info(
+        "Validating part %s, found %d active connections", part_number, len(existing)
+    )
 
     if part_number.startswith("SNAP"):
         if validate_snap_part(part_number):
@@ -296,7 +316,9 @@ def format_snap_part_route():
     try:
         chassis = int(chassis)
         if chassis < 1 or chassis > 4:
-            return jsonify({"success": False, "error": "Chassis must be between 1 and 4"})
+            return jsonify(
+                {"success": False, "error": "Chassis must be between 1 and 4"}
+            )
     except ValueError:
         return jsonify({"success": False, "error": "Invalid chassis number"})
 
@@ -369,8 +391,20 @@ def record_connection():
     try:
         part_number = data["part_number"]
         part_type = data["part_type"]
+        polarization = data["polarization"]
         connected_to = data["connected_to"]
         connected_to_type = data["connected_to_type"]
+        connected_polarization = data["connected_polarization"]
+
+        # Validate polarization match (SNAP excluded as it's N/A)
+        if part_type != "SNAP" and connected_to_type != "SNAP":
+            if polarization != connected_polarization:
+                return jsonify(
+                    {
+                        "success": False,
+                        "error": f"Polarization mismatch: {part_type} is P{polarization} but {connected_to_type} is P{connected_polarization}. Parts must have matching polarization.",
+                    }
+                )
 
         # Validate connection sequence (e.g., BACBOARD must connect to SNAP)
         is_valid_seq, seq_error = validate_connection_sequence(
@@ -419,7 +453,11 @@ def record_connection():
         )
 
         if success:
-            logger.info("Connection recorded: %s → %s", data['part_number'], data['connected_to'])
+            logger.info(
+                "Connection recorded: %s → %s",
+                data["part_number"],
+                data["connected_to"],
+            )
             return jsonify(
                 {
                     "success": True,
@@ -427,7 +465,11 @@ def record_connection():
                 }
             )
         else:
-            logger.error("Failed to record connection: %s → %s", data['part_number'], data['connected_to'])
+            logger.error(
+                "Failed to record connection: %s → %s",
+                data["part_number"],
+                data["connected_to"],
+            )
             return jsonify({"success": False, "error": "Failed to record connection"})
 
     except Exception as e:
@@ -455,7 +497,11 @@ def record_disconnection():
         )
 
         if success:
-            logger.info("Disconnection recorded: %s -X-> %s", data['part_number'], data['connected_to'])
+            logger.info(
+                "Disconnection recorded: %s -X-> %s",
+                data["part_number"],
+                data["connected_to"],
+            )
             return jsonify(
                 {
                     "success": True,
@@ -463,7 +509,11 @@ def record_disconnection():
                 }
             )
         else:
-            logger.error("Failed to record disconnection: %s -X-> %s", data['part_number'], data['connected_to'])
+            logger.error(
+                "Failed to record disconnection: %s -X-> %s",
+                data["part_number"],
+                data["connected_to"],
+            )
             return jsonify(
                 {"success": False, "error": "Failed to record disconnection"}
             )
@@ -483,28 +533,35 @@ def add_parts():
 
     if not part_type:
         return jsonify({"success": False, "error": "Part type is required"})
-    
+
     if not count or count <= 0:
         return jsonify({"success": False, "error": "Count must be greater than 0"})
-    
+
     if polarization not in ["1", "2"]:
         return jsonify({"success": False, "error": "Polarization must be 1 or 2"})
 
     try:
         from casman.parts.generation import generate_part_numbers
-        
+
         new_parts = generate_part_numbers(part_type, count, polarization)
-        
-        logger.info("Created %d new %s parts with polarization %s", len(new_parts), part_type, polarization)
-        
-        return jsonify({
-            "success": True,
-            "parts": new_parts,
-            "count": len(new_parts),
-            "part_type": part_type,
-            "polarization": polarization
-        })
-        
+
+        logger.info(
+            "Created %d new %s parts with polarization %s",
+            len(new_parts),
+            part_type,
+            polarization,
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "parts": new_parts,
+                "count": len(new_parts),
+                "part_type": part_type,
+                "polarization": polarization,
+            }
+        )
+
     except Exception as e:
         logger.error("Error creating parts: %s", e)
         return jsonify({"success": False, "error": str(e)})
@@ -523,7 +580,7 @@ def get_part_history():
         db_path = get_database_path("assembled_casm.db", None)
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
-            
+
             # Get all records where this part appears, deduplicated by normalized pairs
             # This prevents showing duplicate entries for bidirectional connections
             cursor.execute(
@@ -563,28 +620,30 @@ def get_part_history():
                 """,
                 (part_number, part_number),
             )
-            
+
             rows = cursor.fetchall()
-            
+
             history = []
             for row in rows:
-                history.append({
-                    "id": row[0],
-                    "part_number": row[1],
-                    "part_type": row[2],
-                    "connected_to": row[3],
-                    "connected_to_type": row[4],
-                    "status": row[5],
-                    "timestamp": row[6]
-                })
-            
-            logger.info("Retrieved %d history records for part %s", len(history), part_number)
-            return jsonify({
-                "success": True,
-                "part_number": part_number,
-                "history": history
-            })
-            
+                history.append(
+                    {
+                        "id": row[0],
+                        "part_number": row[1],
+                        "part_type": row[2],
+                        "connected_to": row[3],
+                        "connected_to_type": row[4],
+                        "status": row[5],
+                        "timestamp": row[6],
+                    }
+                )
+
+            logger.info(
+                "Retrieved %d history records for part %s", len(history), part_number
+            )
+            return jsonify(
+                {"success": True, "part_number": part_number, "history": history}
+            )
+
     except sqlite3.Error as e:
         logger.error("Database error getting part history for %s: %s", part_number, e)
         return jsonify({"success": False, "error": str(e)})

@@ -29,7 +29,7 @@ def get_test_count() -> Optional[int]:
             text=True,
             check=True,
         )
-        
+
         # Parse output lines - each line shows "file.py: N" where N is test count
         lines = result.stdout.strip().split("\n")
         total = 0
@@ -43,7 +43,7 @@ def get_test_count() -> Optional[int]:
                         total += count
                     except ValueError:
                         continue
-        
+
         return total if total > 0 else None
     except (subprocess.CalledProcessError, ValueError) as e:
         print(f"Error getting test count: {e}")
@@ -81,7 +81,7 @@ def get_coverage_data() -> Tuple[List[Dict], Optional[Dict]]:
             check=True,
         )
         print("Tests completed, generating report...")
-        
+
         # Run coverage and get report
         result = subprocess.run(
             ["coverage", "report", "--include=casman/*"],
@@ -209,7 +209,7 @@ def update_readme_coverage() -> bool:
             r"coverage-[\d\.]+%25-\w+\)"
         )
         content = re.sub(badge_pattern, new_coverage_badge, content)
-        
+
         # Update test count badge
         test_count = get_test_count()
         if test_count:

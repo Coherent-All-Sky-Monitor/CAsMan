@@ -1,0 +1,34 @@
+[Unit]
+Description=CAsMan Web Production Server
+After=network.target
+Documentation=https://github.com/Coherent-All-Sky-Monitor/CAsMan
+
+[Service]
+Type=simple
+User={{USER}}
+Group={{GROUP}}
+WorkingDirectory={{WORKING_DIR}}
+
+# Use the virtual environment's Python
+Environment="PATH={{VENV_PATH}}/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONUNBUFFERED=1"
+
+# Run casman web in production mode
+ExecStart={{VENV_PATH}}/bin/casman web --production --host {{HOST}} --port {{PORT}} {{OPTIONS}}
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=200
+StartLimitBurst=5
+
+# Resource limits
+LimitNOFILE=4096
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=casman-web
+
+[Install]
+WantedBy=multi-user.target

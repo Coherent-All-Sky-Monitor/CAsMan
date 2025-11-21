@@ -9,7 +9,6 @@ building connection chains, and interactive assembly scanning.
 import logging
 
 from .chains import build_connection_chains, print_assembly_chains
-
 # Import all functions from submodules
 from .connections import record_assembly_connection
 from .data import get_assembly_connections
@@ -21,9 +20,9 @@ logger = logging.getLogger(__name__)
 
 def main():
     """
-    Main entry point for the casman-scan command.
+    Legacy entry point for assembly scanning (deprecated).
 
-    Launches the interactive assembly scanner.
+    Use `casman scan connect` for interactive assembly management.
     """
     import sys
 
