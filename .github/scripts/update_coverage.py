@@ -13,12 +13,14 @@ def get_coverage():
     """Extract coverage percentage from pytest-cov output."""
     try:
         # Run pytest with coverage and capture output
+        # Only cover casman package, not entire directory
         result = subprocess.run(
-            ["pytest", "--cov=.", "--cov-report=term-missing", "-q"],
+            ["pytest", "--cov=casman", "--cov-report=term-missing", "-q"],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             encoding="utf-8",
             check=False,
+            timeout=60,  # Add timeout to prevent hanging
         )
         output = result.stdout
         # Look for a line like: "TOTAL      123     4    97%"
@@ -44,6 +46,7 @@ def get_test_count():
             stderr=subprocess.PIPE,
             encoding="utf-8",
             check=True,
+            timeout=30,  # Add timeout to prevent hanging
         )
         
         # Parse output lines - each line shows "file.py: N" where N is test count
