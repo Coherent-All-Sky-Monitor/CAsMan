@@ -546,7 +546,7 @@ casman web --port 8080               # Custom port
 
 ## Testing & Coverage
 
-![Tests](https://img.shields.io/badge/tests-432%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-87.0%25-green)
+![Tests](https://img.shields.io/badge/tests-432%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-0.0%25-green)
 
 
 | Module | Coverage | Lines Covered |

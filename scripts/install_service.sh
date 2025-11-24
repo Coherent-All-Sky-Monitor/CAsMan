@@ -156,6 +156,34 @@ create_virtual_environment() {
 configure_service() {
     log_info "Configuring service options..."
     
+    # Try to read from config.yaml first
+    if read_config_yaml; then
+        # Use values from config.yaml
+        PORT="$CONFIG_PORT"
+        HOST="$CONFIG_HOST"
+        SERVICE_MODE="$CONFIG_MODE"
+        SERVICE_OPTIONS="$CONFIG_OPTIONS"
+        
+        echo ""
+        echo "Configuration from config.yaml:"
+        echo "------------------------------"
+        log_info "  Mode: $SERVICE_MODE"
+        log_info "  Port: $PORT"
+        log_info "  Host: $HOST"
+        echo ""
+        read -p "Use these settings? (yes/no) [yes]: " USE_CONFIG
+        USE_CONFIG="${USE_CONFIG:-yes}"
+        
+        if [[ "$USE_CONFIG" =~ ^[Yy] ]]; then
+            # Accept config.yaml values
+            read -p "Enable service on boot? (yes/no) [yes]: " ENABLE_BOOT
+            ENABLE_BOOT="${ENABLE_BOOT:-yes}"
+            return 0
+        fi
+        # Fall through to manual configuration if user rejects config.yaml
+    fi
+    
+    # Manual configuration (either no config.yaml or user rejected it)
     echo ""
     echo "Service Configuration:"
     echo "---------------------"
@@ -204,6 +232,72 @@ configure_service() {
     log_info "  Port: $PORT"
     log_info "  Host: $HOST"
     log_info "  Enable on boot: $ENABLE_BOOT"
+}
+
+read_config_yaml() {
+    log_info "Reading configuration from config.yaml..."
+    
+    CONFIG_FILE="$INSTALL_DIR/config.yaml"
+    
+    if [ ! -f "$CONFIG_FILE" ]; then
+        log_warning "config.yaml not found, will prompt for configuration"
+        return 1
+    fi
+    
+    # Read web app configuration from config.yaml using Python
+    if command -v python3 &> /dev/null; then
+        CONFIG_VALUES=$(python3 -c "
+import yaml
+import sys
+
+try:
+    with open('$CONFIG_FILE', 'r') as f:
+        config = yaml.safe_load(f)
+    
+    web_config = config.get('web_app', {})
+    prod_config = web_config.get('production', {})
+    
+    # Get values with defaults
+    port = prod_config.get('port', $DEFAULT_PORT)
+    host = prod_config.get('host', '$DEFAULT_HOST')
+    enable_scanner = web_config.get('enable_scanner', True)
+    enable_viz = web_config.get('enable_visualization', True)
+    
+    # Determine mode
+    if enable_scanner and enable_viz:
+        mode = 'both'
+        options = ''
+    elif enable_scanner:
+        mode = 'scanner-only'
+        options = '--scanner-only'
+    elif enable_viz:
+        mode = 'visualize-only'
+        options = '--visualize-only'
+    else:
+        mode = 'both'
+        options = ''
+    
+    print(f'{port}|{host}|{mode}|{options}')
+except Exception as e:
+    print('', file=sys.stderr)
+    sys.exit(1)
+" 2>/dev/null)
+        
+        if [ $? -eq 0 ] && [ -n "$CONFIG_VALUES" ]; then
+            IFS='|' read -r CONFIG_PORT CONFIG_HOST CONFIG_MODE CONFIG_OPTIONS <<< "$CONFIG_VALUES"
+            log_success "Read configuration from config.yaml"
+            log_info "  Port: $CONFIG_PORT"
+            log_info "  Host: $CONFIG_HOST"
+            log_info "  Mode: $CONFIG_MODE"
+            return 0
+        else
+            log_warning "Failed to parse config.yaml, will prompt for configuration"
+            return 1
+        fi
+    else
+        log_warning "Python3 not available to parse config.yaml"
+        return 1
+    fi
 }
 
 verify_config_file() {

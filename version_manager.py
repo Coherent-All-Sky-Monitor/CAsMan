@@ -196,7 +196,7 @@ class VersionManager:
             return False
 
     def commit_version_changes(
-        self, new_version: str, updated_files: List[Path]
+        self, new_version: str, updated_files: List[Path], message: Optional[str] = None
     ) -> bool:
         """Commit version changes to git."""
         if not updated_files:
@@ -211,7 +211,7 @@ class VersionManager:
                 )
 
             # Commit
-            commit_message = f"Bump version to {new_version}"
+            commit_message = message if message else f"Bump version to {new_version}"
             result = subprocess.run(
                 ["git", "commit", "-m", commit_message],
                 cwd=self.project_root,
@@ -291,6 +291,10 @@ Examples:
     )
 
     parser.add_argument(
+        "--commit-message", metavar="MESSAGE", help="Custom message for git commit"
+    )
+
+    parser.add_argument(
         "--tag", action="store_true", help="Create git tag for the version"
     )
 
@@ -335,6 +339,9 @@ Examples:
 
         # Ask about git operations
         commit = input("Commit changes to git? (y/N): ").strip().lower() == "y"
+        commit_message = None
+        if commit:
+            commit_message = input("Commit message (optional): ").strip() or None
         tag = input("Create git tag? (y/N): ").strip().lower() == "y"
         tag_message = None
         if tag:
@@ -353,6 +360,7 @@ Examples:
             new_version = args.set
 
         commit = args.commit
+        commit_message = args.commit_message
         tag = args.tag
         tag_message = args.tag_message
 
@@ -371,7 +379,7 @@ Examples:
     # Git operations
     if commit:
         print("\n📝 Committing changes...")
-        vm.commit_version_changes(new_version, updated_files)
+        vm.commit_version_changes(new_version, updated_files, commit_message)
 
     if tag:
         print("\n🏷️  Creating git tag...")

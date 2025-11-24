@@ -14,7 +14,7 @@ Environment="PATH={{VENV_PATH}}/bin:/usr/local/bin:/usr/bin:/bin"
 Environment="PYTHONUNBUFFERED=1"
 
 # Run casman web in production mode
-ExecStart={{VENV_PATH}}/bin/casman web --production --host {{HOST}} --port {{PORT}} {{OPTIONS}}
+ExecStart={{VENV_PATH}}/bin/casman web --mode prod --host {{HOST}} --port {{PORT}} {{OPTIONS}}
 
 # Restart policy
 Restart=always
