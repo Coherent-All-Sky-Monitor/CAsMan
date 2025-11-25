@@ -187,10 +187,78 @@
     .dark-mode-toggle:hover span { transform: rotate(45deg); }
     .controls {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
+      gap: 15px;
       width: 100%;
       margin-top: 10px;
+    }
+    .search-section {
+      width: 100%;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      border: 1px solid currentColor;
+    }
+    body.dark-mode .search-section {
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .search-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .manual-search {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .part-builder {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding-top: 10px;
+      border-top: 1px solid rgba(128, 128, 128, 0.3);
+    }
+    .dropdown-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    input[type="text"], input[type="number"], select {
+      border: 1px solid currentColor;
+      background: transparent;
+      color: inherit;
+      border-radius: 4px;
+      font-family: 'National Park', sans-serif;
+    }
+    body.dark-mode input[type="text"],
+    body.dark-mode input[type="number"],
+    body.dark-mode select {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    input[type="submit"], button {
+      padding: 6px 12px;
+      cursor: pointer;
+      border: 1px solid currentColor;
+      background: transparent;
+      color: inherit;
+      font-size: 14px;
+      font-family: 'National Park', sans-serif;
+      transition: all 0.2s;
+      border-radius: 4px;
+    }
+    input[type="submit"]:hover, button:hover {
+      background: #333;
+      color: #f0f0f5;
+    }
+    body.dark-mode input[type="submit"]:hover,
+    body.dark-mode button:hover {
+      background: #f0f0f5;
+      color: #333;
     }
     @media (max-width: 1200px) {
       .centered-container { max-width: 99vw; }
@@ -304,18 +372,59 @@
   <div class="centered-container">
     <h1>CASM Analog Chains</h1>
     <div class="controls">
-      <form method="post" style="display: inline;">
-        <label for="part">Select Part:</label>
-        <select name="part" id="part">
-          <option value="">--Show all assembled Analog Chains--</option>
-          {% for part in parts %}
-            <option value="{{ part }}" {% if part == selected_part %}selected{% endif %}>
-              {{ part }}</option>
-          {% endfor %}
-        </select>
-        <input type="submit" value="Show Connections">
-      </form>
-      <button onclick="refreshData()">Refresh Data</button>
+      <!-- Search Form with Manual Input and Part Builder -->
+      <div class="search-section">
+        <form method="post" id="searchForm">
+          <div class="search-row">
+            <div class="manual-search">
+              <label for="search_part">Search Part Number:</label>
+              <input type="text" name="search_part" id="search_part" 
+                     placeholder="e.g., ANT00001P1" 
+                     {% if selected_part %}value="{{ selected_part }}"{% endif %}
+                     style="padding: 5px; font-family: 'Courier New', monospace;">
+              <input type="submit" value="Search">
+            </div>
+            
+            <div class="part-builder">
+              <label>Or Build Part Number:</label>
+              <select id="part_type_select" style="padding: 5px;">
+                <option value="">--Select Type--</option>
+                {% for key, (name, abbrev) in part_types.items() %}
+                  <option value="{{ abbrev }}">{{ name }} ({{ abbrev }})</option>
+                {% endfor %}
+              </select>
+              
+              <input type="number" id="part_serial" placeholder="00001" 
+                     min="1" max="99999" style="width: 80px; padding: 5px;">
+              
+              <select id="part_polarization" style="padding: 5px;">
+                <option value="">--Pol--</option>
+                <option value="P1">P1</option>
+                <option value="P2">P2</option>
+              </select>
+              
+              <button type="button" onclick="buildPartNumber()">Build & Search</button>
+              <button type="button" onclick="clearSearch()">Clear</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Original Dropdown (kept for convenience) -->
+      <div class="dropdown-section">
+        <form method="post" style="display: inline;">
+          <label for="part">Or Select from Dropdown:</label>
+          <select name="part" id="part">
+            <option value="">--Show all assembled Analog Chains--</option>
+            {% for part in parts %}
+              <option value="{{ part }}" {% if part == selected_part %}selected{% endif %}>
+                {{ part }}</option>
+            {% endfor %}
+          </select>
+          <input type="submit" value="Show Connections">
+        </form>
+        <button onclick="refreshData()">Refresh Data</button>
+      </div>
     </div>
     <div class="diagram">
       {% if chains %}
@@ -370,6 +479,44 @@
     function refreshData() {
       document.getElementById('last-update').textContent = 'Fetching database...';
       setTimeout(() => location.reload(), 1000);
+    }
+
+    function buildPartNumber() {
+      const partType = document.getElementById('part_type_select').value;
+      const serial = document.getElementById('part_serial').value;
+      const polarization = document.getElementById('part_polarization').value;
+      
+      if (!partType) {
+        alert('Please select a part type');
+        return;
+      }
+      if (!serial) {
+        alert('Please enter a serial number');
+        return;
+      }
+      if (!polarization) {
+        alert('Please select a polarization');
+        return;
+      }
+      
+      // Format serial number with leading zeros (5 digits)
+      const formattedSerial = serial.padStart(5, '0');
+      
+      // Build part number: TYPE + SERIAL + POLARIZATION
+      const partNumber = partType + formattedSerial + polarization;
+      
+      // Set the search input and submit the form
+      document.getElementById('search_part').value = partNumber;
+      document.getElementById('searchForm').submit();
+    }
+
+    function clearSearch() {
+      document.getElementById('search_part').value = '';
+      document.getElementById('part_type_select').value = '';
+      document.getElementById('part_serial').value = '';
+      document.getElementById('part_polarization').value = '';
+      // Submit to show all chains again
+      document.getElementById('searchForm').submit();
     }
 
     function createCurvedPath(startX, startY, endX, endY, containerWidth, containerHeight, isWrappedConnection = false) {

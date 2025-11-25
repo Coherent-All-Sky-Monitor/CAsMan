@@ -289,11 +289,21 @@ def visualize_static(filename):
 @visualize_bp.route("/chains", methods=["GET", "POST"])
 def visualize_index():
     """Render the visualization interface."""
-    selected_part = (
-        request.form.get("part")
-        if request.method == "POST"
-        else request.args.get("part")
-    )
+    # Get selected part from form, search input, or query string
+    selected_part = None
+    if request.method == "POST":
+        # Check search input first, then dropdown
+        selected_part = request.form.get("search_part") or request.form.get("part")
+    else:
+        selected_part = request.args.get("part")
+    
+    # Load part types for the part builder
+    from casman.parts.types import load_part_types
+    part_types = load_part_types()
+    # Exclude terminal type (highest key)
+    terminal_key = max(part_types.keys())
+    part_types_for_builder = {k: v for k, v in part_types.items() if k != terminal_key}
+    
     parts = get_all_parts()
     chains, connections = get_all_chains(selected_part)
     duplicates = get_duplicate_info()
@@ -309,4 +319,5 @@ def visualize_index():
         selected_part=selected_part,
         last_update=last_update,
         format_display_data=format_display_data,
+        part_types=part_types_for_builder,
     )

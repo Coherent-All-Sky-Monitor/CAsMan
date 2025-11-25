@@ -293,6 +293,7 @@
         .input-group input,
         .input-group select {
             width: 100%;
+            box-sizing: border-box; /* Prevent overflow beyond section padding/border */
             padding: 10px;
             font-size: 16px;
             font-family: 'National Park', sans-serif;
@@ -324,6 +325,44 @@
             font-size: 16px;
             border-radius: 8px;
         }
+        
+        /* Submit button styles */
+        .submit-button {
+            min-height: 60px;
+            padding: 18px 30px;
+            font-size: 20px;
+            font-weight: bold;
+            border: 3px solid #333;
+            background: #fff;
+            color: #333;
+            transition: all 0.3s;
+        }
+        
+        body.dark-mode .submit-button {
+            border-color: #fff;
+            background: #000;
+            color: #fff;
+        }
+        
+        .submit-button.button-ready {
+            background: #28a745;
+            color: #fff;
+            border-color: #28a745;
+            box-shadow: 0 0 20px rgba(40, 167, 69, 0.5);
+        }
+        
+        body.dark-mode .submit-button.button-ready {
+            background: #28a745;
+            color: #fff;
+            border-color: #28a745;
+            box-shadow: 0 0 20px rgba(40, 167, 69, 0.7);
+        }
+        
+        .submit-button.button-ready:hover {
+            background: #218838;
+            border-color: #218838;
+            transform: scale(1.02);
+        }
     </style>
 </head>
 <body>
@@ -353,15 +392,16 @@
     <div class="toolbar-spacer"></div>
     
     <h1>CAsMan - Part Scanner</h1>
+    <h2 id="workflow-title" class="workflow-title hidden" style="margin-top:5px; font-size:24px;"></h2>
     <p>Web-based interface for connecting and disconnecting parts</p>
     
     <!-- Step 1: Choose Action -->
     <div id="step-action" class="section">
         <h2>Step 1: Choose Action</h2>
         <div class="button-grid">
-            <button onclick="selectAction('connect')">CONNECT Parts</button>
-            <button onclick="selectAction('disconnect')">DISCONNECT Parts</button>
-            <button onclick="selectAction('remove')">REMOVE Part</button>
+            <button onclick="selectAction('connect')">Connect Parts</button>
+            <button onclick="selectAction('disconnect')">Disconnect Parts</button>
+            <button onclick="selectAction('remove')">Remove Part</button>
             <button onclick="selectAction('history')">Part History</button>
         </div>
     </div>
@@ -425,7 +465,7 @@
         <div id="manual-number" class="input-group hidden">
             <label for="part-number-input">Enter Part Number:</label>
             <input type="number" id="part-number-input" placeholder="Enter number..." min="1" inputmode="numeric" pattern="[0-9]*">
-            <button onclick="submitManualPart()" style="margin-top: 10px; width: 100%; padding: 15px;">Submit Part</button>
+            <button id="submit-manual-btn" onclick="submitManualPart()" class="submit-button" style="margin-top: 10px; width: 100%;">Submit Part</button>
         </div>
         
         <div id="manual-status"></div>
@@ -518,7 +558,6 @@
         <div id="result-message" class="status-message"></div>
         <div class="nav-buttons">
             <button onclick="continueScanning()">▶️ Continue <span id="continue-action-text"></span></button>
-            <button onclick="resetScanner()">Start Over</button>
         </div>
     </div>
 
@@ -573,7 +612,7 @@
         <div id="remove-number" class="input-group hidden">
             <label for="remove-part-number-input">Enter Part Number:</label>
             <input type="number" id="remove-part-number-input" placeholder="Enter number..." min="1" inputmode="numeric" pattern="[0-9]*">
-            <button onclick="submitRemovePart()" style="margin-top: 10px; width: 100%; padding: 15px;">Remove Part</button>
+            <button id="submit-remove-btn" onclick="submitRemovePart()" class="submit-button" style="margin-top: 10px; width: 100%;">Remove Part</button>
         </div>
         
         <div id="remove-manual-status"></div>
@@ -725,6 +764,19 @@
         
         function selectAction(action) {
             state.action = action;
+
+            // Set workflow title
+            const workflowTitleEl = document.getElementById('workflow-title');
+            if (workflowTitleEl) {
+                const titleMap = {
+                    connect: 'Connect Parts',
+                    disconnect: 'Disconnect Parts',
+                    remove: 'Remove Part',
+                    history: 'Part History'
+                };
+                workflowTitleEl.textContent = titleMap[action] || '';
+                workflowTitleEl.classList.remove('hidden');
+            }
             
             // History action goes directly to history view
             if (action === 'history') {
@@ -786,6 +838,13 @@
             const historyResults = document.getElementById('history-results');
             if (historyInput) historyInput.value = '';
             if (historyResults) historyResults.innerHTML = '';
+
+            // Hide workflow title
+            const workflowTitleEl = document.getElementById('workflow-title');
+            if (workflowTitleEl) {
+                workflowTitleEl.textContent = '';
+                workflowTitleEl.classList.add('hidden');
+            }
             
             goToStep('action');
         }
@@ -1070,7 +1129,20 @@
             event.target.classList.add('button-selected');
             
             document.getElementById('manual-number').classList.remove('hidden');
-            document.getElementById('part-number-input').focus();
+            const input = document.getElementById('part-number-input');
+            input.focus();
+            
+            // Add input event listener to highlight submit button when text is entered
+            input.addEventListener('input', function() {
+                const submitBtn = document.getElementById('submit-manual-btn');
+                if (submitBtn) {
+                    if (this.value.trim()) {
+                        submitBtn.classList.add('button-ready');
+                    } else {
+                        submitBtn.classList.remove('button-ready');
+                    }
+                }
+            });
         }
         
         async function submitManualPart() {
@@ -2000,6 +2072,18 @@
             
             // Set appropriate placeholder
             const input = document.getElementById('remove-part-number-input');
+            
+            // Add input event listener to highlight submit button when text is entered
+            input.addEventListener('input', function() {
+                const submitBtn = document.getElementById('submit-remove-btn');
+                if (submitBtn) {
+                    if (this.value.trim()) {
+                        submitBtn.classList.add('button-ready');
+                    } else {
+                        submitBtn.classList.remove('button-ready');
+                    }
+                }
+            });
             if (state.removePartType === 'ANTENNA') {
                 input.placeholder = `e.g., 00001 for ANT00001P${pol}`;
             } else if (state.removePartType === 'LNA') {

@@ -546,7 +546,7 @@ casman web --port 8080               # Custom port
 
 ## Testing & Coverage
 
-![Tests](https://img.shields.io/badge/tests-432%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-0.0%25-green)
+![Tests](https://img.shields.io/badge/tests-432%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-85.0%25-green)
 
 
 | Module | Coverage | Lines Covered |
@@ -570,7 +570,7 @@ casman web --port 8080               # Custom port
 | **Parts Validation** | 96.0% | 51/53 |
 | **Visualization __Init__** | 95.0% | 18/19 |
 | **Web App** | 95.0% | 37/39 |
-| **Web Visualize** | 94.0% | 110/117 |
+| **Web Visualize** | 94.0% | 117/124 |
 | **Parts Interactive** | 92.0% | 111/121 |
 | **Parts Generation** | 91.0% | 59/65 |
 | **Barcode Generation** | 90.0% | 84/93 |
@@ -589,7 +589,7 @@ casman web --port 8080               # Custom port
 | **Cli Parts_Commands** | 66.0% | 51/77 |
 | **Database Connection** | 64.0% | 14/22 |
 | **Cli Assembly_Commands** | 61.0% | 99/163 |
-| **Overall** | **85.0%** | **2012/2380** |
+| **Overall** | **85.0%** | **2019/2387** |
 
 ### Running Tests
 
@@ -611,3 +611,6 @@ pytest tests/test_cli.py -v
 
 ```
 
+## Disclosure
+
+I have used vscode copilot to populate the docs and have it write tests. I have checked some of it. It might not be the best, 
