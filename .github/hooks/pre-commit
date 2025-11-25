@@ -4,6 +4,12 @@
 
 echo "🔍 Checking for changes requiring documentation updates..."
 
+# Always sync root README into docs before any generation
+echo "📄 Syncing docs/README.md from root README.md..."
+mkdir -p docs
+cp README.md docs/README.md
+git add docs/README.md
+
 # Check if any Python files in casman/ have changed
 if git diff --cached --name-only | grep -E "(casman/.*\.py|docs/generate_docs\.py)" > /dev/null; then
     echo "📚 Python source files changed, updating documentation..."
