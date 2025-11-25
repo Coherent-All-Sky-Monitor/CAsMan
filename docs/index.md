@@ -4,7 +4,7 @@ Welcome to the CAsMan (CASM Assembly Manager) documentation.
 
 ## Getting Started
 
-- [Overview and Quick Start](README.md) - Start here for an introduction to CAsMan
+- [Overview and Quick Start](main.md) - Start here for an introduction to CAsMan
 
 - [Development Guide](development.md) - Comprehensive guide for developers
 
