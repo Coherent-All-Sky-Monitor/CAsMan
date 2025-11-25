@@ -4,20 +4,23 @@ import sqlite3
 from unittest.mock import MagicMock, patch
 
 from casman.assembly import main
-from casman.assembly.chains import (build_connection_chains,
-                                    print_assembly_chains)
-from casman.assembly.connections import (record_assembly_connection,
-                                         record_assembly_disconnection)
+from casman.assembly.chains import build_connection_chains, print_assembly_chains
+from casman.assembly.connections import (
+    record_assembly_connection,
+    record_assembly_disconnection,
+)
 from casman.assembly.data import get_assembly_connections
-from casman.assembly.interactive import (VALID_NEXT_CONNECTIONS,
-                                         check_existing_connections,
-                                         check_target_connections,
-                                         scan_and_assemble_interactive,
-                                         scan_and_disassemble_interactive,
-                                         validate_chain_directionality,
-                                         validate_connection_rules,
-                                         validate_part_in_database,
-                                         validate_snap_part)
+from casman.assembly.interactive import (
+    VALID_NEXT_CONNECTIONS,
+    check_existing_connections,
+    check_target_connections,
+    scan_and_assemble_interactive,
+    scan_and_disassemble_interactive,
+    validate_chain_directionality,
+    validate_connection_rules,
+    validate_part_in_database,
+    validate_snap_part,
+)
 
 
 class TestAssemblyConnections:

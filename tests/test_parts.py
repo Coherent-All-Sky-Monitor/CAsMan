@@ -5,11 +5,20 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from casman.parts.part import Part, create_part
-from casman.parts.search import (find_part, get_all_parts, get_part_statistics,
-                                 get_recent_parts, search_by_prefix,
-                                 search_parts)
-from casman.parts.validation import (get_part_info, validate_part_number,
-                                     validate_part_type, validate_polarization)
+from casman.parts.search import (
+    find_part,
+    get_all_parts,
+    get_part_statistics,
+    get_recent_parts,
+    search_by_prefix,
+    search_parts,
+)
+from casman.parts.validation import (
+    get_part_info,
+    validate_part_number,
+    validate_part_type,
+    validate_polarization,
+)
 
 
 class TestPartsValidation:

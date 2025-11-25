@@ -14,10 +14,7 @@ from typing import Any, Dict, List, Optional, Set, Union
 import sys
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(levelname)s: %(message)s'
-)
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 # Add the project root to the path so we can import casman

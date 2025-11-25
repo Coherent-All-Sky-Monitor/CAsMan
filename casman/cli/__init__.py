@@ -14,13 +14,16 @@ from .assembly_commands import cmd_scan
 from .barcode_commands import cmd_barcode
 from .main import main
 from .parts_commands import cmd_parts
-from .utils import (show_commands_list, show_completion_help,
-                    show_help_with_completion, show_unknown_command_error,
-                    show_version)
+from .utils import (
+    show_commands_list,
+    show_completion_help,
+    show_help_with_completion,
+    show_unknown_command_error,
+    show_version,
+)
 from .visualization_commands import cmd_visualize
 
 # Import functions that tests still expect to be available
-
 
 
 __all__ = [

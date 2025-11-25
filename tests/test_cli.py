@@ -3,8 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 from casman.cli.main import main
-from casman.cli.utils import (show_commands_list, show_completion_help,
-                              show_version)
+from casman.cli.utils import show_commands_list, show_completion_help, show_version
 
 
 class TestCLIMain:

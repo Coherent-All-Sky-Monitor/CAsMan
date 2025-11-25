@@ -9,6 +9,7 @@ building connection chains, and interactive assembly scanning.
 import logging
 
 from .chains import build_connection_chains, print_assembly_chains
+
 # Import all functions from submodules
 from .connections import record_assembly_connection
 from .data import get_assembly_connections

@@ -18,7 +18,7 @@ def set_casman_db_env_vars(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> N
     # Use test_db directory for all test databases
     test_db_dir = os.path.join(os.path.dirname(__file__), "..", "test_db")
     os.makedirs(test_db_dir, exist_ok=True)
-    
+
     # Create unique temp subdirectory for this test
     temp_dir = str(tmp_path)
     parts_db = os.path.join(temp_dir, "parts.db")
@@ -35,7 +35,7 @@ def set_casman_db_env_vars(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> N
     monkeypatch.setenv("CASMAN_PARTS_DB", parts_db)
     monkeypatch.setenv("CASMAN_ASSEMBLED_DB", assembled_db)
     monkeypatch.setenv("CASMAN_DATABASE_DIR", temp_dir)
-    
+
     # Also redirect barcode directory to temp
     barcode_test_dir = os.path.join(temp_dir, "barcodes")
     os.makedirs(barcode_test_dir, exist_ok=True)

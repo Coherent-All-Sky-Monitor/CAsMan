@@ -6,8 +6,11 @@ import tempfile
 from unittest.mock import MagicMock, patch
 
 from casman.database.connection import get_database_path
-from casman.database.initialization import (init_all_databases,
-                                            init_assembled_db, init_parts_db)
+from casman.database.initialization import (
+    init_all_databases,
+    init_assembled_db,
+    init_parts_db,
+)
 from casman.database.operations import check_part_in_db, get_parts_by_criteria
 
 

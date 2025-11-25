@@ -10,10 +10,15 @@ from unittest.mock import MagicMock, mock_open, patch
 import pytest
 
 from casman.web import create_app
-from casman.web.visualize import (format_display_data, get_all_chains,
-                                  get_all_parts, get_duplicate_info,
-                                  get_last_update, load_viz_template,
-                                  visualize_bp)
+from casman.web.visualize import (
+    format_display_data,
+    get_all_chains,
+    get_all_parts,
+    get_duplicate_info,
+    get_last_update,
+    load_viz_template,
+    visualize_bp,
+)
 
 
 @pytest.fixture

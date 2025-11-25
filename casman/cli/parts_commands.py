@@ -8,8 +8,7 @@ import sys
 
 from casman.database.initialization import init_all_databases
 from casman.database.operations import get_parts_by_criteria
-from casman.parts.interactive import (add_parts_interactive,
-                                      display_parts_interactive)
+from casman.parts.interactive import add_parts_interactive, display_parts_interactive
 
 
 def cmd_parts() -> None:

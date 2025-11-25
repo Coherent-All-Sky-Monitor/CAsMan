@@ -48,7 +48,7 @@ def get_test_count():
             check=True,
             timeout=30,  # Add timeout to prevent hanging
         )
-        
+
         # Parse output lines - each line shows "file.py: N" where N is test count
         lines = result.stdout.strip().split("\n")
         total = 0
@@ -62,7 +62,7 @@ def get_test_count():
                         total += count
                     except ValueError:
                         continue
-        
+
         return str(total) if total > 0 else "0"
     except Exception:
         return "0"

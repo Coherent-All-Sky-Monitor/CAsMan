@@ -9,8 +9,7 @@ import os
 import sqlite3
 from typing import Dict, List, Optional, Tuple
 
-from flask import (Blueprint, render_template_string, request,
-                   send_from_directory)
+from flask import Blueprint, render_template_string, request, send_from_directory
 
 from casman.config import get_config
 
@@ -296,14 +295,15 @@ def visualize_index():
         selected_part = request.form.get("search_part") or request.form.get("part")
     else:
         selected_part = request.args.get("part")
-    
+
     # Load part types for the part builder
     from casman.parts.types import load_part_types
+
     part_types = load_part_types()
     # Exclude terminal type (highest key)
     terminal_key = max(part_types.keys())
     part_types_for_builder = {k: v for k, v in part_types.items() if k != terminal_key}
-    
+
     parts = get_all_parts()
     chains, connections = get_all_chains(selected_part)
     duplicates = get_duplicate_info()

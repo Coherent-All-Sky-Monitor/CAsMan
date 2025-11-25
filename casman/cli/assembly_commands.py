@@ -69,8 +69,7 @@ def cmd_scan() -> None:
         scan_and_assemble_interactive()
     elif args.action == "disconnection":
         # Launch interactive disconnection scanner
-        from casman.assembly.interactive import \
-            scan_and_disassemble_interactive
+        from casman.assembly.interactive import scan_and_disassemble_interactive
 
         scan_and_disassemble_interactive()
     elif args.action == "connect":
@@ -250,8 +249,7 @@ def cmd_scan() -> None:
                 sys.exit(0)
 
             # Disconnect all connections using the proper API
-            from casman.assembly.connections import \
-                record_assembly_disconnection
+            from casman.assembly.connections import record_assembly_disconnection
 
             disconnect_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             disconnected = 0

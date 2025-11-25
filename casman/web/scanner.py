@@ -12,8 +12,10 @@ from typing import Dict, List, Optional, Tuple
 
 from flask import Blueprint, jsonify, render_template, request
 
-from casman.assembly.connections import (record_assembly_connection,
-                                         record_assembly_disconnection)
+from casman.assembly.connections import (
+    record_assembly_connection,
+    record_assembly_disconnection,
+)
 from casman.database.connection import get_database_path
 from casman.parts.types import load_part_types
 

@@ -14,9 +14,12 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from casman.visualization import main as package_main
-from casman.visualization.core import (_calculate_chain_length,
-                                       format_ascii_chains, get_chain_summary,
-                                       get_duplicate_connections)
+from casman.visualization.core import (
+    _calculate_chain_length,
+    format_ascii_chains,
+    get_chain_summary,
+    get_duplicate_connections,
+)
 from casman.visualization.core import main as core_main
 
 

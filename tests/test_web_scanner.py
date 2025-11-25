@@ -11,10 +11,15 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from casman.web import create_app
-from casman.web.scanner import (ALL_PART_TYPES, format_snap_part,
-                                get_existing_connections, get_part_details,
-                                scanner_bp, validate_connection_sequence,
-                                validate_snap_part)
+from casman.web.scanner import (
+    ALL_PART_TYPES,
+    format_snap_part,
+    get_existing_connections,
+    get_part_details,
+    scanner_bp,
+    validate_connection_sequence,
+    validate_snap_part,
+)
 
 
 @pytest.fixture
