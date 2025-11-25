@@ -29,6 +29,27 @@ graph TD
 
 ```
 
+<pre class="mermaid">
+
+graph TD
+    A["ANTENNA (ANT)"]
+    B["LNA (LNA)"]
+    C["COAXSHORT (CXS)"]
+    D["COAXLONG (CXL)"]
+    E["BACBOARD (BAC)"]
+    F["SNAP (SNAP)"]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    
+    style A fill:#e1f5fe
+    style F fill:#f3e5f5
+
+</pre>
+
 ### Connection Rules
 
 - **🔒 Sequence Enforcement**: Parts must connect in order: `ANT → LNA → COAXSHORT → COAXLONG → BACBOARD → SNAP`
