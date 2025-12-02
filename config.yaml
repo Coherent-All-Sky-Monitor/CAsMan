@@ -65,6 +65,16 @@ web_app:
   # Set enable_scanner=false if you only want the visualization interface
   # Set enable_visualization=false if you only want the scanner interface
 
+# Antenna grid / array layout configuration
+grid:
+  core:
+    array_id: "C"          # Leading letter for core array positions
+    north_rows: 21          # Number of rows north of center (N001..N021)
+    south_rows: 21          # Number of rows south of center (S001..S021)
+    east_columns: 6         # Number of east columns (E00..E05)
+    allow_expansion: true   # Future expansion: larger offsets (N/C/S000-999) and east columns (E00-99)
+
+
 # Logging configuration
 logging:
   level: INFO

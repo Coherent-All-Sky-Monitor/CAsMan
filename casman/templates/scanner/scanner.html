@@ -403,6 +403,7 @@
             <button onclick="selectAction('disconnect')">Disconnect Parts</button>
             <button onclick="selectAction('remove')">Remove Part</button>
             <button onclick="selectAction('history')">Part History</button>
+            <button onclick="selectAction('assign-position')">Assign Antenna Position</button>
         </div>
     </div>
     
@@ -700,6 +701,104 @@
         </div>
     </div>
 
+    <!-- Assign Antenna Position Workflow -->
+    
+    <!-- Step 2ap: Position Assignment - Method Selection -->
+    <div id="step-assign-position-method" class="section hidden">
+        <h2>Step 2: Choose Input Method</h2>
+        <p class="status-info status-message">Select how you want to enter the antenna number</p>
+        <div class="button-grid">
+            <button onclick="selectPositionMethod('barcode')">Barcode Reader</button>
+            <button onclick="selectPositionMethod('manual')">⌨️ Manual Entry</button>
+        </div>
+        <div class="nav-buttons">
+            <button onclick="goToStep('action')">← Back</button>
+        </div>
+    </div>
+    
+    <!-- Step 3ap: Position Assignment - Barcode Input -->
+    <div id="step-assign-position-barcode" class="section hidden">
+        <h2>Scan Antenna Barcode</h2>
+        <p class="status-info status-message">Scan the antenna barcode to assign a grid position</p>
+        <div class="input-group">
+            <label for="position-barcode-input">Scan or Type Antenna Number:</label>
+            <input type="text" id="position-barcode-input" placeholder="Scan barcode..." autofocus>
+        </div>
+        <div id="position-barcode-status"></div>
+        <div class="nav-buttons">
+            <button onclick="goToStep('assign-position-method')">← Back</button>
+            <button onclick="switchPositionToManual()">⌨️ Manual Entry</button>
+            <button onclick="resetScanner()">Reset</button>
+        </div>
+    </div>
+    
+    <!-- Step 3ap: Position Assignment - Manual Entry -->
+    <div id="step-assign-position-manual" class="section hidden">
+        <h2>Enter Antenna Number</h2>
+        <p class="status-info status-message">Enter the antenna number (e.g., enter "1" for ANT00001, "32" for ANT00032)</p>
+        <div class="input-group">
+            <label for="position-antenna-input">Antenna Number (1-99999):</label>
+            <input type="number" id="position-antenna-input" placeholder="e.g., 1, 32, 100..." min="1" max="99999" inputmode="numeric" pattern="[0-9]*">
+        </div>
+        <div id="position-manual-status"></div>
+        
+        <button id="position-manual-submit-btn" onclick="submitManualAntenna()" class="submit-button" style="margin-top: 20px; width: 100%;">Submit</button>
+        
+        <div class="nav-buttons">
+            <button onclick="goToStep('assign-position-method')">← Back</button>
+            <button onclick="switchPositionToBarcode()">Scan Barcode</button>
+            <button onclick="resetScanner()">Reset</button>
+        </div>
+    </div>
+    
+    <!-- Step 4ap: Position Assignment - Grid Position Selection -->
+    <div id="step-assign-position-grid" class="section hidden">
+        <h2>Select Grid Position</h2>
+        <div id="position-antenna-display" class="part-display"></div>
+        
+        <div class="input-group">
+            <label for="position-east-input">East Column (0-5):</label>
+            <input type="number" id="position-east-input" placeholder="e.g., 0, 1, 2..." min="0" max="5" inputmode="numeric" pattern="[0-9]*">
+        </div>
+        
+        <div class="input-group">
+            <label>Direction:</label>
+            <div class="button-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <button onclick="selectDirection('N')" id="dir-N">North</button>
+                <button onclick="selectDirection('C')" id="dir-C">Center</button>
+                <button onclick="selectDirection('S')" id="dir-S">South</button>
+            </div>
+        </div>
+        
+        <div id="position-offset-group" class="input-group hidden">
+            <label for="position-offset-input">Row Number (1-21):</label>
+            <input type="number" id="position-offset-input" placeholder="e.g., 1, 12, 21..." min="1" max="21" inputmode="numeric" pattern="[0-9]*">
+        </div>
+        
+        <div id="position-preview" class="status-info status-message" style="margin: 20px 0; font-size: 20px; font-weight: bold; text-align: center;">
+            Grid Position: <span id="grid-code-preview">---</span>
+        </div>
+        
+        <div id="position-status-check"></div>
+        
+        <button id="assign-position-btn" onclick="submitPositionAssignment()" class="submit-button" style="margin-top: 20px; width: 100%;" disabled>Assign Position</button>
+        
+        <div class="nav-buttons">
+            <button onclick="goBackFromGrid()">← Back</button>
+            <button onclick="resetScanner()">Reset</button>
+        </div>
+    </div>
+    
+    <!-- Step 5ap: Position Assignment - Result -->
+    <div id="step-assign-position-result" class="section hidden">
+        <h2>Position Assignment Result</h2>
+        <div id="position-assignment-result" class="status-message"></div>
+        <div class="nav-buttons">
+            <button onclick="resetScanner()">← Back to Menu</button>
+            <button onclick="selectAction('assign-position')">Assign Another Position</button>
+        </div>
+    </div>
+
     <script>
         // Theme management
         function toggleTheme() {
@@ -772,7 +871,8 @@
                     connect: 'Connect Parts',
                     disconnect: 'Disconnect Parts',
                     remove: 'Remove Part',
-                    history: 'Part History'
+                    history: 'Part History',
+                    'assign-position': 'Assign Antenna Position'
                 };
                 workflowTitleEl.textContent = titleMap[action] || '';
                 workflowTitleEl.classList.remove('hidden');
@@ -791,6 +891,12 @@
             // Remove action goes to method selection
             if (action === 'remove') {
                 goToStep('remove-method');
+                return;
+            }
+            
+            // Assign position action goes to method selection
+            if (action === 'assign-position') {
+                goToStep('assign-position-method');
                 return;
             }
             
@@ -2496,6 +2602,406 @@
                 }
             } catch (error) {
                 resultDiv.innerHTML = `<div class="status-error status-message">Error: ${error.message}</div>`;
+            }
+        }
+        
+        // ===== POSITION ASSIGNMENT FUNCTIONS =====
+        
+        // Grid configuration (loaded from server)
+        let gridConfig = null;
+        
+        // Position assignment state
+        let positionState = {
+            antenna: null,
+            direction: null,
+            offset: null,
+            eastCol: null,
+            gridCode: null
+        };
+        
+        // Load grid configuration
+        async function loadGridConfig() {
+            if (gridConfig) return gridConfig;
+            
+            try {
+                const response = await fetch('/scanner/api/grid-config');
+                const result = await response.json();
+                if (result.success) {
+                    gridConfig = result;
+                    return gridConfig;
+                }
+            } catch (error) {
+                console.error('Error loading grid config:', error);
+            }
+            return null;
+        }
+        
+        function selectPositionMethod(method) {
+            if (method === 'barcode') {
+                setupPositionBarcodeInput();
+                goToStep('assign-position-barcode');
+            } else if (method === 'manual') {
+                setupPositionManualInput();
+                goToStep('assign-position-manual');
+            }
+        }
+        
+        function setupPositionBarcodeInput() {
+            const input = document.getElementById('position-barcode-input');
+            const statusDiv = document.getElementById('position-barcode-status');
+            
+            input.value = '';
+            statusDiv.innerHTML = '';
+            
+            // Store handler reference to avoid duplicate listeners
+            if (input.positionBarcodeHandler) {
+                input.removeEventListener('keypress', input.positionBarcodeHandler);
+            }
+            
+            input.positionBarcodeHandler = async function(e) {
+                if (e.key === 'Enter') {
+                    const value = input.value.trim().toUpperCase();
+                    if (value) {
+                        await validateAntennaAndProceed(value, statusDiv);
+                    }
+                }
+            };
+            
+            input.addEventListener('keypress', input.positionBarcodeHandler);
+            
+            // Focus the input
+            setTimeout(() => input.focus(), 100);
+        }
+        
+        function setupPositionManualInput() {
+            const input = document.getElementById('position-antenna-input');
+            const statusDiv = document.getElementById('position-manual-status');
+            
+            input.value = '';
+            statusDiv.innerHTML = '';
+            
+            // Store handler reference to avoid duplicate listeners
+            if (input.positionManualHandler) {
+                input.removeEventListener('keypress', input.positionManualHandler);
+            }
+            
+            input.positionManualHandler = async function(e) {
+                if (e.key === 'Enter') {
+                    const value = input.value.trim();
+                    if (value && parseInt(value) > 0) {
+                        const antennaNum = 'ANT' + value.padStart(5, '0');
+                        await validateAntennaAndProceed(antennaNum, statusDiv);
+                    } else {
+                        statusDiv.innerHTML = '<div class="status-error status-message">❌ Please enter a valid number</div>';
+                    }
+                }
+            };
+            
+            input.addEventListener('keypress', input.positionManualHandler);
+            
+            // Focus the input
+            setTimeout(() => input.focus(), 100);
+        }
+        
+        function submitManualAntenna() {
+            const input = document.getElementById('position-antenna-input');
+            const statusDiv = document.getElementById('position-manual-status');
+            const value = input.value.trim();
+            
+            if (value && parseInt(value) > 0) {
+                const antennaNum = 'ANT' + value.padStart(5, '0');
+                validateAntennaAndProceed(antennaNum, statusDiv);
+            } else {
+                statusDiv.innerHTML = '<div class="status-error status-message">❌ Please enter a valid number</div>';
+            }
+        }
+        
+        async function validateAntennaAndProceed(antennaNumber, statusDiv) {
+            statusDiv.innerHTML = '<div class="status-info status-message">⏳ Validating antenna...</div>';
+            
+            try {
+                // Strip P1/P2 if present
+                const cleanAntenna = antennaNumber.replace(/P[12]$/i, '');
+                
+                // Check if either P1 or P2 exists in database
+                const p1Response = await fetch('/scanner/api/validate-part', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({part_number: cleanAntenna + 'P1'})
+                });
+                
+                const p1Result = await p1Response.json();
+                
+                if (p1Result.success && p1Result.part_type === 'ANTENNA') {
+                    positionState.antenna = cleanAntenna;
+                    
+                    // Check if antenna already has a position
+                    const posResponse = await fetch('/scanner/api/get-antenna-position', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({antenna_number: cleanAntenna})
+                    });
+                    
+                    const posResult = await posResponse.json();
+                    
+                    if (posResult.success && posResult.position) {
+                        statusDiv.innerHTML = `<div class="status-info status-message">⚠️ Antenna already at position: ${posResult.position.grid_code}</div>`;
+                        setTimeout(() => proceedToGridSelection(posResult.position.grid_code), 1500);
+                    } else {
+                        statusDiv.innerHTML = '<div class="status-success status-message">✓ Valid antenna</div>';
+                        setTimeout(() => proceedToGridSelection(), 800);
+                    }
+                } else {
+                    // Try P2 if P1 doesn't exist
+                    const p2Response = await fetch('/scanner/api/validate-part', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({part_number: cleanAntenna + 'P2'})
+                    });
+                    
+                    const p2Result = await p2Response.json();
+                    
+                    if (p2Result.success && p2Result.part_type === 'ANTENNA') {
+                        positionState.antenna = cleanAntenna;
+                        
+                        // Check if antenna already has a position
+                        const posResponse = await fetch('/scanner/api/get-antenna-position', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({antenna_number: cleanAntenna})
+                        });
+                        
+                        const posResult = await posResponse.json();
+                        
+                        if (posResult.success && posResult.position) {
+                            statusDiv.innerHTML = `<div class="status-info status-message">⚠️ Antenna already at position: ${posResult.position.grid_code}</div>`;
+                            setTimeout(() => proceedToGridSelection(posResult.position.grid_code), 1500);
+                        } else {
+                            statusDiv.innerHTML = '<div class="status-success status-message">✓ Valid antenna</div>';
+                            setTimeout(() => proceedToGridSelection(), 800);
+                        }
+                    } else {
+                        statusDiv.innerHTML = '<div class="status-error status-message">❌ Antenna not found in database</div>';
+                    }
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status-error status-message">Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function proceedToGridSelection(existingGridCode = null) {
+            await loadGridConfig();
+            
+            const displayDiv = document.getElementById('position-antenna-display');
+            displayDiv.innerHTML = `
+                <h3>Antenna: ${positionState.antenna}</h3>
+                ${existingGridCode ? `<p style="color: #ff6600;">Current position: ${existingGridCode}</p>` : ''}
+            `;
+            
+            // Reset position state
+            positionState.direction = null;
+            positionState.offset = null;
+            positionState.eastCol = null;
+            positionState.gridCode = null;
+            
+            // Clear selections
+            document.querySelectorAll('#step-assign-position-grid .button-selected').forEach(btn => {
+                btn.classList.remove('button-selected');
+            });
+            document.getElementById('position-offset-input').value = '';
+            document.getElementById('position-east-input').value = '';
+            document.getElementById('position-offset-group').classList.add('hidden');
+            document.getElementById('grid-code-preview').textContent = '---';
+            document.getElementById('position-status-check').innerHTML = '';
+            document.getElementById('assign-position-btn').disabled = true;
+            
+            goToStep('assign-position-grid');
+        }
+        
+        function selectDirection(direction) {
+            positionState.direction = direction;
+            
+            // Update button selection
+            ['C', 'N', 'S'].forEach(dir => {
+                const btn = document.getElementById('dir-' + dir);
+                if (dir === direction) {
+                    btn.classList.add('button-selected');
+                } else {
+                    btn.classList.remove('button-selected');
+                }
+            });
+            
+            // Show/hide offset input
+            const offsetGroup = document.getElementById('position-offset-group');
+            const offsetInput = document.getElementById('position-offset-input');
+            
+            if (direction === 'C') {
+                offsetGroup.classList.add('hidden');
+                offsetInput.value = '';
+                positionState.offset = 0;
+            } else {
+                offsetGroup.classList.remove('hidden');
+                offsetInput.value = '';
+                positionState.offset = null;
+            }
+            
+            updateGridCodePreview();
+        }
+        
+        // Setup event listeners for offset and east column
+        document.addEventListener('DOMContentLoaded', function() {
+            const offsetInput = document.getElementById('position-offset-input');
+            const eastInput = document.getElementById('position-east-input');
+            
+            if (offsetInput) {
+                offsetInput.addEventListener('input', function() {
+                    const value = parseInt(this.value);
+                    if (value >= 1 && value <= 21) {
+                        positionState.offset = value;
+                    } else {
+                        positionState.offset = null;
+                    }
+                    updateGridCodePreview();
+                });
+            }
+            
+            if (eastInput) {
+                eastInput.addEventListener('input', function() {
+                    const value = parseInt(this.value);
+                    if (value >= 0 && value <= 5) {
+                        positionState.eastCol = value;
+                    } else {
+                        positionState.eastCol = null;
+                    }
+                    updateGridCodePreview();
+                });
+            }
+        });
+        
+        async function updateGridCodePreview() {
+            const previewSpan = document.getElementById('grid-code-preview');
+            const statusDiv = document.getElementById('position-status-check');
+            const assignBtn = document.getElementById('assign-position-btn');
+            
+            // Check if all required fields are filled
+            if (!positionState.direction || positionState.eastCol === null) {
+                previewSpan.textContent = '---';
+                statusDiv.innerHTML = '';
+                assignBtn.disabled = true;
+                return;
+            }
+            
+            // Check offset for N/S
+            if (positionState.direction !== 'C' && !positionState.offset) {
+                previewSpan.textContent = '---';
+                statusDiv.innerHTML = '';
+                assignBtn.disabled = true;
+                return;
+            }
+            
+            // Build grid code
+            const arrayId = gridConfig ? gridConfig.array_id : 'C';
+            const direction = positionState.direction;
+            const offset = positionState.direction === 'C' ? '000' : String(positionState.offset).padStart(3, '0');
+            const eastCol = String(positionState.eastCol).padStart(2, '0');
+            
+            const gridCode = `${arrayId}${direction}${offset}E${eastCol}`;
+            positionState.gridCode = gridCode;
+            previewSpan.textContent = gridCode;
+            
+            // Check if position is occupied
+            statusDiv.innerHTML = '<div class="status-info status-message">⏳ Checking position...</div>';
+            
+            try {
+                const response = await fetch('/scanner/api/check-position', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({grid_code: gridCode})
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (result.occupied) {
+                        statusDiv.innerHTML = `<div class="status-error status-message">⚠️ Position occupied by ${result.antenna_number}</div>`;
+                        assignBtn.disabled = false; // Allow overwrite
+                        assignBtn.textContent = 'Overwrite Position';
+                    } else {
+                        statusDiv.innerHTML = '<div class="status-success status-message">✓ Position available</div>';
+                        assignBtn.disabled = false;
+                        assignBtn.textContent = 'Assign Position';
+                    }
+                } else {
+                    statusDiv.innerHTML = `<div class="status-error status-message">❌ ${result.error}</div>`;
+                    assignBtn.disabled = true;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status-error status-message">Error: ${error.message}</div>`;
+                assignBtn.disabled = true;
+            }
+        }
+        
+        async function submitPositionAssignment() {
+            const resultDiv = document.getElementById('position-assignment-result');
+            resultDiv.innerHTML = '<div class="status-info status-message">⏳ Assigning position...</div>';
+            
+            goToStep('assign-position-result');
+            
+            try {
+                const response = await fetch('/scanner/api/assign-position', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        antenna_number: positionState.antenna,
+                        grid_code: positionState.gridCode,
+                        allow_overwrite: true
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="status-success status-message">
+                            <h3>✓ Position Assigned Successfully</h3>
+                            <p><strong>Antenna:</strong> ${positionState.antenna}</p>
+                            <p><strong>Grid Position:</strong> ${positionState.gridCode}</p>
+                            <p style="margin-top: 15px;">
+                                <a href="/visualize/grid?antenna=${positionState.antenna}" style="color: inherit; text-decoration: underline;">
+                                    View in Visualizer →
+                                </a>
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="status-error status-message">❌ ${result.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="status-error status-message">Error: ${error.message}</div>`;
+            }
+        }
+        
+        function switchPositionToManual() {
+            setupPositionManualInput();
+            goToStep('assign-position-manual');
+        }
+        
+        function switchPositionToBarcode() {
+            setupPositionBarcodeInput();
+            goToStep('assign-position-barcode');
+        }
+        
+        function goBackFromGrid() {
+            // Determine which input method we came from
+            const barcodeInput = document.getElementById('position-barcode-input');
+            const manualInput = document.getElementById('position-antenna-input');
+            
+            if (barcodeInput && barcodeInput.value) {
+                goToStep('assign-position-barcode');
+            } else if (manualInput && manualInput.value) {
+                goToStep('assign-position-manual');
+            } else {
+                goToStep('assign-position-method');
             }
         }
     </script>

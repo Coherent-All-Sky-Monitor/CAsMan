@@ -63,7 +63,22 @@ graph TD
 
 ## Installation
 
-### From Source with Virtual Environment (Recommended)
+### Quick Install Options
+
+**Minimal install (Antenna module only - one line):**
+```bash
+pip install "git+https://github.com/Coherent-All-Sky-Monitor/CAsMan.git#egg=casman[antenna]"
+```
+- Perfect for data analysis, baseline calculations, UV coverage
+- Only PyYAML dependency (~5MB vs ~50MB full install)
+- No web interface, just Python API
+
+**Full install (All features):**
+```bash
+pip install "git+https://github.com/Coherent-All-Sky-Monitor/CAsMan.git"
+```
+
+### From Source with Virtual Environment (Recommended for Development)
 
 ```bash
 
@@ -84,8 +99,8 @@ source .venv/bin/activate
 # Install in development mode
 pip install -e .
 
-# Or install normally
-pip install .
+# Or install antenna module only
+pip install -e ".[antenna]"
 
 ```
 
@@ -263,7 +278,9 @@ record_assembly_disconnection(
 A web server serving both scanner and visualization interfaces with flexible configuration.
 
 - Scanner interface for connecting/disconnecting parts
+- Antenna grid position assignment workflow
 - Visualization interface for viewing assembled chains
+- Interactive 43×6 antenna grid display with SNAP port tracing
   
 **Configuration (`config.yaml`):**
 ```yaml
@@ -276,6 +293,15 @@ web_app:
   production:
     port: 8000
     workers: 4
+
+# Antenna grid layout configuration (expandable format)
+grid:
+  core:
+    array_id: "C"           # Core array identifier
+    north_rows: 21          # Rows north of center (N001-N021)
+    south_rows: 21          # Rows south of center (S001-S021)
+    east_columns: 6         # East columns (E00-E05)
+    allow_expansion: true   # Allow grid codes beyond core bounds
 ```
 
 **Deployment:**
@@ -291,6 +317,50 @@ casman web --scanner-only
 
 # Visualization-only for monitoring
 casman web --visualize-only
+```
+
+### Antenna Grid Position Assignment
+
+CAsMan provides a complete system for assigning antennas to physical grid positions and tracing connections to SNAP boards.
+
+**Grid Format:** `[A-Z][N/C/S][000-999]E[00-99]`
+
+- **Array ID** (A-Z): Single letter identifying the array (C = core)
+- **Direction** (N/C/S): North, Center, or South of array center
+- **Offset** (000-999): Row offset (C must use 000, N/S must use 001-999)
+- **East Column** (00-99): Zero-based east column index
+
+**Examples:**
+- `CN002E03` - Core array, North row 2, East column 3
+- `CC000E01` - Core array, Center row, East column 1  
+- `CS021E05` - Core array, South row 21, East column 5
+
+**Scanner Workflow:**
+1. Select "Assign Antenna Position" action
+2. Choose input method (barcode scan or manual entry)
+3. Enter antenna number (with or without P1/P2 suffix)
+4. Select grid position using direction, offset, and column dropdowns
+5. System validates antenna exists and checks position availability
+6. Assign position with optional overwrite for corrections
+
+**Visualization:**
+- Visit `/visualize/grid` for interactive 43×6 grid display
+- Search by antenna number or grid code
+- View assigned positions with color highlighting
+- Display SNAP port connections for both P1 and P2 polarizations
+- Full analog chain tracing from antenna to SNAP board
+
+**Database Schema:**
+```sql
+CREATE TABLE antenna_positions (
+    antenna_number TEXT UNIQUE NOT NULL,  -- Base antenna (no P1/P2)
+    array_id TEXT NOT NULL,                -- 'C' for core
+    row_offset INTEGER NOT NULL,           -- -999 to +999 (signed)
+    east_col INTEGER NOT NULL,             -- 0-99
+    grid_code TEXT UNIQUE NOT NULL,        -- Canonical format
+    assigned_at TEXT NOT NULL,             -- ISO timestamp
+    notes TEXT
+);
 ```
 
 ### Version Management
@@ -564,22 +634,35 @@ casman web --port 8080               # Custom port
 
 ```
 
+### Manage grid position coordinates
+
+```sh
+
+# Load geographic coordinates from CSV
+casman database load-coordinates                    # Load from database/grid_positions.csv
+casman database load-coordinates --csv survey.csv   # Load from custom CSV file
+
+```
+
+CAsMan supports tracking latitude, longitude, and height for antenna grid positions. Coordinates are managed via CSV file for easy editing and version control. See [Grid Coordinates Documentation](docs/grid_coordinates.md) for details.
+
 ---
 
 ## Testing & Coverage
 
-![Tests](https://img.shields.io/badge/tests-432%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-85.0%25-green)
+![Tests](https://img.shields.io/badge/tests-568%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-80.0%25-green)
 
 
 | Module | Coverage | Lines Covered |
 |--------|----------|---------------|
 | **__Init__** | 100.0% | 2/2 |
+| **Antenna __Init__** | 100.0% | 4/4 |
 | **Assembly __Init__** | 100.0% | 40/40 |
 | **Assembly Connections** | 100.0% | 24/24 |
 | **Assembly Data** | 100.0% | 15/15 |
 | **Barcode __Init__** | 100.0% | 3/3 |
 | **Cli __Init__** | 100.0% | 11/11 |
-| **Database __Init__** | 100.0% | 4/4 |
+| **Database __Init__** | 100.0% | 5/5 |
 | **Database Operations** | 100.0% | 31/31 |
 | **Parts __Init__** | 100.0% | 10/10 |
 | **Parts Db** | 100.0% | 4/4 |
@@ -592,26 +675,30 @@ casman web --port 8080               # Custom port
 | **Parts Validation** | 96.0% | 51/53 |
 | **Visualization __Init__** | 95.0% | 18/19 |
 | **Web App** | 95.0% | 37/39 |
-| **Web Visualize** | 94.0% | 117/124 |
+| **Antenna Grid** | 93.0% | 94/101 |
 | **Parts Interactive** | 92.0% | 111/121 |
 | **Parts Generation** | 91.0% | 59/65 |
 | **Barcode Generation** | 90.0% | 84/93 |
+| **Database Antenna_Positions** | 90.0% | 145/161 |
+| **Database Initialization** | 89.0% | 40/45 |
 | **Cli Utils** | 88.0% | 28/32 |
-| **Database Initialization** | 88.0% | 38/43 |
 | **Barcode Printing** | 86.0% | 90/105 |
-| **Web Scanner** | 86.0% | 199/232 |
 | **Assembly Interactive** | 85.0% | 279/330 |
 | **Config __Init__** | 85.0% | 22/26 |
 | **Cli Web_Commands** | 80.0% | 44/55 |
 | **Web Server** | 76.0% | 41/54 |
 | **Cli Barcode_Commands** | 73.0% | 22/30 |
 | **Cli Main** | 73.0% | 57/78 |
+| **Antenna Array** | 71.0% | 101/143 |
+| **Cli Database_Commands** | 69.0% | 131/189 |
+| **Web Scanner** | 69.0% | 209/302 |
 | **Cli Visualization_Commands** | 68.0% | 23/34 |
-| **Cli Database_Commands** | 66.0% | 101/153 |
 | **Cli Parts_Commands** | 66.0% | 51/77 |
+| **Web Visualize** | 65.0% | 119/184 |
 | **Database Connection** | 64.0% | 14/22 |
 | **Cli Assembly_Commands** | 61.0% | 99/163 |
-| **Overall** | **85.0%** | **2019/2387** |
+| **Antenna Chain** | 17.0% | 7/42 |
+| **Overall** | **80.0%** | **2415/3007** |
 
 ### Running Tests
 
@@ -632,7 +719,3 @@ pytest tests/test_cli.py -v
 ./coverage_check.sh
 
 ```
-
-## Disclosure
-
-I have used vscode copilot to populate the docs and have it write tests. I have checked some of it. It might not be the best, 

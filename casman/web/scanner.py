@@ -17,6 +17,12 @@ from casman.assembly.connections import (
     record_assembly_disconnection,
 )
 from casman.database.connection import get_database_path
+from casman.database.antenna_positions import (
+    assign_antenna_position,
+    get_antenna_at_position,
+    get_antenna_position,
+)
+from casman.antenna.grid import load_core_layout, parse_grid_code
 from casman.parts.types import load_part_types
 
 logger = logging.getLogger(__name__)
@@ -648,4 +654,142 @@ def get_part_history():
 
     except sqlite3.Error as e:
         logger.error("Database error getting part history for %s: %s", part_number, e)
+        return jsonify({"success": False, "error": str(e)})
+
+
+# ============================================================================
+# ANTENNA GRID POSITION ASSIGNMENT
+# ============================================================================
+
+
+@scanner_bp.route("/api/grid-config", methods=["GET"])
+def get_grid_config():
+    """Get grid configuration for UI."""
+    try:
+        array_id, north_rows, south_rows, east_columns, allow_expansion = (
+            load_core_layout()
+        )
+        return jsonify(
+            {
+                "success": True,
+                "array_id": array_id,
+                "north_rows": north_rows,
+                "south_rows": south_rows,
+                "east_columns": east_columns,
+                "allow_expansion": allow_expansion,
+            }
+        )
+    except Exception as e:
+        logger.error("Error loading grid config: %s", e)
+        return jsonify({"success": False, "error": str(e)})
+
+
+@scanner_bp.route("/api/check-position", methods=["POST"])
+def check_position_status():
+    """Check if a grid position is occupied."""
+    try:
+        data = request.get_json()
+        grid_code = data.get("grid_code", "").strip().upper()
+
+        if not grid_code:
+            return jsonify({"success": False, "error": "Grid code required"})
+
+        # Validate grid code
+        try:
+            parse_grid_code(grid_code)
+        except ValueError as e:
+            return jsonify({"success": False, "error": f"Invalid grid code: {e}"})
+
+        # Check if position occupied
+        antenna_info = get_antenna_at_position(grid_code)
+
+        if antenna_info:
+            return jsonify(
+                {
+                    "success": True,
+                    "occupied": True,
+                    "antenna": antenna_info["antenna_number"],
+                    "grid_code": grid_code,
+                }
+            )
+        else:
+            return jsonify({"success": True, "occupied": False, "grid_code": grid_code})
+
+    except Exception as e:
+        logger.error("Error checking position status: %s", e)
+        return jsonify({"success": False, "error": str(e)})
+
+
+@scanner_bp.route("/api/assign-position", methods=["POST"])
+def api_assign_position():
+    """Assign an antenna to a grid position."""
+    try:
+        data = request.get_json()
+        antenna_number = data.get("antenna_number", "").strip().upper()
+        grid_code = data.get("grid_code", "").strip().upper()
+        notes = data.get("notes", "").strip() or None
+        allow_overwrite = data.get("allow_overwrite", False)
+
+        if not antenna_number:
+            return jsonify({"success": False, "error": "Antenna number required"})
+        if not grid_code:
+            return jsonify({"success": False, "error": "Grid code required"})
+
+        # Validate antenna exists in parts database
+        part_details = get_part_details(antenna_number)
+        if not part_details:
+            # Try without polarization
+            from casman.database.antenna_positions import strip_polarization
+
+            antenna_base = strip_polarization(antenna_number)
+            part_details = get_part_details(f"{antenna_base}P1")
+            if not part_details:
+                return jsonify(
+                    {
+                        "success": False,
+                        "error": f"Antenna {antenna_number} not found in database",
+                    }
+                )
+
+        # Assign position
+        result = assign_antenna_position(
+            antenna_number, grid_code, notes=notes, allow_overwrite=allow_overwrite
+        )
+
+        logger.info("Assigned %s to %s", result["antenna"], result["grid_code"])
+        return jsonify(result)
+
+    except ValueError as e:
+        logger.warning("Position assignment validation error: %s", e)
+        return jsonify({"success": False, "error": str(e)})
+    except Exception as e:
+        logger.error("Error assigning position: %s", e)
+        return jsonify({"success": False, "error": str(e)})
+
+
+@scanner_bp.route("/api/get-antenna-position", methods=["POST"])
+def api_get_antenna_position():
+    """Get grid position for an antenna."""
+    try:
+        data = request.get_json()
+        antenna_number = data.get("antenna_number", "").strip().upper()
+
+        if not antenna_number:
+            return jsonify({"success": False, "error": "Antenna number required"})
+
+        position_info = get_antenna_position(antenna_number)
+
+        if position_info:
+            return jsonify({"success": True, "found": True, **position_info})
+        else:
+            return jsonify(
+                {
+                    "success": True,
+                    "found": False,
+                    "message": f"{antenna_number} not assigned to any position",
+                }
+            )
+
+    except Exception as e:
+        logger.error("Error getting antenna position: %s", e)
         return jsonify({"success": False, "error": str(e)})

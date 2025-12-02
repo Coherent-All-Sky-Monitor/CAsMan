@@ -31,6 +31,10 @@ Provides web interface for scanning, connecting, and disconnecting parts.
 - `record_disconnection()` - Record a disconnection between two parts
 - `add_parts()` - Add new part numbers for a given part type
 - `get_part_history()` - Get complete connection/disconnection history for a part
+- `get_grid_config()` - Get grid configuration for UI
+- `check_position_status()` - Check if a grid position is occupied
+- `api_assign_position()` - Assign an antenna to a grid position
+- `api_get_antenna_position()` - Get grid position for an antenna
 
 ### server
 
@@ -62,6 +66,7 @@ Provides web interface for viewing assembly chain connections.
 - `format_display_data()` - Format part display data for visualization
 - `visualize_static()` - Serve static files for visualization (fonts, etc
 - `visualize_index()` - Render the visualization interface
+- `antenna_grid()` - Display antenna grid position visualization
 - `ts()` - No docstring available
 
 ### app
@@ -213,6 +218,46 @@ Get complete connection/disconnection history for a part.
 
 ---
 
+### get_grid_config
+
+*@scanner_bp.route('/api/grid-config', methods=['GET'])*
+
+**Signature:** `get_grid_config()`
+
+Get grid configuration for UI.
+
+---
+
+### check_position_status
+
+*@scanner_bp.route('/api/check-position', methods=['POST'])*
+
+**Signature:** `check_position_status()`
+
+Check if a grid position is occupied.
+
+---
+
+### api_assign_position
+
+*@scanner_bp.route('/api/assign-position', methods=['POST'])*
+
+**Signature:** `api_assign_position()`
+
+Assign an antenna to a grid position.
+
+---
+
+### api_get_antenna_position
+
+*@scanner_bp.route('/api/get-antenna-position', methods=['POST'])*
+
+**Signature:** `api_get_antenna_position()`
+
+Get grid position for an antenna.
+
+---
+
 ## Server Module Details
 
 Provides development and production server runners.
@@ -359,6 +404,16 @@ Serve static files for visualization (fonts, etc.).
 **Signature:** `visualize_index()`
 
 Render the visualization interface.
+
+---
+
+### antenna_grid
+
+*@visualize_bp.route('/grid')*
+
+**Signature:** `antenna_grid()`
+
+Display antenna grid position visualization.
 
 ---
 

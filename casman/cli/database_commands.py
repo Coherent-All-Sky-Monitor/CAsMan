@@ -33,8 +33,9 @@ def cmd_database() -> None:
         "Provides safe database clearing, formatted content display, and\n"
         "interactive scanning workflows with validation.\n\n"
         "Subcommands:\n"
-        "  clear   - Safely clear database contents with confirmations\n"
-        "  print   - Display formatted database tables and records\n\n"
+        "  clear            - Safely clear database contents with confirmations\n"
+        "  print            - Display formatted database tables and records\n"
+        "  load-coordinates - Load grid coordinates from CSV file\n\n"
         "Examples:\n"
         "  casman database clear --parts     # Clear only parts database\n"
         "  casman database clear --assembled # Clear only assembly database\n"
@@ -99,6 +100,32 @@ def cmd_database() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
+    # Load coordinates subcommand
+    coords_parser = subparsers.add_parser(
+        "load-coordinates",
+        help="Load grid coordinates from CSV file",
+        description="Load geographic coordinates from database/grid_positions.csv and update\n"
+        "the antenna_positions table with latitude, longitude, height, and coordinate\n"
+        "system information.\n\n"
+        "CSV Format:\n"
+        "  grid_code,latitude,longitude,height,coordinate_system,notes\n"
+        "  CN021E00,37.8719,-122.2585,10.5,WGS84,North row 21\n\n"
+        "Features:\n"
+        "- Updates existing antenna position records\n"
+        "- Skips empty coordinate values\n"
+        "- Reports update counts and errors\n"
+        "- Does not create new antenna assignments\n\n"
+        "Examples:\n"
+        "  casman database load-coordinates                    # Load default CSV\n"
+        "  casman database load-coordinates --csv survey.csv   # Load custom CSV",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    coords_parser.add_argument(
+        "--csv",
+        type=str,
+        help="Path to CSV file (default: database/grid_positions.csv)",
+    )
+
     argcomplete.autocomplete(parser)
 
     # Parse arguments with the cleaned argument list
@@ -124,6 +151,15 @@ def cmd_database() -> None:
             print_index = args_to_parse.index("print")
             print_args = args_to_parse[print_index + 1 :]  # Everything after "print"
         cmd_database_print(print_parser, print_args)
+    elif args.subcommand == "load-coordinates":
+        # Reconstruct arguments for the load-coordinates subcommand
+        coords_args = []
+        if "load-coordinates" in args_to_parse:
+            coords_index = args_to_parse.index("load-coordinates")
+            coords_args = args_to_parse[
+                coords_index + 1 :
+            ]  # Everything after "load-coordinates"
+        cmd_database_load_coordinates(coords_parser, coords_args)
     else:
         parser.print_help()
 
@@ -376,3 +412,53 @@ def cmd_database_print(parser: argparse.ArgumentParser, remaining_args: list) ->
     print("Assembly Database Contents:")
     print("=" * 50)
     print_db_schema(str(assembled_db_path))
+
+
+def cmd_database_load_coordinates(
+    parser: argparse.ArgumentParser, remaining_args: list
+) -> None:
+    """
+    Handle database load-coordinates subcommand.
+
+    Parameters
+    ----------
+    parser : argparse.ArgumentParser
+        The parser for the load-coordinates subcommand
+    remaining_args : list
+        Remaining command line arguments
+    """
+    args = parser.parse_args(remaining_args)
+
+    from ..database.antenna_positions import load_grid_coordinates_from_csv
+
+    print("Loading grid coordinates from CSV...")
+    print("=" * 50)
+
+    try:
+        result = load_grid_coordinates_from_csv(csv_path=args.csv)
+
+        print(f"\n✓ Updated: {result['updated']} position(s)")
+        print(f"  Skipped: {result['skipped']} position(s)")
+
+        if result["errors"]:
+            print("\n⚠ Errors encountered:")
+            for error in result["errors"]:
+                print(f"  - {error}")
+
+        if result["updated"] > 0:
+            print("\n✓ Coordinate data loaded successfully")
+        else:
+            print("\n⚠ No positions were updated")
+            print("  Make sure:")
+            print("  - CSV file has valid coordinate data")
+            print("  - Grid positions exist in antenna_positions table")
+            print("  - CSV grid_code values match database records")
+
+    except FileNotFoundError as e:
+        print(f"\n✗ Error: {e}")
+        print("  Default CSV path: database/grid_positions.csv")
+        print("  Use --csv to specify a different file")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n✗ Error loading coordinates: {e}")
+        sys.exit(1)

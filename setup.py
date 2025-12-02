@@ -45,6 +45,10 @@ setup(
             "flake8>=3.8",
             "mypy>=0.812",
         ],
+        "antenna": [
+            # Minimal dependencies for antenna module only
+            # No Flask, Pillow, or heavy dependencies
+        ],
     },
     entry_points={
         "console_scripts": [

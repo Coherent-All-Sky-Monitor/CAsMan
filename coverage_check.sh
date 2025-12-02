@@ -5,7 +5,6 @@
 #
 
 echo "🔍 Running coverage analysis..."
-echo "   (Running ~320 tests - this takes 30-60 seconds)"
 echo ""
 
 # Run tests with coverage

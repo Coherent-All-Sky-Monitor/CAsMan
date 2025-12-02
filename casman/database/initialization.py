@@ -10,6 +10,7 @@ import sqlite3
 from typing import Optional
 
 from .connection import get_database_path
+from .antenna_positions import init_antenna_positions_table
 
 
 def init_parts_db(db_dir: Optional[str] = None) -> None:
@@ -147,8 +148,8 @@ def init_all_databases(db_dir: Optional[str] = None) -> None:
     """
     Initialize all databases.
 
-    Calls both init_parts_db() and init_assembled_db() to set up
-    all required database tables for the CAsMan system.
+    Calls init_parts_db(), init_assembled_db(), and init_antenna_positions_table()
+    to set up all required database tables for the CAsMan system.
 
     Parameters
     ----------
@@ -161,3 +162,4 @@ def init_all_databases(db_dir: Optional[str] = None) -> None:
     """
     init_parts_db(db_dir)
     init_assembled_db(db_dir)
+    init_antenna_positions_table(db_dir)

@@ -321,3 +321,107 @@ def visualize_index():
         format_display_data=format_display_data,
         part_types=part_types_for_builder,
     )
+
+
+@visualize_bp.route("/grid")
+def antenna_grid():
+    """Display antenna grid position visualization."""
+    from casman.antenna.grid import load_core_layout
+    from casman.database.antenna_positions import get_all_antenna_positions
+    from casman.antenna.chain import get_snap_ports_for_antenna, format_snap_port
+
+    # Load grid configuration
+    array_id, north_rows, south_rows, east_columns, allow_expansion = load_core_layout()
+
+    # Get all antenna positions
+    positions = get_all_antenna_positions(array_id=array_id)
+
+    # Build grid data structure (43 rows × 6 columns)
+    # Row order: N21, N20, ..., N01, C00, S01, ..., S20, S21
+    grid_data = []
+
+    # North rows (reversed so N21 is at top)
+    for row_offset in range(north_rows, 0, -1):
+        row = {"label": f"N{row_offset:03d}", "cells": []}
+        for col in range(east_columns):
+            cell = {"row_offset": row_offset, "east_col": col, "antenna": None}
+            # Find antenna at this position
+            for pos in positions:
+                if pos["row_offset"] == row_offset and pos["east_col"] == col:
+                    cell["antenna"] = pos["antenna_number"]
+                    break
+            row["cells"].append(cell)
+        grid_data.append(row)
+
+    # Center row
+    row = {"label": "C000", "cells": []}
+    for col in range(east_columns):
+        cell = {"row_offset": 0, "east_col": col, "antenna": None}
+        for pos in positions:
+            if pos["row_offset"] == 0 and pos["east_col"] == col:
+                cell["antenna"] = pos["antenna_number"]
+                break
+        row["cells"].append(cell)
+    grid_data.append(row)
+
+    # South rows
+    for row_offset in range(-1, -(south_rows + 1), -1):
+        row = {"label": f"S{abs(row_offset):03d}", "cells": []}
+        for col in range(east_columns):
+            cell = {"row_offset": row_offset, "east_col": col, "antenna": None}
+            for pos in positions:
+                if pos["row_offset"] == row_offset and pos["east_col"] == col:
+                    cell["antenna"] = pos["antenna_number"]
+                    break
+            row["cells"].append(cell)
+        grid_data.append(row)
+
+    # Get search parameters
+    search_antenna = request.args.get("antenna", "").strip()
+    search_grid = request.args.get("grid", "").strip()
+
+    # Determine selected antenna and position
+    selected_antenna = None
+    selected_position = None
+    snap_info = None
+
+    if search_antenna:
+        # Search by antenna number
+        for pos in positions:
+            if pos["antenna_number"] == search_antenna:
+                selected_antenna = search_antenna
+                selected_position = pos
+                # Get SNAP ports
+                snap_info = get_snap_ports_for_antenna(search_antenna)
+                break
+    elif search_grid:
+        # Search by grid code
+        for pos in positions:
+            if pos["grid_code"] == search_grid:
+                selected_antenna = pos["antenna_number"]
+                selected_position = pos
+                # Get SNAP ports
+                snap_info = get_snap_ports_for_antenna(selected_antenna)
+                break
+
+    # Load grid template
+    template_path = os.path.join(
+        os.path.dirname(__file__), "..", "templates", "visualize", "grid.html"
+    )
+    with open(template_path, "r", encoding="utf-8") as f:
+        template = f.read()
+
+    return render_template_string(
+        template,
+        grid_data=grid_data,
+        array_id=array_id,
+        north_rows=north_rows,
+        south_rows=south_rows,
+        east_columns=east_columns,
+        selected_antenna=selected_antenna,
+        selected_position=selected_position,
+        snap_info=snap_info,
+        search_antenna=search_antenna,
+        search_grid=search_grid,
+        format_snap_port=format_snap_port,
+    )

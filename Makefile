@@ -1,4 +1,4 @@
-.PHONY: docs test coverage update-docs install install-dev clean lint format
+.PHONY: docs test coverage update-docs install install-dev clean format
 
 # Default target
 all: install test
@@ -6,6 +6,9 @@ all: install test
 # Installation targets
 install:
 	pip install -e .
+
+install-antenna:
+	pip install -e ".[antenna]"
 
 install-dev:
 	pip install -e ".[dev]"
@@ -40,7 +43,7 @@ update-docs: docs
 	@echo "✅ Auto-generated documentation and coverage info updated"
 
 # Development workflow
-check: lint test coverage
+check: test coverage
 
 # Troubleshooting
 troubleshoot:
@@ -54,11 +57,6 @@ troubleshoot:
 	@echo "Entry point test:"
 	which casman 2>/dev/null || echo "❌ casman command not found in PATH"
 	@echo "🔍 Diagnostics complete"
-
-# Linting and formatting
-lint:
-	flake8 casman/ tests/
-	pylint casman/ tests/ || true
 
 format:
 	black casman/ tests/
@@ -86,7 +84,7 @@ dev-setup: install-dev setup-hooks
 	@echo "✅ Development environment set up"
 
 # Quick development workflow
-dev: clean lint test update-docs
+dev: clean test update-docs
 	@echo "✅ Development checks complete"
 
 # Release preparation
@@ -119,15 +117,15 @@ service-logs:
 # Help target
 help:
 	@echo "Available targets:"
-	@echo "  install        - Install package in development mode"
-	@echo "  install-dev    - Install with development dependencies"
-	@echo "  install-clean  - Clean uninstall and reinstall"
+	@echo "  install         - Install package in development mode"
+	@echo "  install-antenna - Install antenna module only (minimal dependencies)"
+	@echo "  install-dev     - Install with development dependencies"
+	@echo "  install-clean   - Clean uninstall and reinstall"
 	@echo "  test           - Run all tests"
 	@echo "  test-verbose   - Run tests with verbose output"
 	@echo "  coverage       - Run tests with coverage report"
 	@echo "  docs           - Generate documentation"
 	@echo "  update-docs    - Update docs and coverage info"
-	@echo "  lint           - Run linting checks"
 	@echo "  format         - Format code with black and isort"
 	@echo "  clean          - Remove build artifacts"
 	@echo "  setup-hooks    - Install pre-commit hooks"

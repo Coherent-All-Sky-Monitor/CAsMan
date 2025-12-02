@@ -8,6 +8,15 @@ Welcome to the CAsMan (CASM Assembly Manager) documentation.
 
 - [Development Guide](development.md) - Comprehensive guide for developers
 
+## Core Documentation
+
+- [Database Schema](database_schema.md) - Complete database structure and table definitions
+
+- [Grid Coordinates](grid_coordinates.md) - Geographic coordinate management system
+
+- [Antenna Module](antenna_module.md) - Standalone antenna array analysis module
+
+- [Antenna Quick Start](antenna_quickstart.md) - Quick start guide for antenna module
 
 ## Auto-Generated API Documentation
 

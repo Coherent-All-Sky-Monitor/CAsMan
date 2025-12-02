@@ -1,0 +1,5 @@
+# Minimal requirements for casman.antenna module only
+# No web framework, visualization, or CLI dependencies
+
+# Only PyYAML for config loading (grid.py uses get_config)
+PyYAML>=5.4
