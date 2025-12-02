@@ -214,6 +214,7 @@ __marimo__/
 # Database files (except template/initial databases)
 database/parts.db
 database/assembled_casm.db
+*.db
 *.db-journal
 *.db-wal
 
