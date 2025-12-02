@@ -10,6 +10,11 @@ venv:
 		python3 -m venv .venv; \
 		echo "✅ Virtual environment created at .venv"; \
 		echo "To activate: source .venv/bin/activate"; \
+	elif [ ! -f .venv/bin/pip ]; then \
+		echo "Virtual environment exists but is incomplete, recreating..."; \
+		rm -rf .venv; \
+		python3 -m venv .venv; \
+		echo "✅ Virtual environment recreated at .venv"; \
 	else \
 		echo "✅ Virtual environment already exists at .venv"; \
 	fi
