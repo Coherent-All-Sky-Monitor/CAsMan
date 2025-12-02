@@ -5,18 +5,18 @@ all: install test
 
 # Installation targets
 install:
-	pip install -e .
+	python -m pip install -e .
 
 install-antenna:
-	pip install -e ".[antenna]"
+	python -m pip install -e ".[antenna]"
 
 install-dev:
-	pip install -e ".[dev]"
+	python -m pip install -e ".[dev]"
 
 # Clean installation (useful for new machines)
 install-clean: clean
-	pip uninstall -y casman || true
-	pip install -e .
+	python -m pip uninstall -y casman || true
+	python -m pip install -e .
 	@echo "✅ Clean installation complete"
 
 # Testing targets
@@ -64,14 +64,10 @@ format:
 
 # Cleanup
 clean:
-	find . -type f -name "*.pyc" -delete
-	find . -type d -name "__pycache__" -delete
-	find . -type d -name "*.egg-info" -exec rm -rf {} +
-	rm -rf build/
-	rm -rf dist/
-	rm -rf htmlcov/
-	rm -rf .coverage
-	rm -rf .pytest_cache/
+	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
+	rm -rf build/ dist/ htmlcov/ .coverage .pytest_cache/ 2>/dev/null || true
 
 # Git hooks setup
 setup-hooks:
