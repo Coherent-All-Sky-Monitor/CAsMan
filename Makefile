@@ -23,10 +23,12 @@ venv:
 install: venv
 	@if [ -z "$$VIRTUAL_ENV" ]; then \
 		echo "Installing in virtual environment..."; \
-		.venv/bin/pip install -e .; \
+		.venv/bin/pip install --upgrade pip; \
+		.venv/bin/pip install -e . && echo "✅ Installation complete"; \
 	else \
 		echo "Installing in active virtual environment..."; \
-		python3 -m pip install -e .; \
+		python3 -m pip install --upgrade pip; \
+		python3 -m pip install -e . && echo "✅ Installation complete"; \
 	fi
 
 install-antenna: venv
@@ -38,9 +40,11 @@ install-antenna: venv
 
 install-dev: venv
 	@if [ -z "$$VIRTUAL_ENV" ]; then \
-		.venv/bin/pip install -e ".[dev]"; \
+		.venv/bin/pip install --upgrade pip; \
+		.venv/bin/pip install -e ".[dev]" && echo "✅ Dev installation complete"; \
 	else \
-		python3 -m pip install -e ".[dev]"; \
+		python3 -m pip install --upgrade pip; \
+		python3 -m pip install -e ".[dev]" && echo "✅ Dev installation complete"; \
 	fi
 
 # Clean installation (useful for new machines)
