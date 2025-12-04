@@ -125,73 +125,7 @@ print(f"Max baseline: {max(distances):.2f}m")
 print(f"Avg baseline: {sum(distances)/len(distances):.2f}m")
 ```
 
-### Example 2: UV Coverage Analysis
 
-```python
-# Compute UV coordinates for 21cm HI line
-wavelength = 0.21  # meters
-
-for ant1_num, ant2_num, dist in array.compute_all_baselines():
-    ant1 = array.get_antenna(ant1_num)
-    ant2 = array.get_antenna(ant2_num)
-    
-    if ant1.has_coordinates() and ant2.has_coordinates():
-        # Simplified UV calculation (needs proper projection)
-        ew_baseline = (ant2.longitude - ant1.longitude) * 111000
-        ns_baseline = (ant2.latitude - ant1.latitude) * 111000
-        
-        u = ew_baseline / wavelength
-        v = ns_baseline / wavelength
-        
-        print(f"Baseline {ant1_num}-{ant2_num}: u={u:.1f}, v={v:.1f} λ")
-```
-
-### Example 3: Export to CSV
-
-```python
-import csv
-
-array = AntennaArray.from_database('database/parts.db')
-
-with open('antenna_positions.csv', 'w', newline='') as f:
-    writer = csv.writer(f)
-    writer.writerow(['antenna', 'grid_code', 'lat', 'lon', 'height'])
-    
-    for ant in array:
-        writer.writerow([
-            ant.antenna_number,
-            ant.grid_code,
-            ant.latitude or '',
-            ant.longitude or '',
-            ant.height or ''
-        ])
-
-print(f"Exported {len(array)} antennas")
-```
-
-### Example 4: Find Nearest Neighbors
-
-```python
-def find_nearest(array, target_num, n=5):
-    """Find N nearest antennas to target."""
-    target = array.get_antenna(target_num)
-    
-    neighbors = []
-    for ant in array:
-        if ant.antenna_number != target_num and ant.has_coordinates():
-            dist = array.compute_baseline(target, ant, use_coordinates=True)
-            neighbors.append((ant, dist))
-    
-    neighbors.sort(key=lambda x: x[1])
-    return neighbors[:n]
-
-# Example usage
-array = AntennaArray.from_database('database/parts.db')
-nearest = find_nearest(array, 'ANT00001', n=5)
-
-for ant, dist in nearest:
-    print(f"{ant.antenna_number}: {dist:.2f}m away")
-```
 
 ## API Reference
 
@@ -282,7 +216,7 @@ Used when `use_coordinates=False` or coordinates unavailable:
 d = √((Δrow × spacing)² + (Δcol × spacing)²)
 ```
 
-Where spacing = 14 meters (default HERA grid spacing)
+Where spacing = 0.4 (default CASM grid spacing)
 
 **Accuracy:** Assumes flat grid, no height differences
 
