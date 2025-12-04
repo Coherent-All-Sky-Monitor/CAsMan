@@ -2,7 +2,11 @@
 
 # CAsMan - CASM Assembly Manager
 
-A comprehensive toolkit for managing and visualizing CASM (Coherent All-Sky Monitor) assembly processes. CAsMan provides CLI tools for part management, barcode generation, assembly tracking with connection validation, and interactive visualization.
+A comprehensive toolkit for managing and visualizing CASM (Coherent All-Sky Monitor) assembly processes. CAsMan provides CLI tools for part management, barcode generation, assembly tracking with connection validation, and interactive visualization. 
+
+
+> I used this a practice playground for learning SQL, full stack web app development, OOP and best software development practices. It might be hacky and maybe even bloated but i have worked hard to make sure it is deliverable product.  
+
 
 ## Assembly Chain Validation
 

@@ -418,6 +418,7 @@ class DocumentationGenerator:
 
         # Generate package documentation
         packages = [
+            "antenna",
             "assembly",
             "barcode",
             "cli",

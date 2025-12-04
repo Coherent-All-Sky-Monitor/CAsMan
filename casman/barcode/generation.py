@@ -59,6 +59,12 @@ def generate_barcode(
     else:
         barcode_dir = os.path.join(output_dir, part_type)
 
+    # Determine polarization from part number and create subdirectory
+    if "P1" in part_number.upper():
+        barcode_dir = os.path.join(barcode_dir, "P1")
+    elif "P2" in part_number.upper():
+        barcode_dir = os.path.join(barcode_dir, "P2")
+    
     # Create the barcode directory if it doesn't exist
     if not os.path.exists(barcode_dir):
         os.makedirs(barcode_dir)
@@ -83,18 +89,30 @@ def generate_barcode(
         target_width = int(width_inches * dpi)
         target_height = int(height_inches * dpi)
 
-        # Generate the barcode with ImageWriter
+        # Generate the barcode with ImageWriter and minimal margins
         writer = ImageWriter()
+        
+        # Writer options with 0.5mm quiet zone and spacing
+        writer_options = {
+            'module_width': 0.3,      # Width of barcode modules
+            'module_height': 10.0,     # Height of barcode bars in mm
+            'quiet_zone': 2.0,         # 0.5mm quiet zone (2.0mm before scaling)
+            'text_distance': 5,        # Distance between barcode and text
+            'font_size': 10,           # Font size for text
+            'write_text': True,        # Include text below barcode
+        }
+        
         barcode_generator = barcode.get(barcode_format, part_number, writer=writer)
 
         # Save to temporary location first
         temp_path = os.path.join(barcode_dir, f"{part_number}_temp")
-        barcode_generator.save(temp_path)
+        barcode_generator.save(temp_path, writer_options)
 
         # Open the generated image and resize to exact dimensions
         temp_image_path = f"{temp_path}.png"
         with Image.open(temp_image_path) as img:
             # Resize to exact target dimensions (this includes the barcode + text)
+            # Use LANCZOS for high-quality resampling
             resized_img = img.resize(
                 (target_width, target_height), Image.Resampling.LANCZOS
             )
@@ -157,6 +175,12 @@ def generate_coax_label(
     else:
         label_dir = os.path.join(output_dir, part_type)
 
+    # Determine polarization from part number and create subdirectory
+    if "P1" in part_number.upper():
+        label_dir = os.path.join(label_dir, "P1")
+    elif "P2" in part_number.upper():
+        label_dir = os.path.join(label_dir, "P2")
+    
     # Create the label directory if it doesn't exist
     if not os.path.exists(label_dir):
         os.makedirs(label_dir)

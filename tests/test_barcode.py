@@ -276,44 +276,60 @@ class TestBarcodePrintPages:
 
     def test_generate_printpages_creates_pdf(self):
         """Test PDF generation for a small range."""
-        # Function returns None but creates PDF file
+        # Function returns None but creates PDF files (P1 and P2)
         generate_barcode_printpages("ANTENNA", 1, 2)
 
-        # Check that PDF was created in test barcode directory
+        # Check that P1 and P2 PDFs were created in test barcode directory
         test_barcode_dir = os.environ.get("CASMAN_BARCODE_DIR")
         if test_barcode_dir:
-            pdf_path = os.path.join(test_barcode_dir, "ANTENNA_00001_00002.pdf")
+            p1_pdf = os.path.join(test_barcode_dir, "ANTENNA_P1_00001_00002.pdf")
+            p2_pdf = os.path.join(test_barcode_dir, "ANTENNA_P2_00001_00002.pdf")
         else:
             # Fallback for when not using test isolation
-            pdf_path = os.path.join(
-                os.path.dirname(__file__), "..", "barcodes", "ANTENNA_00001_00002.pdf"
+            p1_pdf = os.path.join(
+                os.path.dirname(__file__), "..", "barcodes", "ANTENNA_P1_00001_00002.pdf"
             )
-        assert os.path.exists(pdf_path), f"PDF not found at {pdf_path}"
+            p2_pdf = os.path.join(
+                os.path.dirname(__file__), "..", "barcodes", "ANTENNA_P2_00001_00002.pdf"
+            )
+        assert os.path.exists(p1_pdf), f"P1 PDF not found at {p1_pdf}"
+        assert os.path.exists(p2_pdf), f"P2 PDF not found at {p2_pdf}"
 
     def test_generate_printpages_coaxshort(self):
-        """Test PDF generation for COAXSHORT with text labels."""
+        """Test LaTeX file generation for COAXSHORT with text labels."""
         generate_barcode_printpages("COAXSHORT", 1, 2)
 
-        # Check that PDF was created in test barcode directory
+        # Check that P1 and P2 LaTeX files were created in test barcode directory
+        # Note: COAXSHORT generates .tex files, not PDFs directly
         test_barcode_dir = os.environ.get("CASMAN_BARCODE_DIR")
         if test_barcode_dir:
-            pdf_path = os.path.join(test_barcode_dir, "COAXSHORT_00001_00002.pdf")
+            p1_tex = os.path.join(test_barcode_dir, "COAXSHORT_P1_00001_00002.tex")
+            p2_tex = os.path.join(test_barcode_dir, "COAXSHORT_P2_00001_00002.tex")
         else:
-            pdf_path = os.path.join(
-                os.path.dirname(__file__), "..", "barcodes", "COAXSHORT_00001_00002.pdf"
+            p1_tex = os.path.join(
+                os.path.dirname(__file__), "..", "barcodes", "COAXSHORT_P1_00001_00002.tex"
             )
-        assert os.path.exists(pdf_path), f"PDF not found at {pdf_path}"
+            p2_tex = os.path.join(
+                os.path.dirname(__file__), "..", "barcodes", "COAXSHORT_P2_00001_00002.tex"
+            )
+        assert os.path.exists(p1_tex), f"P1 LaTeX file not found at {p1_tex}"
+        assert os.path.exists(p2_tex), f"P2 LaTeX file not found at {p2_tex}"
 
     def test_generate_printpages_single_number(self):
         """Test PDF generation for a single part number."""
         generate_barcode_printpages("LNA", 1, 1)
 
-        # Check that PDF was created in test barcode directory
+        # Check that P1 and P2 PDFs were created in test barcode directory
         test_barcode_dir = os.environ.get("CASMAN_BARCODE_DIR")
         if test_barcode_dir:
-            pdf_path = os.path.join(test_barcode_dir, "LNA_00001_00001.pdf")
+            p1_pdf = os.path.join(test_barcode_dir, "LNA_P1_00001_00001.pdf")
+            p2_pdf = os.path.join(test_barcode_dir, "LNA_P2_00001_00001.pdf")
         else:
-            pdf_path = os.path.join(
-                os.path.dirname(__file__), "..", "barcodes", "LNA_00001_00001.pdf"
+            p1_pdf = os.path.join(
+                os.path.dirname(__file__), "..", "barcodes", "LNA_P1_00001_00001.pdf"
             )
-        assert os.path.exists(pdf_path), f"PDF not found at {pdf_path}"
+            p2_pdf = os.path.join(
+                os.path.dirname(__file__), "..", "barcodes", "LNA_P2_00001_00001.pdf"
+            )
+        assert os.path.exists(p1_pdf), f"P1 PDF not found at {p1_pdf}"
+        assert os.path.exists(p2_pdf), f"P2 PDF not found at {p2_pdf}"

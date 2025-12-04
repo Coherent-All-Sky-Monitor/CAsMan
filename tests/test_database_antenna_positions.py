@@ -229,7 +229,7 @@ class TestPositionAssignment:
         """Test assigning center position."""
         result = assign_antenna_position(
             antenna_number="ANT00001",
-            grid_code="CC000E00",
+            grid_code="CC000E01",
             db_dir=temp_db_dir,
         )
 
@@ -237,7 +237,7 @@ class TestPositionAssignment:
 
         pos = get_antenna_position("ANT00001", db_dir=temp_db_dir)
         assert pos["row_offset"] == 0
-        assert pos["grid_code"] == "CC000E00"
+        assert pos["grid_code"] == "CC000E01"
 
     def test_assign_south_position(self, temp_db_dir):
         """Test assigning south position."""
@@ -346,14 +346,14 @@ class TestPositionListing:
         assign_antenna_position("ANT00001", "CS005E02", db_dir=temp_db_dir)  # row=-5
         assign_antenna_position("ANT00002", "CN010E01", db_dir=temp_db_dir)  # row=10
         assign_antenna_position("ANT00003", "CN010E03", db_dir=temp_db_dir)  # row=10
-        assign_antenna_position("ANT00004", "CC000E00", db_dir=temp_db_dir)  # row=0
+        assign_antenna_position("ANT00004", "CC000E01", db_dir=temp_db_dir)  # row=0
 
         positions = get_all_antenna_positions(db_dir=temp_db_dir)
 
-        # Check order: N10E01, N10E03, C00E00, S05E02
+        # Check order: N10E01, N10E03, C00E01, S05E02
         assert positions[0]["antenna_number"] == "ANT00002"  # CN010E01
         assert positions[1]["antenna_number"] == "ANT00003"  # CN010E03
-        assert positions[2]["antenna_number"] == "ANT00004"  # CC000E00
+        assert positions[2]["antenna_number"] == "ANT00004"  # CC000E01
         assert positions[3]["antenna_number"] == "ANT00001"  # CS005E02
 
     def test_get_all_positions_filter_array(self, temp_db_dir):
@@ -459,12 +459,12 @@ class TestIntegrationScenarios:
         """Test assigning to all positions in a small grid."""
         # Assign to first 3 rows, all columns
         assignments = [
-            ("ANT00001", "CN021E00"),
-            ("ANT00002", "CN021E01"),
-            ("ANT00003", "CN021E02"),
-            ("ANT00004", "CN020E00"),
-            ("ANT00005", "CN020E01"),
-            ("ANT00006", "CN020E02"),
+            ("ANT00001", "CN021E01"),
+            ("ANT00002", "CN021E02"),
+            ("ANT00003", "CN021E03"),
+            ("ANT00004", "CN020E01"),
+            ("ANT00005", "CN020E02"),
+            ("ANT00006", "CN020E03"),
         ]
 
         for antenna, grid_code in assignments:

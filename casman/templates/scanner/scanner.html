@@ -757,8 +757,15 @@
         <div id="position-antenna-display" class="part-display"></div>
         
         <div class="input-group">
-            <label for="position-east-input">East Column (0-5):</label>
-            <input type="number" id="position-east-input" placeholder="e.g., 0, 1, 2..." min="0" max="5" inputmode="numeric" pattern="[0-9]*">
+            <label for="position-array-select">Array:</label>
+            <select id="position-array-select" onchange="updateArraySelection()">
+                <option value="">Loading arrays...</option>
+            </select>
+        </div>
+        
+        <div class="input-group">
+            <label for="position-east-input">East Column <span id="east-col-range">(1-6)</span>:</label>
+            <input type="number" id="position-east-input" placeholder="e.g., 1, 2, 3..." min="1" max="6" inputmode="numeric" pattern="[0-9]*">
         </div>
         
         <div class="input-group">
@@ -771,7 +778,7 @@
         </div>
         
         <div id="position-offset-group" class="input-group hidden">
-            <label for="position-offset-input">Row Number (1-21):</label>
+            <label for="position-offset-input">Row Number <span id="row-offset-range">(1-21)</span>:</label>
             <input type="number" id="position-offset-input" placeholder="e.g., 1, 12, 21..." min="1" max="21" inputmode="numeric" pattern="[0-9]*">
         </div>
         
@@ -2609,10 +2616,12 @@
         
         // Grid configuration (loaded from server)
         let gridConfig = null;
+        let currentArray = null;
         
         // Position assignment state
         let positionState = {
             antenna: null,
+            array: null,
             direction: null,
             offset: null,
             eastCol: null,
@@ -2628,12 +2637,79 @@
                 const result = await response.json();
                 if (result.success) {
                     gridConfig = result;
+                    populateArraySelector();
                     return gridConfig;
                 }
             } catch (error) {
                 console.error('Error loading grid config:', error);
             }
             return null;
+        }
+        
+        // Populate array selector dropdown
+        function populateArraySelector() {
+            const select = document.getElementById('position-array-select');
+            if (!gridConfig || !gridConfig.arrays) return;
+            
+            select.innerHTML = '';
+            
+            // Add arrays from config
+            for (const [arrayName, arrayData] of Object.entries(gridConfig.arrays)) {
+                const option = document.createElement('option');
+                option.value = arrayName;
+                option.textContent = `${arrayName.charAt(0).toUpperCase() + arrayName.slice(1)} (${arrayData.array_id})`;
+                select.appendChild(option);
+            }
+            
+            // Select first array by default
+            if (select.options.length > 0) {
+                select.selectedIndex = 0;
+                updateArraySelection();
+            }
+        }
+        
+        // Update UI when array selection changes
+        function updateArraySelection() {
+            const select = document.getElementById('position-array-select');
+            const arrayName = select.value;
+            
+            if (!gridConfig || !gridConfig.arrays || !arrayName) return;
+            
+            currentArray = gridConfig.arrays[arrayName];
+            positionState.array = arrayName;
+            
+            // Update east column constraints
+            const eastInput = document.getElementById('position-east-input');
+            const eastRange = document.getElementById('east-col-range');
+            eastInput.min = 1;
+            eastInput.max = currentArray.east_columns;
+            eastRange.textContent = `(1-${currentArray.east_columns})`;
+            eastInput.placeholder = `e.g., 1-${currentArray.east_columns}`;
+            
+            // Update row offset constraints
+            const offsetInput = document.getElementById('position-offset-input');
+            const offsetRange = document.getElementById('row-offset-range');
+            const maxRows = Math.max(currentArray.north_rows, currentArray.south_rows);
+            offsetInput.min = 1;
+            offsetInput.max = maxRows;
+            offsetRange.textContent = `(1-${maxRows})`;
+            offsetInput.placeholder = `e.g., 1-${maxRows}`;
+            
+            // Reset selections when array changes
+            positionState.direction = null;
+            positionState.offset = null;
+            positionState.eastCol = null;
+            positionState.gridCode = null;
+            
+            document.querySelectorAll('#step-assign-position-grid .button-selected').forEach(btn => {
+                btn.classList.remove('button-selected');
+            });
+            offsetInput.value = '';
+            eastInput.value = '';
+            document.getElementById('position-offset-group').classList.add('hidden');
+            document.getElementById('grid-code-preview').textContent = '---';
+            document.getElementById('position-status-check').innerHTML = '';
+            document.getElementById('assign-position-btn').disabled = true;
         }
         
         function selectPositionMethod(method) {
@@ -2856,7 +2932,14 @@
             if (offsetInput) {
                 offsetInput.addEventListener('input', function() {
                     const value = parseInt(this.value);
-                    if (value >= 1 && value <= 21) {
+                    if (!currentArray) {
+                        positionState.offset = null;
+                        updateGridCodePreview();
+                        return;
+                    }
+                    
+                    const maxRows = Math.max(currentArray.north_rows, currentArray.south_rows);
+                    if (value >= 1 && value <= maxRows) {
                         positionState.offset = value;
                     } else {
                         positionState.offset = null;
@@ -2868,7 +2951,13 @@
             if (eastInput) {
                 eastInput.addEventListener('input', function() {
                     const value = parseInt(this.value);
-                    if (value >= 0 && value <= 5) {
+                    if (!currentArray) {
+                        positionState.eastCol = null;
+                        updateGridCodePreview();
+                        return;
+                    }
+                    
+                    if (value >= 1 && value <= currentArray.east_columns) {
                         positionState.eastCol = value;
                     } else {
                         positionState.eastCol = null;
@@ -2900,7 +2989,14 @@
             }
             
             // Build grid code
-            const arrayId = gridConfig ? gridConfig.array_id : 'C';
+            if (!currentArray) {
+                previewSpan.textContent = '---';
+                statusDiv.innerHTML = '';
+                assignBtn.disabled = true;
+                return;
+            }
+            
+            const arrayId = currentArray.array_id;
             const direction = positionState.direction;
             const offset = positionState.direction === 'C' ? '000' : String(positionState.offset).padStart(3, '0');
             const eastCol = String(positionState.eastCol).padStart(2, '0');

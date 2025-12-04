@@ -7,11 +7,13 @@ This guide explains how to install and use just the antenna positioning module f
 The `casman.antenna` module provides lightweight antenna array management with:
 
 - **Antenna position loading** from CAsMan database
-- **Grid position parsing** and validation
+- **Multi-array support** (core array, outriggers, custom arrays)
+- **Grid position parsing** and validation (1-based indexing)
+- **Kernel index mapping** for correlator processing (0-255)
 - **Geographic coordinates** (latitude, longitude, height)
 - **SNAP port mappings** for polarizations
 - **Baseline calculations** between antenna pairs (geodetic and grid-based)
-- **Minimal dependencies** (no Flask, Pillow, or web frameworks)
+- **Minimal dependencies** (PyYAML, NumPy for kernel index operations)
 
 Perfect for:
 - Data analysis scripts
@@ -75,6 +77,12 @@ ant = array.get_antenna('ANT00001')
 print(f"Antenna: {ant.antenna_number}")
 print(f"Grid Position: {ant.grid_code}")
 print(f"Coordinates: ({ant.latitude}, {ant.longitude})")
+
+# Get kernel index for grid position (core array only)
+from casman.antenna import grid_to_kernel_index
+kernel_idx = grid_to_kernel_index(ant.grid_code)
+if kernel_idx is not None:
+    print(f"Kernel Index: {kernel_idx}")
 ```
 
 ### Compute Baselines
@@ -162,6 +170,35 @@ Main interface for working with antenna collections.
 - Filter antennas by coordinate availability
 - Returns: list of `AntennaPosition`
 
+### Kernel Index Functions
+
+Functions for mapping between grid coordinates and correlator kernel indices.
+
+**`grid_to_kernel_index(grid_code, array_name='core')`**
+- Convert grid coordinate to kernel index
+- `grid_code`: Grid position (e.g., 'CN021E01')
+- `array_name`: Array name in config (default: 'core')
+- Returns: int (0-255) or None if unmapped
+- Example: `grid_to_kernel_index('CN021E01')` returns 0
+
+**`kernel_index_to_grid(kernel_idx, array_name='core')`**
+- Convert kernel index to grid coordinate
+- `kernel_idx`: Kernel index (0-255)
+- `array_name`: Array name in config (default: 'core')
+- Returns: str (grid code) or None if invalid
+- Example: `kernel_index_to_grid(0)` returns 'CN021E01'
+
+**`get_antenna_kernel_idx(array_name='core', db_dir=None)`**
+- Get complete kernel index mapping with antenna data
+- Returns: `KernelIndexArray` object with 43×6 arrays:
+  - `kernel_indices`: int array (-1 for unmapped)
+  - `grid_codes`: str array
+  - `antenna_numbers`: str array
+  - `snap_ports`: tuple array (chassis, slot, port)
+- Methods:
+  - `get_by_kernel_index(kernel_idx)`: Query by kernel index
+  - `get_by_grid_code(grid_code)`: Query by grid code
+
 ### AntennaPosition Class
 
 Represents a single antenna with all metadata.
@@ -181,7 +218,7 @@ Represents a single antenna with all metadata.
 
 - `grid_code`: str - Grid code string (e.g., 'CN002E03')
 - `row_offset`: int - Signed row offset
-- `east_col`: int - Zero-based east column index
+- `east_col`: int - 1-based east column index (1-6 for core array)
 
 #### Methods
 
@@ -190,6 +227,8 @@ Represents a single antenna with all metadata.
 - `format_chain_status(polarization='P1')`: str - Format assembly chain status for display
 
 ## Examples
+
+### Baseline Matrix Computation
 
 ```python
 from casman.antenna import AntennaArray
@@ -220,7 +259,71 @@ np.save('antenna_order.npy', antenna_numbers)
 print(f"Saved {n}×{n} baseline matrix")
 ```
 
+### Kernel Index Mapping
 
+```python
+from casman.antenna import (
+    grid_to_kernel_index,
+    kernel_index_to_grid,
+    get_antenna_kernel_idx
+)
+
+# Convert between grid codes and kernel indices
+kernel_idx = grid_to_kernel_index('CN021E01')  # Returns 0
+grid_code = kernel_index_to_grid(0)  # Returns 'CN021E01'
+
+# Get complete mapping with antenna assignments
+kernel_data = get_antenna_kernel_idx()
+
+print(f"Array shape: {kernel_data.shape}")  # (43, 6)
+print(f"Mapped positions: {np.sum(kernel_data.kernel_indices >= 0)}")  # 256
+
+# Query by kernel index
+info = kernel_data.get_by_kernel_index(0)
+print(f"Kernel 0: {info['grid_code']}, {info['antenna_number']}")
+
+# Query by grid code
+info = kernel_data.get_by_grid_code('CN021E01')
+print(f"Grid CN021E01: kernel index {info['kernel_index']}")
+
+# Create antenna-to-kernel-index mapping
+antenna_to_kernel = {}
+for row in range(43):
+    for col in range(6):
+        ant_num = kernel_data.antenna_numbers[row, col]
+        kernel_idx = kernel_data.kernel_indices[row, col]
+        if ant_num and kernel_idx >= 0:
+            antenna_to_kernel[ant_num] = kernel_idx
+
+print(f"Mapped {len(antenna_to_kernel)} antennas to kernel indices")
+```
+
+### Multi-Array Support
+
+```python
+from casman.antenna import load_array_layout, get_array_name_for_id
+
+# Load different array configurations
+core_layout = load_array_layout('core')
+print(f"Core: {core_layout[1]} N rows, {core_layout[3]} E cols")
+
+# Get array name from ID
+array_name = get_array_name_for_id('C')  # Returns 'core'
+array_name = get_array_name_for_id('O')  # Returns 'outriggers' if configured
+
+# Validate positions for specific arrays
+from casman.antenna import validate_components
+
+# This enforces bounds for the specified array
+is_valid = validate_components(
+    array_id='C',
+    direction='N',
+    offset=21,
+    east_col=6,
+    enforce_bounds=True,
+    array_name='core'
+)
+```
 
 ## Database Requirements
 
@@ -233,9 +336,9 @@ CREATE TABLE antenna_positions (
     id INTEGER PRIMARY KEY,
     antenna_number TEXT UNIQUE,
     grid_code TEXT UNIQUE,
-    array_id TEXT,
-    row_offset INTEGER,
-    east_col INTEGER,
+    array_id TEXT,           -- 'C' for core, 'O' for outriggers, etc.
+    row_offset INTEGER,       -- Signed: -21 to +21 for core
+    east_col INTEGER,         -- 1-based: 1-6 for core array
     assigned_at TEXT,
     notes TEXT,
     latitude REAL,
@@ -257,23 +360,26 @@ grid:
     south_rows: 21
     east_columns: 6
     allow_expansion: true
+    
+    # Kernel index mapping (core array only)
+    kernel_index:
+      enabled: true
+      max_index: 255        # 256 antennas (0-255)
+      start_row: 21         # CN021
+      start_column: 1       # E01
+  
+  # Optional: Additional arrays
+  outriggers:
+    array_id: "O"
+    north_rows: 10
+    south_rows: 10
+    east_columns: 4
+    allow_expansion: false
 ```
 
 This file should be in the project root or discoverable via `CASMAN_CONFIG` environment variable.
 
-## Performance Notes
-
-- **Database loading**: Typically < 100ms for ~250 antennas
-- **Baseline computation**: ~1ms per pair with coordinates, faster with grid spacing
-- **All baselines**: ~1-2 seconds for 250 antennas (31,125 baselines)
-- **Memory usage**: ~1KB per antenna (minimal)
-
-## Limitations
-
-- Grid baseline calculation assumes uniform spacing (0.4m default) - use coordinates for real life
-- Great circle distance formula (Haversine) is accurate for Earth-scale baselines but assumes spherical Earth
-- SNAP mappings require separate database table
-
+**Note:** Kernel index mapping is only enabled for the core array and maps 256 positions (kernel indices 0-255) using row-major ordering starting from CN021E01. Positions CS021E05 and CS021E06 are unmapped as they exceed the 256-antenna limit.
 
 ## See Also
 

@@ -326,9 +326,10 @@ def visualize_index():
 @visualize_bp.route("/grid")
 def antenna_grid():
     """Display antenna grid position visualization."""
-    from casman.antenna.grid import load_core_layout
+    from casman.antenna.grid import load_core_layout, format_grid_code
     from casman.database.antenna_positions import get_all_antenna_positions
     from casman.antenna.chain import get_snap_ports_for_antenna, format_snap_port
+    from casman.antenna.kernel_index import grid_to_kernel_index
 
     # Load grid configuration
     array_id, north_rows, south_rows, east_columns, allow_expansion = load_core_layout()
@@ -343,8 +344,11 @@ def antenna_grid():
     # North rows (reversed so N21 is at top)
     for row_offset in range(north_rows, 0, -1):
         row = {"label": f"N{row_offset:03d}", "cells": []}
-        for col in range(east_columns):
-            cell = {"row_offset": row_offset, "east_col": col, "antenna": None}
+        for col in range(1, east_columns + 1):  # 1-based column indexing
+            grid_code = format_grid_code(array_id, 'N', row_offset, col)
+            kernel_idx = grid_to_kernel_index(grid_code)
+            cell = {"row_offset": row_offset, "east_col": col, "antenna": None, 
+                    "grid_code": grid_code, "kernel_index": kernel_idx}
             # Find antenna at this position
             for pos in positions:
                 if pos["row_offset"] == row_offset and pos["east_col"] == col:
@@ -355,8 +359,11 @@ def antenna_grid():
 
     # Center row
     row = {"label": "C000", "cells": []}
-    for col in range(east_columns):
-        cell = {"row_offset": 0, "east_col": col, "antenna": None}
+    for col in range(1, east_columns + 1):  # 1-based column indexing
+        grid_code = format_grid_code(array_id, 'C', 0, col)
+        kernel_idx = grid_to_kernel_index(grid_code)
+        cell = {"row_offset": 0, "east_col": col, "antenna": None,
+                "grid_code": grid_code, "kernel_index": kernel_idx}
         for pos in positions:
             if pos["row_offset"] == 0 and pos["east_col"] == col:
                 cell["antenna"] = pos["antenna_number"]
@@ -367,8 +374,11 @@ def antenna_grid():
     # South rows
     for row_offset in range(-1, -(south_rows + 1), -1):
         row = {"label": f"S{abs(row_offset):03d}", "cells": []}
-        for col in range(east_columns):
-            cell = {"row_offset": row_offset, "east_col": col, "antenna": None}
+        for col in range(1, east_columns + 1):  # 1-based column indexing
+            grid_code = format_grid_code(array_id, 'S', abs(row_offset), col)
+            kernel_idx = grid_to_kernel_index(grid_code)
+            cell = {"row_offset": row_offset, "east_col": col, "antenna": None,
+                    "grid_code": grid_code, "kernel_index": kernel_idx}
             for pos in positions:
                 if pos["row_offset"] == row_offset and pos["east_col"] == col:
                     cell["antenna"] = pos["antenna_number"]
@@ -379,6 +389,7 @@ def antenna_grid():
     # Get search parameters
     search_antenna = request.args.get("antenna", "").strip()
     search_grid = request.args.get("grid", "").strip()
+    search_kernel = request.args.get("kernel", "").strip()
 
     # Determine selected antenna and position
     selected_antenna = None
@@ -391,6 +402,8 @@ def antenna_grid():
             if pos["antenna_number"] == search_antenna:
                 selected_antenna = search_antenna
                 selected_position = pos
+                # Add kernel index to position info
+                selected_position["kernel_index"] = grid_to_kernel_index(pos["grid_code"])
                 # Get SNAP ports
                 snap_info = get_snap_ports_for_antenna(search_antenna)
                 break
@@ -400,9 +413,29 @@ def antenna_grid():
             if pos["grid_code"] == search_grid:
                 selected_antenna = pos["antenna_number"]
                 selected_position = pos
+                # Add kernel index to position info
+                selected_position["kernel_index"] = grid_to_kernel_index(pos["grid_code"])
                 # Get SNAP ports
                 snap_info = get_snap_ports_for_antenna(selected_antenna)
                 break
+    elif search_kernel:
+        # Search by kernel index
+        from casman.antenna.kernel_index import kernel_index_to_grid
+        try:
+            kernel_idx = int(search_kernel)
+            target_grid_code = kernel_index_to_grid(kernel_idx)
+            if target_grid_code:
+                for pos in positions:
+                    if pos["grid_code"] == target_grid_code:
+                        selected_antenna = pos["antenna_number"]
+                        selected_position = pos
+                        # Add kernel index to position info
+                        selected_position["kernel_index"] = kernel_idx
+                        # Get SNAP ports
+                        snap_info = get_snap_ports_for_antenna(selected_antenna)
+                        break
+        except ValueError:
+            pass  # Invalid kernel index input
 
     # Load grid template
     template_path = os.path.join(
@@ -423,5 +456,6 @@ def antenna_grid():
         snap_info=snap_info,
         search_antenna=search_antenna,
         search_grid=search_grid,
+        search_kernel=search_kernel,
         format_snap_port=format_snap_port,
     )

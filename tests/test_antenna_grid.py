@@ -26,13 +26,13 @@ class TestGridCodeParsing:
 
     def test_parse_valid_center(self):
         """Test parsing center position."""
-        pos = parse_grid_code("CC000E00")
+        pos = parse_grid_code("CC000E01")
         assert pos.array_id == "C"
         assert pos.direction == "C"
         assert pos.offset == 0
-        assert pos.east_col == 0
+        assert pos.east_col == 1
         assert pos.row_offset == 0
-        assert pos.grid_code == "CC000E00"
+        assert pos.grid_code == "CC000E01"
 
     def test_parse_valid_north(self):
         """Test parsing north position."""
@@ -68,7 +68,7 @@ class TestGridCodeParsing:
 
     def test_parse_different_array(self):
         """Test parsing with different array ID."""
-        pos = parse_grid_code("AN010E02", enforce_core_bounds=False)
+        pos = parse_grid_code("AN010E02", enforce_bounds=False)
         assert pos.array_id == "A"
         assert pos.direction == "N"
         assert pos.offset == 10
@@ -115,7 +115,7 @@ class TestGridCodeParsing:
 
     def test_parse_expansion_beyond_core(self):
         """Test parsing beyond core bounds with expansion enabled."""
-        pos = parse_grid_code("CN050E10", enforce_core_bounds=False)
+        pos = parse_grid_code("CN050E10", enforce_bounds=False)
         assert pos.offset == 50
         assert pos.east_col == 10
 
@@ -125,8 +125,8 @@ class TestGridCodeFormatting:
 
     def test_format_center(self):
         """Test formatting center position."""
-        code = format_grid_code("C", "C", 0, 0)
-        assert code == "CC000E00"
+        code = format_grid_code("C", "C", 0, 1)
+        assert code == "CC000E01"
 
     def test_format_north(self):
         """Test formatting north position."""
@@ -140,8 +140,8 @@ class TestGridCodeFormatting:
 
     def test_format_padding(self):
         """Test formatting with padding."""
-        code = format_grid_code("C", "N", 1, 0)
-        assert code == "CN001E00"
+        code = format_grid_code("C", "N", 1, 1)
+        assert code == "CN001E01"
 
     def test_format_max_offset(self):
         """Test formatting with maximum offset."""
@@ -159,8 +159,8 @@ class TestGridCodeConversion:
 
     def test_to_grid_code_center(self):
         """Test converting center row offset."""
-        code = to_grid_code(0, 0)
-        assert code == "CC000E00"
+        code = to_grid_code(0, 1)
+        assert code == "CC000E01"
 
     def test_to_grid_code_north(self):
         """Test converting north row offset."""
@@ -213,11 +213,11 @@ class TestComponentValidation:
 
     def test_validate_core_center(self):
         """Test validating core center position."""
-        validate_components("C", 0, 0)  # Should not raise
+        validate_components("C", 0, 1)  # Should not raise
 
     def test_validate_core_north_min(self):
         """Test validating minimum north position."""
-        validate_components("C", 1, 0)  # Should not raise
+        validate_components("C", 1, 1)  # Should not raise
 
     def test_validate_core_north_max(self):
         """Test validating maximum north position."""
@@ -225,7 +225,7 @@ class TestComponentValidation:
 
     def test_validate_core_south_min(self):
         """Test validating minimum south position."""
-        validate_components("C", -1, 0)  # Should not raise
+        validate_components("C", -1, 1)  # Should not raise
 
     def test_validate_core_south_max(self):
         """Test validating maximum south position."""
@@ -248,11 +248,11 @@ class TestComponentValidation:
 
     def test_validate_expansion_beyond_core(self):
         """Test validating beyond core with expansion."""
-        validate_components("C", 50, 10, enforce_core_bounds=False)  # Should not raise
+        validate_components("C", 50, 10, enforce_bounds=False)  # Should not raise
 
     def test_validate_different_array_no_enforcement(self):
         """Test validating different array without enforcement."""
-        validate_components("A", 100, 20, enforce_core_bounds=False)  # Should not raise
+        validate_components("A", 100, 20, enforce_bounds=False)  # Should not raise
 
 
 class TestRoundTripConsistency:
@@ -260,7 +260,7 @@ class TestRoundTripConsistency:
 
     def test_roundtrip_center(self):
         """Test round-trip for center position."""
-        original = "CC000E00"
+        original = "CC000E01"
         pos = parse_grid_code(original)
         reconstructed = format_grid_code(
             pos.array_id, pos.direction, pos.offset, pos.east_col
@@ -289,7 +289,7 @@ class TestRoundTripConsistency:
 
     def test_roundtrip_all_columns(self):
         """Test round-trip for all columns."""
-        for col in range(6):
+        for col in range(1, 7):
             original = f"CN010E{col:02d}"
             pos = parse_grid_code(original)
             reconstructed = format_grid_code(
@@ -304,17 +304,17 @@ class TestBoundaryConditions:
     def test_boundary_north_zero(self):
         """Test boundary: N000 is invalid."""
         with pytest.raises(ValueError):
-            parse_grid_code("CN000E00")
+            parse_grid_code("CN000E01")
 
     def test_boundary_south_zero(self):
         """Test boundary: S000 is invalid."""
         with pytest.raises(ValueError):
-            parse_grid_code("CS000E00")
+            parse_grid_code("CS000E01")
 
     def test_boundary_center_nonzero(self):
         """Test boundary: C with non-zero offset is invalid."""
         with pytest.raises(ValueError):
-            parse_grid_code("CC001E00")
+            parse_grid_code("CC001E01")
 
     def test_boundary_core_north_21(self):
         """Test boundary: N021 is valid (at core boundary)."""
@@ -360,9 +360,9 @@ class TestAntennaGridPositionDataclass:
                 array_id="C",
                 direction="X",
                 offset=1,
-                east_col=0,
+                east_col=1,
                 row_offset=1,
-                grid_code="CX001E00",
+                grid_code="CX001E01",
             )
 
     def test_post_init_offset_negative(self):
@@ -372,9 +372,9 @@ class TestAntennaGridPositionDataclass:
                 array_id="C",
                 direction="N",
                 offset=-1,
-                east_col=0,
+                east_col=1,
                 row_offset=1,
-                grid_code="CN001E00",
+                grid_code="CN001E01",
             )
 
     def test_post_init_offset_too_large(self):
@@ -384,9 +384,9 @@ class TestAntennaGridPositionDataclass:
                 array_id="C",
                 direction="N",
                 offset=1000,
-                east_col=0,
+                east_col=1,
                 row_offset=1000,
-                grid_code="CN1000E00",
+                grid_code="CN1000E01",
             )
 
     def test_post_init_center_nonzero_offset(self):
@@ -396,9 +396,9 @@ class TestAntennaGridPositionDataclass:
                 array_id="C",
                 direction="C",
                 offset=1,
-                east_col=0,
+                east_col=1,
                 row_offset=0,
-                grid_code="CC001E00",
+                grid_code="CC001E01",
             )
 
     def test_post_init_north_south_zero_offset(self):
@@ -408,9 +408,9 @@ class TestAntennaGridPositionDataclass:
                 array_id="C",
                 direction="N",
                 offset=0,
-                east_col=0,
+                east_col=1,
                 row_offset=0,
-                grid_code="CN000E00",
+                grid_code="CN000E01",
             )
 
     def test_post_init_east_col_negative(self):
@@ -422,7 +422,7 @@ class TestAntennaGridPositionDataclass:
                 offset=1,
                 east_col=-1,
                 row_offset=1,
-                grid_code="CN001E00",
+                grid_code="CN001E01",
             )
 
     def test_post_init_east_col_too_large(self):
@@ -444,9 +444,9 @@ class TestAntennaGridPositionDataclass:
                 array_id="C",
                 direction="N",
                 offset=1,
-                east_col=0,
+                east_col=1,
                 row_offset=1,
-                grid_code="CN002E00",  # Mismatch: offset is 1 but code says 2
+                grid_code="CN002E01",  # Mismatch: offset is 1 but code says 2
             )
 
 
@@ -520,12 +520,12 @@ class TestValidateComponentsEdgeCases:
     def test_validate_row_offset_too_negative(self):
         """Test validate_components rejects row_offset < -999."""
         with pytest.raises(ValueError, match="row_offset out of absolute range"):
-            validate_components("A", -1000, 0, enforce_core_bounds=False)
+            validate_components("A", -1000, 1, enforce_bounds=False)
 
     def test_validate_row_offset_too_positive(self):
         """Test validate_components rejects row_offset > 999."""
         with pytest.raises(ValueError, match="row_offset out of absolute range"):
-            validate_components("A", 1000, 0, enforce_core_bounds=False)
+            validate_components("A", 1000, 1, enforce_bounds=False)
 
 
 class TestParseGridCodeEdgeCases:
@@ -552,8 +552,8 @@ class TestToGridCodeEdgeCases:
 
     def test_to_grid_code_center_with_default_array(self):
         """Test to_grid_code for center with default array_id."""
-        code = to_grid_code(0, 0)
-        assert code == "CC000E00"
+        code = to_grid_code(0, 1)
+        assert code == "CC000E01"
 
     def test_to_grid_code_explicit_array(self):
         """Test to_grid_code with explicit array_id."""

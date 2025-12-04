@@ -12,7 +12,7 @@ Examples
     CC000E01  -> Core array (C), Center row, East column 1
 
 The format is intentionally expansive; while the core layout currently uses
-only a 43 x 6 grid (rows N001..N021, C000, S001..S021 and E00..E05), the
+only a 43 x 6 grid (rows N001..N021, C000, S001..S021 and E01..E06), the
 specification reserves three digits for the north/south offset and two digits
 for the east column to allow future expansion (e.g. additional arrays or
 extended baselines).
@@ -43,10 +43,10 @@ Rows are converted to signed integer offsets relative to the center:
     S017 -> -17
     C000 -> 0 (Center must always use offset 000)
 
-East columns are zero-based integers parsed from the two-digit field:
+East columns are one-based integers parsed from the two-digit field:
 
-    E00 -> 0
-    E05 -> 5
+    E01 -> 1
+    E06 -> 6
 
 Data Model
 ----------
@@ -115,7 +115,7 @@ class AntennaGridPosition:
             raise ValueError("Center (C) must have offset 0 (C000)")
         if self.direction != "C" and self.offset == 0:
             raise ValueError("North/South offsets must be >= 1 (e.g. N001)")
-        if self.east_col < 0 or self.east_col > 99:
+        if self.east_col < 1 or self.east_col > 99:
             raise ValueError(f"East column out of range: E{self.east_col:02d}")
         # Check grid code consistency
         expected = format_grid_code(
@@ -152,6 +152,80 @@ def load_core_layout() -> tuple[str, int, int, int, bool]:
     )
 
 
+def load_array_layout(array_name: str) -> tuple[str, int, int, int, bool]:
+    """Load array layout limits from configuration for any grid.
+
+    Parameters
+    ----------
+    array_name : str
+        Name of the array section in config (e.g., 'core', 'outriggers').
+
+    Returns
+    -------
+    (array_id, north_rows, south_rows, east_columns, allow_expansion)
+        Tuple containing bounds for validation.
+
+    Raises
+    ------
+    KeyError
+        If required configuration keys are missing.
+
+    Examples
+    --------
+    >>> load_array_layout('core')
+    ('C', 21, 21, 6, True)
+    >>> load_array_layout('outriggers')
+    ('O', 10, 10, 4, False)
+    """
+    array_id = get_config(f"grid.{array_name}.array_id")
+    if array_id is None:
+        raise KeyError(f"Array '{array_name}' not found in configuration")
+    north_rows = get_config(f"grid.{array_name}.north_rows")
+    south_rows = get_config(f"grid.{array_name}.south_rows")
+    east_columns = get_config(f"grid.{array_name}.east_columns")
+    allow_expansion = bool(get_config(f"grid.{array_name}.allow_expansion", False))
+    return (
+        str(array_id),
+        int(north_rows),
+        int(south_rows),
+        int(east_columns),
+        allow_expansion,
+    )
+
+
+def get_array_name_for_id(array_id: str) -> Optional[str]:
+    """Look up the array name (config key) for a given array ID letter.
+
+    Parameters
+    ----------
+    array_id : str
+        Single letter array identifier (e.g., 'C', 'O').
+
+    Returns
+    -------
+    str or None
+        Array name (e.g., 'core', 'outriggers') or None if not found.
+
+    Examples
+    --------
+    >>> get_array_name_for_id('C')
+    'core'
+    >>> get_array_name_for_id('O')
+    'outriggers'
+    >>> get_array_name_for_id('Z')
+    None
+    """
+    try:
+        # Get all grid configurations
+        grid_config = get_config("grid", {})
+        for array_name, array_data in grid_config.items():
+            if isinstance(array_data, dict) and array_data.get("array_id") == array_id:
+                return array_name
+    except Exception:
+        pass
+    return None
+
+
 def direction_from_row(row_offset: int) -> str:
     """Infer direction code from signed row offset.
 
@@ -182,7 +256,7 @@ def format_grid_code(array_id: str, direction: str, offset: int, east_col: int) 
     offset : int
         Absolute offset (0-999). Must be 0 if direction == 'C'.
     east_col : int
-        Zero-based east column (0-99).
+        One-based east column (1-99).
 
     Returns
     -------
@@ -209,13 +283,13 @@ def format_grid_code(array_id: str, direction: str, offset: int, east_col: int) 
         raise ValueError("Center direction must have offset 0 (C000)")
     if direction != "C" and offset == 0:
         raise ValueError("North/South offsets must be >= 1")
-    if east_col < 0 or east_col > 99:
-        raise ValueError("east_col must be between 0 and 99")
+    if east_col < 1 or east_col > 99:
+        raise ValueError("east_col must be between 1 and 99")
     return f"{array_id}{direction}{offset:03d}E{east_col:02d}"
 
 
 def validate_components(
-    array_id: str, row_offset: int, east_col: int, *, enforce_core_bounds: bool = True
+    array_id: str, row_offset: int, east_col: int, *, enforce_bounds: bool = True
 ) -> None:
     """Validate numeric components against configuration bounds.
 
@@ -224,11 +298,11 @@ def validate_components(
     array_id : str
         Array identifier letter.
     row_offset : int
-        Signed offset (-999..999). Core bounds narrower.
+        Signed offset (-999..999). Specific array bounds may be narrower.
     east_col : int
-        East column index.
-    enforce_core_bounds : bool, optional
-        If True, apply core layout limits unless expansion is enabled.
+        East column index (1-based).
+    enforce_bounds : bool, optional
+        If True, apply array-specific layout limits unless expansion is enabled.
 
     Raises
     ------
@@ -242,22 +316,25 @@ def validate_components(
         or not array_id.isupper()
     ):
         raise ValueError("Invalid array_id")
-    if east_col < 0 or east_col > 99:
-        raise ValueError("east_col out of range (0-99)")
+    if east_col < 1 or east_col > 99:
+        raise ValueError("east_col out of range (1-99)")
     if row_offset < -999 or row_offset > 999:
         raise ValueError("row_offset out of absolute range (±999)")
 
-    core_id, north_rows, south_rows, east_columns, allow_expansion = load_core_layout()
-    if enforce_core_bounds and array_id == core_id:
-        if not allow_expansion:
-            if row_offset > north_rows or row_offset < -south_rows:
-                raise ValueError("row_offset exceeds core bounds")
-            if east_col >= east_columns:
-                raise ValueError("east_col exceeds core east column bounds")
+    if enforce_bounds:
+        # Find the array configuration for this array_id
+        array_name = get_array_name_for_id(array_id)
+        if array_name:
+            _, north_rows, south_rows, east_columns, allow_expansion = load_array_layout(array_name)
+            if not allow_expansion:
+                if row_offset > north_rows or row_offset < -south_rows:
+                    raise ValueError(f"row_offset exceeds {array_name} array bounds")
+                if east_col < 1 or east_col > east_columns:
+                    raise ValueError(f"east_col exceeds {array_name} array column bounds (1-{east_columns})")
 
 
 def parse_grid_code(
-    code: str, *, enforce_core_bounds: bool = True
+    code: str, *, enforce_bounds: bool = True
 ) -> AntennaGridPosition:
     """Parse and validate a grid code string.
 
@@ -265,9 +342,8 @@ def parse_grid_code(
     ----------
     code : str
         Grid code string in the canonical format.
-    enforce_core_bounds : bool, optional
-        Apply core layout limits for the core array; ignored if expansion
-        enabled in config.
+    enforce_bounds : bool, optional
+        Apply array-specific layout limits; ignored if expansion enabled in config.
 
     Returns
     -------
@@ -293,7 +369,7 @@ def parse_grid_code(
     code = code.strip().upper()
     if not GRID_CODE_PATTERN.match(code):
         raise ValueError(
-            f"Grid code '{code}' does not match pattern [A-Z][NCS][000-999]E[00-99]"
+            f"Grid code '{code}' does not match pattern [A-Z][NCS][000-999]E[01-99]"
         )
 
     array_id = code[0]
@@ -317,7 +393,7 @@ def parse_grid_code(
 
     # Bounds validation
     validate_components(
-        array_id, row_offset, east_col, enforce_core_bounds=enforce_core_bounds
+        array_id, row_offset, east_col, enforce_bounds=enforce_bounds
     )
 
     return AntennaGridPosition(
@@ -338,7 +414,7 @@ def to_grid_code(row_offset: int, east_col: int, array_id: Optional[str] = None)
     row_offset : int
         Signed relative offset (negative south, positive north, zero center).
     east_col : int
-        Zero-based east column.
+        One-based east column (1-99).
     array_id : str, optional
         Array identifier; defaults to core array from config if omitted.
 
@@ -364,8 +440,8 @@ def to_grid_code(row_offset: int, east_col: int, array_id: Optional[str] = None)
     elif offset == 0:
         raise ValueError("Non-center rows must have non-zero offset")
 
-    # Enforce bounds via validate_components (core only unless expansion)
-    validate_components(array_id, row_offset, east_col, enforce_core_bounds=True)
+    # Enforce bounds via validate_components (any array unless expansion)
+    validate_components(array_id, row_offset, east_col, enforce_bounds=True)
     return format_grid_code(array_id, direction, offset, east_col)
 
 
@@ -377,4 +453,6 @@ __all__ = [
     "validate_components",
     "to_grid_code",
     "load_core_layout",
+    "load_array_layout",
+    "get_array_name_for_id",
 ]

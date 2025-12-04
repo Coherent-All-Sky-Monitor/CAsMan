@@ -450,6 +450,12 @@
                        placeholder="e.g., CN002E03" 
                        value="{{ search_grid }}">
             </div>
+            <div class="search-group">
+                <label for="kernel-search">Kernel Index:</label>
+                <input type="text" id="kernel-search" name="kernel" 
+                       placeholder="e.g., 0-255" 
+                       value="{{ search_kernel }}">
+            </div>
             <div class="search-buttons">
                 <button type="submit">Search</button>
                 <button type="button" onclick="window.location.href='/visualize/grid'">Clear</button>
@@ -477,7 +483,9 @@
                         {% if selected_antenna and cell.antenna == selected_antenna %}selected{% endif %}"
                         {% if cell.antenna %}
                         onclick="searchByAntenna('{{ cell.antenna }}')"
-                        title="{{ cell.antenna }}"
+                        title="{{ cell.antenna }} | {{ cell.grid_code }}{% if cell.kernel_index is not none %} | Kernel: {{ cell.kernel_index }}{% endif %}"
+                        {% else %}
+                        title="{{ cell.grid_code }}{% if cell.kernel_index is not none %} | Kernel: {{ cell.kernel_index }}{% else %} | Not mapped{% endif %}"
                         {% endif %}>
                         {% if cell.antenna %}
                             {{ cell.antenna }}
@@ -496,6 +504,11 @@
     <div class="info-panel">
         <h2>Selected Antenna: {{ selected_antenna }}</h2>
         <p><strong>Grid Position:</strong> {{ selected_position.grid_code }}</p>
+        {% if selected_position.kernel_index is not none %}
+        <p><strong>Kernel Index:</strong> {{ selected_position.kernel_index }}</p>
+        {% else %}
+        <p><strong>Kernel Index:</strong> <em>Not mapped</em></p>
+        {% endif %}
         <p><strong>Assigned:</strong> {{ selected_position.assigned_at }}</p>
         {% if selected_position.notes %}
         <p><strong>Notes:</strong> {{ selected_position.notes }}</p>

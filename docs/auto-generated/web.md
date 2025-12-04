@@ -31,7 +31,7 @@ Provides web interface for scanning, connecting, and disconnecting parts.
 - `record_disconnection()` - Record a disconnection between two parts
 - `add_parts()` - Add new part numbers for a given part type
 - `get_part_history()` - Get complete connection/disconnection history for a part
-- `get_grid_config()` - Get grid configuration for UI
+- `get_grid_config()` - Get grid configuration for UI - returns all available arrays
 - `check_position_status()` - Check if a grid position is occupied
 - `api_assign_position()` - Assign an antenna to a grid position
 - `api_get_antenna_position()` - Get grid position for an antenna
@@ -224,7 +224,7 @@ Get complete connection/disconnection history for a part.
 
 **Signature:** `get_grid_config()`
 
-Get grid configuration for UI.
+Get grid configuration for UI - returns all available arrays.
 
 ---
 

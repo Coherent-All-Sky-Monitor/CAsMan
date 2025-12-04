@@ -48,7 +48,7 @@ class TestAntennaArray:
         test_data = [
             (
                 "ANT00001",
-                "CN001E00",
+                "CN001E01",
                 "C",
                 1,
                 0,
@@ -61,10 +61,10 @@ class TestAntennaArray:
             ),
             (
                 "ANT00002",
-                "CN001E01",
+                "CN001E02",
                 "C",
                 1,
-                1,
+                2,
                 37.8720,
                 -122.2583,
                 10.6,
@@ -74,7 +74,7 @@ class TestAntennaArray:
             ),
             (
                 "ANT00003",
-                "CC000E00",
+                "CC000E01",
                 "C",
                 0,
                 0,
@@ -87,7 +87,7 @@ class TestAntennaArray:
             ),
             (
                 "ANT00004",
-                "CS001E00",
+                "CS001E01",
                 "C",
                 -1,
                 0,
@@ -135,7 +135,7 @@ class TestAntennaArray:
         ant = array.get_antenna("ANT00001")
         assert ant is not None
         assert ant.antenna_number == "ANT00001"
-        assert ant.grid_code == "CN001E00"
+        assert ant.grid_code == "CN001E01"
 
         missing = array.get_antenna("ANT99999")
         assert missing is None
@@ -144,12 +144,12 @@ class TestAntennaArray:
         """Test retrieving antenna by grid position."""
         array = AntennaArray.from_database(test_db)
 
-        ant = array.get_antenna_at_position("CN001E00")
+        ant = array.get_antenna_at_position("CN001E01")
         assert ant is not None
         assert ant.antenna_number == "ANT00001"
 
         # Case insensitive
-        ant2 = array.get_antenna_at_position("cn001e00")
+        ant2 = array.get_antenna_at_position("cn001e01")
         assert ant2 is not None
         assert ant2.antenna_number == "ANT00001"
 
@@ -162,9 +162,9 @@ class TestAntennaArray:
         ant = array.get_antenna("ANT00001")
 
         assert ant.has_coordinates() is True
-        assert ant.grid_code == "CN001E00"
+        assert ant.grid_code == "CN001E01"
         assert ant.row_offset == 1
-        assert ant.east_col == 0
+        assert ant.east_col == 1
 
     def test_antenna_position_no_coords(self, test_db):
         """Test antenna without coordinates."""
@@ -192,13 +192,13 @@ class TestAntennaArray:
         """Test grid-based baseline calculation."""
         array = AntennaArray.from_database(test_db)
 
-        ant1 = array.get_antenna("ANT00001")  # CN001E00 (row +1, col 0)
-        ant2 = array.get_antenna("ANT00002")  # CN001E01 (row +1, col 1)
+        ant1 = array.get_antenna("ANT00001")  # CN001E01 (row +1, col 1)
+        ant2 = array.get_antenna("ANT00002")  # CN001E02 (row +1, col 2)
 
         baseline = array.compute_baseline(ant1, ant2, use_coordinates=False)
 
-        # Grid spacing: 1 column apart with default 14m spacing
-        assert baseline == pytest.approx(14.0, rel=0.01)
+        # Grid spacing: 1 column apart with default 0.4m spacing
+        assert baseline == pytest.approx(0.4, rel=0.01)
 
     def test_compute_baseline_fallback(self, test_db):
         """Test baseline falls back to grid when coordinates unavailable."""

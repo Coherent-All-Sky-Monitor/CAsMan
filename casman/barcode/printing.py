@@ -105,27 +105,43 @@ def generate_barcode_printpages(
     if failed_p1 > 0 or failed_p2 > 0:
         print(f"Failed to generate {failed_p1 + failed_p2} barcodes")
 
-    # Create PDF with pol1 first, then pol2
-    # Check for test environment variable first
+    # Determine base output directory
     env_barcode_dir = os.environ.get("CASMAN_BARCODE_DIR")
     if env_barcode_dir:
-        output_pdf = os.path.join(
-            env_barcode_dir,
-            f"{part_type}_{start_number:05d}_{end_number:05d}.pdf",
-        )
+        base_dir = env_barcode_dir
     else:
-        output_pdf = os.path.join(
-            os.path.dirname(__file__),
-            "..",
-            "..",
-            "barcodes",
-            f"{part_type}_{start_number:05d}_{end_number:05d}.pdf",
-        )
+        base_dir = os.path.join(os.path.dirname(__file__), "..", "..", "barcodes")
 
-    _create_barcode_pdf(pol1_results, pol2_results, output_pdf)
+    # Create separate files for P1 and P2
+    output_p1_pdf = os.path.join(
+        base_dir,
+        f"{part_type}_P1_{start_number:05d}_{end_number:05d}.pdf",
+    )
+    output_p2_pdf = os.path.join(
+        base_dir,
+        f"{part_type}_P2_{start_number:05d}_{end_number:05d}.pdf",
+    )
 
-    print(f"Barcode generation complete. Files saved in barcodes/{part_type}/")
-    print(f"PDF created: {output_pdf}")
+    # Create LaTeX/PDF files for coax labels (separate for P1 and P2)
+    if is_coax:
+        output_p1_tex = output_p1_pdf.replace('.pdf', '.tex')
+        output_p2_tex = output_p2_pdf.replace('.pdf', '.tex')
+        
+        _create_latex_barcode_page(pol1_results, {}, output_p1_tex)
+        _create_latex_barcode_page({}, pol2_results, output_p2_tex)
+        
+        print(f"P1 LaTeX file created: {output_p1_tex}")
+        print(f"P2 LaTeX file created: {output_p2_tex}")
+        print(f"To generate PDFs, run:")
+        print(f"  pdflatex {output_p1_tex}")
+        print(f"  pdflatex {output_p2_tex}")
+    else:
+        _create_barcode_pdf(pol1_results, {}, output_p1_pdf)
+        _create_barcode_pdf({}, pol2_results, output_p2_pdf)
+        print(f"P1 PDF created: {output_p1_pdf}")
+        print(f"P2 PDF created: {output_p2_pdf}")
+
+    print(f"Barcode generation complete. Files saved in barcodes/{part_type}/P1 and barcodes/{part_type}/P2")
 
 
 def _create_barcode_pdf(
@@ -143,25 +159,66 @@ def _create_barcode_pdf(
     output_pdf : str
         Path to output PDF file.
     """
+    # Determine if this is a coax part type by checking the first barcode path
+    is_coax = False
+    first_path = None
+    for path in list(pol1_results.values()) + list(pol2_results.values()):
+        if path:
+            first_path = path
+            # Check if path contains COAXSHORT or COAXLONG
+            is_coax = "COAXSHORT" in path or "COAXLONG" in path
+            break
+    
     # Get layout settings from config (all in inches)
-    margin_inches = get_config("barcode.page.margin_inches", 0.5)
-    h_spacing_inches = get_config("barcode.page.horizontal_spacing_inches", 0.25)
-    v_spacing_inches = get_config("barcode.page.vertical_spacing_inches", 0.25)
-    images_per_row = get_config("barcode.page.images_per_row", 3)
+    if is_coax:
+        # Use coax-specific page layout settings
+        page_width_inches = get_config("barcode.coax.page_layout.page_width", 8.5)
+        page_height_inches = get_config("barcode.coax.page_layout.page_height", 11.0)
+        margin_top = get_config("barcode.coax.page_layout.margin_top", 0.5)
+        margin_bottom = get_config("barcode.coax.page_layout.margin_bottom", 0.5)
+        margin_left = get_config("barcode.coax.page_layout.margin_left", 0.5)
+        margin_right = get_config("barcode.coax.page_layout.margin_right", 0.5)
+        h_spacing_inches = get_config("barcode.coax.page_layout.horizontal_spacing", 0.25)
+        v_spacing_inches = get_config("barcode.coax.page_layout.vertical_spacing", 0.25)
+        images_per_row = get_config("barcode.coax.page_layout.columns", 3)
+        rows_per_page = get_config("barcode.coax.page_layout.rows", 8)
+        width_inches = get_config("barcode.coax.width_inches", 1.0)
+        height_inches = get_config("barcode.coax.height_inches", 0.34)
+    else:
+        # Use standard page layout settings
+        page_width_inches = 8.5  # US Letter
+        page_height_inches = 11.0  # US Letter
+        margin_top = margin_bottom = margin_left = margin_right = get_config("barcode.page.margin_inches", 0.5)
+        h_spacing_inches = get_config("barcode.page.horizontal_spacing_inches", 0.25)
+        v_spacing_inches = get_config("barcode.page.vertical_spacing_inches", 0.25)
+        images_per_row = get_config("barcode.page.images_per_row", 3)
+        rows_per_page = None  # Auto-calculate based on page height
+        width_inches = get_config("barcode.width_inches", 2.0)
+        height_inches = get_config("barcode.height_inches", 0.7)
+    
     dpi = get_config("barcode.page.dpi", 300)
 
-    width_inches = get_config("barcode.width_inches", 2.0)
-    height_inches = get_config("barcode.height_inches", 0.7)
+    # Convert inches to pixels - use round for precise conversions
+    margin_left_px = round(margin_left * dpi)
+    margin_right_px = round(margin_right * dpi)
+    margin_top_px = round(margin_top * dpi)
+    margin_bottom_px = round(margin_bottom * dpi)
+    h_spacing = round(h_spacing_inches * dpi)
+    v_spacing = round(v_spacing_inches * dpi)
+    barcode_width = round(width_inches * dpi)
+    barcode_height = round(height_inches * dpi)
 
-    # Convert inches to pixels
-    margin = int(margin_inches * dpi)
-    h_spacing = int(h_spacing_inches * dpi)
-    v_spacing = int(v_spacing_inches * dpi)
-    barcode_width = int(width_inches * dpi)
-    barcode_height = int(height_inches * dpi)
-
-    # Letter size in inches: 8.5 x 11, convert to pixels
-    letter_size = (int(8.5 * dpi), int(11 * dpi))
+    # Page size in pixels
+    page_size = (round(page_width_inches * dpi), round(page_height_inches * dpi))
+    
+    # Verify layout fits on page (for coax with fixed rows/columns)
+    if is_coax and rows_per_page:
+        required_width = margin_left_px + (images_per_row * barcode_width) + ((images_per_row - 1) * h_spacing) + margin_right_px
+        required_height = margin_top_px + (rows_per_page * barcode_height) + ((rows_per_page - 1) * v_spacing) + margin_bottom_px
+        if required_width > page_size[0] or required_height > page_size[1]:
+            print(f"Warning: Layout doesn't fit! Required: {required_width/dpi:.3f}\" x {required_height/dpi:.3f}\", Page: {page_width_inches}\" x {page_height_inches}\"")
+            print(f"  Width: {required_width} px (available: {page_size[0]} px)")
+            print(f"  Height: {required_height} px (available: {page_size[1]} px)")
 
     # Collect all barcode paths: pol1 first, then pol2
     all_barcode_paths: List[str] = []
@@ -176,38 +233,158 @@ def _create_barcode_pdf(
         raise ValueError("No valid barcode images to create PDF")
 
     pages = []
-    x_offset = margin
-    y_offset = margin
-    page = Image.new("RGB", letter_size, "white")
+    page = Image.new("RGB", page_size, "white")
+    
+    current_row = 0
+    current_col = 0
 
     for index, barcode_path in enumerate(all_barcode_paths):
         img = Image.open(barcode_path)
 
-        # Resize to exact dimensions from config
+        # Resize to exact dimensions from config - preserves dimensions in inches
         img = img.resize((barcode_width, barcode_height), Image.Resampling.LANCZOS)
 
         # Check if we need to start a new row
-        if (index % images_per_row) == 0 and index != 0:
-            x_offset = margin
-            y_offset += barcode_height + v_spacing
+        if current_col >= images_per_row:
+            current_col = 0
+            current_row += 1
 
         # Check if we need to start a new page
-        if y_offset + barcode_height > letter_size[1] - margin:
+        if rows_per_page and current_row >= rows_per_page:
+            # Fixed rows per page (for coax)
             pages.append(page)
-            page = Image.new("RGB", letter_size, "white")
-            x_offset = margin
-            y_offset = margin
+            page = Image.new("RGB", page_size, "white")
+            current_row = 0
+            current_col = 0
 
+        # Calculate exact position based on row/column using config values
+        x_offset = margin_left_px + (current_col * (barcode_width + h_spacing))
+        y_offset = margin_top_px + (current_row * (barcode_height + v_spacing))
+        
+        # For non-coax with auto page breaks
+        if not rows_per_page and y_offset + barcode_height > page_size[1] - margin_bottom_px:
+            pages.append(page)
+            page = Image.new("RGB", page_size, "white")
+            current_row = 0
+            current_col = 0
+            x_offset = margin_left_px + (current_col * (barcode_width + h_spacing))
+            y_offset = margin_top_px + (current_row * (barcode_height + v_spacing))
+        
         # Paste the image onto the page
         page.paste(img, (x_offset, y_offset))
-        x_offset += barcode_width + h_spacing
+        current_col += 1
 
     # Add the last page if it has content
-    if y_offset >= margin or len(all_barcode_paths) > 0:
+    if current_row > 0 or current_col > 0 or len(all_barcode_paths) > 0:
         pages.append(page)
 
-    # Save all pages as a PDF
+    # Save all pages as a PDF with correct DPI to preserve physical dimensions
     if pages:
-        pages[0].save(output_pdf, save_all=True, append_images=pages[1:])
+        pages[0].save(
+            output_pdf, 
+            save_all=True, 
+            append_images=pages[1:],
+            resolution=dpi,
+            dpi=(dpi, dpi)
+        )
     else:
         raise ValueError("No valid images to create PDF")
+
+
+def _create_latex_barcode_page(
+    pol1_results: Dict[str, str], pol2_results: Dict[str, str], output_tex: str
+) -> None:
+    """
+    Create a LaTeX file that references barcode images in a precise grid layout.
+
+    Parameters
+    ----------
+    pol1_results : Dict[str, str]
+        Dictionary of P1 part numbers to barcode file paths.
+    pol2_results : Dict[str, str]
+        Dictionary of P2 part numbers to barcode file paths.
+    output_tex : str
+        Path to output LaTeX file.
+    """
+    # Get layout settings from config
+    page_width = get_config("barcode.coax.page_layout.page_width", 8.5)
+    page_height = get_config("barcode.coax.page_layout.page_height", 11.0)
+    margin_top = get_config("barcode.coax.page_layout.margin_top", 0.984252)
+    margin_bottom = get_config("barcode.coax.page_layout.margin_bottom", 0.669291)
+    margin_left = get_config("barcode.coax.page_layout.margin_left", 0.433071)
+    margin_right = get_config("barcode.coax.page_layout.margin_right", 0.433071)
+    h_spacing = get_config("barcode.coax.page_layout.horizontal_spacing", 0.108268)
+    v_spacing = get_config("barcode.coax.page_layout.vertical_spacing", 0.393701)
+    columns = get_config("barcode.coax.page_layout.columns", 7)
+    rows = get_config("barcode.coax.page_layout.rows", 13)
+    label_width = get_config("barcode.coax.width_inches", 1.0)
+    label_height = get_config("barcode.coax.height_inches", 0.34)
+
+    # Collect all barcode paths: pol1 first, then pol2
+    all_barcode_paths: List[str] = []
+    for part_number in sorted(pol1_results.keys()):
+        if pol1_results[part_number]:
+            all_barcode_paths.append(pol1_results[part_number])
+    for part_number in sorted(pol2_results.keys()):
+        if pol2_results[part_number]:
+            all_barcode_paths.append(pol2_results[part_number])
+
+    if not all_barcode_paths:
+        raise ValueError("No valid barcode images to create LaTeX file")
+
+    # Start LaTeX document
+    latex_content = []
+    latex_content.append(r"\documentclass[letterpaper]{article}")
+    latex_content.append(r"\usepackage{graphicx}")
+    latex_content.append(r"\usepackage[margin=0in,top=0in,bottom=0in,left=0in,right=0in]{geometry}")
+    latex_content.append(r"\pagestyle{empty}")
+    latex_content.append(r"\setlength{\parindent}{0pt}")
+    latex_content.append(r"\setlength{\parskip}{0pt}")
+    latex_content.append(r"\setlength{\topskip}{0pt}")
+    latex_content.append(r"\setlength{\baselineskip}{0pt}")
+    latex_content.append(r"\begin{document}")
+    latex_content.append(r"\vspace*{" + f"{margin_top}in" + r"}")
+    latex_content.append("")
+
+    # Process barcodes in pages
+    labels_per_page = columns * rows
+    total_pages = (len(all_barcode_paths) + labels_per_page - 1) // labels_per_page
+
+    for page_num in range(total_pages):
+        start_idx = page_num * labels_per_page
+        end_idx = min(start_idx + labels_per_page, len(all_barcode_paths))
+        page_barcodes = all_barcode_paths[start_idx:end_idx]
+
+        if page_num > 0:
+            latex_content.append(r"\clearpage")
+            latex_content.append(r"\vspace*{" + f"{margin_top}in" + r"}")
+
+        # Create the grid with precise positioning
+        latex_content.append(r"\noindent")
+        
+        for row in range(rows):
+            if row > 0:
+                latex_content.append(f"\\\\[{v_spacing}in]")
+            latex_content.append(r"\noindent")
+            latex_content.append(f"\\hspace*{{{margin_left}in}}%")
+            
+            for col in range(columns):
+                idx = start_idx + (row * columns + col)
+                if idx >= end_idx:
+                    break
+                
+                barcode_path = page_barcodes[idx - start_idx]
+                # Convert absolute path to relative path from barcodes directory
+                rel_path = os.path.relpath(barcode_path, os.path.dirname(output_tex))
+                
+                if col > 0:
+                    latex_content.append(f"\\hspace{{{h_spacing}in}}%")
+                
+                latex_content.append(f"\\includegraphics[width={label_width}in,height={label_height}in]{{{rel_path}}}%")
+
+    latex_content.append("")
+    latex_content.append(r"\end{document}")
+
+    # Write to file
+    with open(output_tex, 'w') as f:
+        f.write('\n'.join(latex_content))

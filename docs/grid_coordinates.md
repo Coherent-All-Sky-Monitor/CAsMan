@@ -18,11 +18,11 @@ The CSV file has the following columns:
 
 ```csv
 grid_code,latitude,longitude,height,coordinate_system,notes
-CN021E00,37.8719,-122.2585,10.5,WGS84,North row 21 east 0
-CN021E01,37.8720,-122.2583,10.6,WGS84,North row 21 east 1
+CN021E01,37.8719,-122.2585,10.5,WGS84,North row 21 east 1
+CN021E02,37.8720,-122.2583,10.6,WGS84,North row 21 east 2
 ```
 
-- **grid_code**: Grid position identifier (e.g., 'CN021E00')
+- **grid_code**: Grid position identifier (e.g., 'CN021E01') - Note: uses 1-based indexing for east columns
 - **latitude**: Decimal degrees (e.g., 37.8719)
 - **longitude**: Decimal degrees (e.g., -122.2585)
 - **height**: Height in meters (e.g., 10.5)
@@ -45,7 +45,7 @@ nano database/grid_positions.csv
 # Then export as CSV when done
 ```
 
-**Template:** A template with all 258 core array positions (CN021E00 through CS021E05) is provided in `database/grid_positions.csv`.
+**Template:** A template with all 258 core array positions (CN021E01 through CS021E06) is provided in `database/grid_positions.csv`. Note that the core array uses 1-based indexing for east columns (E01-E06).
 
 ### 2. Load Coordinates
 

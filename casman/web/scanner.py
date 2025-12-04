@@ -22,7 +22,12 @@ from casman.database.antenna_positions import (
     get_antenna_at_position,
     get_antenna_position,
 )
-from casman.antenna.grid import load_core_layout, parse_grid_code
+from casman.antenna.grid import (
+    load_core_layout,
+    load_array_layout,
+    parse_grid_code,
+)
+from casman.config import get_config
 from casman.parts.types import load_part_types
 
 logger = logging.getLogger(__name__)
@@ -664,19 +669,25 @@ def get_part_history():
 
 @scanner_bp.route("/api/grid-config", methods=["GET"])
 def get_grid_config():
-    """Get grid configuration for UI."""
+    """Get grid configuration for UI - returns all available arrays."""
     try:
-        array_id, north_rows, south_rows, east_columns, allow_expansion = (
-            load_core_layout()
-        )
+        grid_config = get_config("grid", {})
+        arrays = {}
+        
+        for array_name, array_data in grid_config.items():
+            if isinstance(array_data, dict) and "array_id" in array_data:
+                arrays[array_name] = {
+                    "array_id": array_data.get("array_id"),
+                    "north_rows": array_data.get("north_rows"),
+                    "south_rows": array_data.get("south_rows"),
+                    "east_columns": array_data.get("east_columns"),
+                    "allow_expansion": array_data.get("allow_expansion", True),
+                }
+        
         return jsonify(
             {
                 "success": True,
-                "array_id": array_id,
-                "north_rows": north_rows,
-                "south_rows": south_rows,
-                "east_columns": east_columns,
-                "allow_expansion": allow_expansion,
+                "arrays": arrays,
             }
         )
     except Exception as e:

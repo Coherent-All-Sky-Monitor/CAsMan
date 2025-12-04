@@ -353,7 +353,7 @@ class AntennaArray:
         # Build AntennaPosition objects
         antennas = []
         for row in position_rows:
-            grid_pos = parse_grid_code(row["grid_code"], enforce_core_bounds=False)
+            grid_pos = parse_grid_code(row["grid_code"], enforce_bounds=False)
 
             ant_pos = AntennaPosition(
                 antenna_number=row["antenna_number"],
