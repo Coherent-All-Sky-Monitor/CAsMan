@@ -1003,13 +1003,11 @@
             
             if (state.action === 'connect') {
                 if (!state.firstPart) {
-                    instructions.innerHTML = 'Scan FIRST part (source of connection)<br><small>Note: After LNA, you\'ll need to manually enter COAX parts (no barcodes)</small>';
+                    instructions.innerHTML = 'Scan FIRST part (source of connection)';
                 } else {
                     const nextPartType = getNextPartInChain(state.firstPart.part_type);
                     let extraInfo = '';
-                    if (nextPartType === 'COAXSHORT' || nextPartType === 'COAXLONG') {
-                        extraInfo = '<br>COAX parts have no barcode - will switch to manual entry';
-                    } else if (nextPartType === 'BACBOARD') {
+                    if (nextPartType === 'BACBOARD') {
                         extraInfo = '<br>Can scan barcode OR use manual entry button';
                     }
                     instructions.innerHTML = `
@@ -1136,52 +1134,6 @@
             document.getElementById('coax-type-selection').classList.add('hidden');
             document.getElementById('manual-polarization').classList.add('hidden');
             document.getElementById('manual-number').classList.add('hidden');
-        }
-        
-        // Function to prompt user for coax cable entry
-        function promptForCoaxEntry(expectedCoaxType) {
-            goToStep('manual');
-            
-            const instructionsDiv = document.getElementById('manual-instructions');
-            instructionsDiv.innerHTML = `
-                <strong>Just scanned:</strong> ${state.firstPart.part_number} (${state.firstPart.part_type})<br>
-                <strong>Next:</strong> ${expectedCoaxType}<br>
-                ${expectedCoaxType} parts have no barcode - manual entry required
-            `;
-            
-            // Hide part type selection and show coax type selection
-            document.getElementById('part-type-buttons').parentElement.classList.add('hidden');
-            document.getElementById('coax-type-selection').classList.remove('hidden');
-            document.getElementById('manual-polarization').classList.add('hidden');
-            document.getElementById('manual-number').classList.add('hidden');
-            document.getElementById('manual-status').innerHTML = '';
-            
-            // Clear previous selections
-            state.coaxType = null;
-            state.manualPolarization = null;
-            
-            // Show only the expected coax type button, hide the other
-            const buttons = document.querySelectorAll('#coax-type-selection button');
-            buttons.forEach(btn => {
-                btn.classList.remove('button-selected');
-                btn.style.border = '';
-                btn.style.display = '';
-                
-                if (btn.textContent.includes(expectedCoaxType)) {
-                    // Show and auto-select the expected button
-                    btn.style.display = 'block';
-                    btn.classList.add('button-selected');
-                    // Auto-select this coax type
-                    state.coaxType = expectedCoaxType;
-                    state.manualPartType = expectedCoaxType;
-                } else {
-                    // Hide the other button
-                    btn.style.display = 'none';
-                }
-            });
-            
-            // Since the coax type is auto-selected, show polarization immediately
-            document.getElementById('manual-polarization').classList.remove('hidden');
         }
         
         function selectCoaxType(coaxType) {
@@ -1364,41 +1316,7 @@
                     statusDiv.innerHTML = `<div class="status-success status-message">Part ${partInfo.part_number} found in database</div>`;
                 }
                 
-                // If first part connects to a coax type, go to coax manual entry (no barcode)
                 const nextType = connectionChain[partInfo.part_type];
-                if (nextType && coaxTypes.includes(nextType)) {
-                    setTimeout(() => {
-                        statusDiv.innerHTML = '';
-                        state.method = 'manual';
-                        // Show coax selection directly
-                        promptForCoaxEntry(nextType);
-                    }, 1500);
-                    return;
-                }
-                
-                // If current part is a coax type and next is also coax, prompt for next coax
-                if (coaxTypes.includes(partInfo.part_type) && nextType && coaxTypes.includes(nextType)) {
-                    setTimeout(() => {
-                        statusDiv.innerHTML = '';
-                        state.method = 'manual';
-                        promptForCoaxEntry(nextType);
-                    }, 1500);
-                    return;
-                }
-                
-                // If current part is a coax and next is not coax, allow scan or manual entry
-                if (coaxTypes.includes(partInfo.part_type) && nextType && !coaxTypes.includes(nextType)) {
-                    setTimeout(() => {
-                        statusDiv.innerHTML = `<div class="status-info status-message">Next: ${nextType}<br>Choose to scan barcode or enter manually</div>`;
-                        // Stay in current method (user can switch using buttons)
-                        if (state.method === 'barcode') {
-                            setupBarcodeInput();
-                        } else {
-                            setupManualEntry();
-                        }
-                    }, 1500);
-                    return;
-                }
                 
                 // If next part is the terminal type, show special selection interface
                 if (nextType === terminalType) {

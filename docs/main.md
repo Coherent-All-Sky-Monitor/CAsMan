@@ -31,19 +31,19 @@ graph TD
 
 ### Connection Rules
 
-- **🔒 Sequence Enforcement**: Parts must connect in order: `ANT → LNA → COAXSHORT → COAXLONG → BACBOARD → SNAP`
+- ** Sequence Enforcement**: Parts must connect in order: `ANT → LNA → COAXSHORT → COAXLONG → BACBOARD → SNAP`
 
-- **🔒 Directionality**: ANTENNA parts can only be sources, SNAP parts can only be targets
+- ** Directionality**: ANTENNA parts can only be sources, SNAP parts can only be targets
 
-- **🔒 No Duplicates**: Each part can have only one outgoing and one incoming connection
+- ** No Duplicates**: Each part can have only one outgoing and one incoming connection
 
-- **🔒 Part Validation**: All parts validated against database and SNAP mapping files
+- ** Part Validation**: All parts validated against database and SNAP mapping files
 
 ## Installation
 
 ### Quick Install Options
 
-**Minimal install (Antenna module only - one line):**
+**Minimal install (Antenna module only:):**
 ```bash
 pip install "git+https://github.com/Coherent-All-Sky-Monitor/CAsMan.git#egg=casman[antenna]"
 ```
