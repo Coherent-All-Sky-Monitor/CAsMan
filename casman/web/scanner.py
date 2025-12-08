@@ -79,7 +79,7 @@ def validate_snap_part(part_number: str) -> bool:
     return bool(re.match(pattern, part_number))
 
 
-def validate_connection_sequence(first_type: str, second_type: str) -> tuple[bool, str]:
+def validate_connection_sequence(first_type: str, second_type: str) -> Tuple[bool, str]:
     """Validate that connection follows the proper chain sequence."""
     # Build valid chain from config (sorted by key order)
     VALID_CHAIN = [name for _, (name, _) in sorted(PART_TYPES.items())]
