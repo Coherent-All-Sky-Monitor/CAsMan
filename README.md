@@ -687,7 +687,7 @@ CAsMan supports tracking latitude, longitude, and height for antenna grid positi
 
 ## Testing & Coverage
 
-![Tests](https://img.shields.io/badge/tests-629%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-80.0%25-green)
+![Tests](https://img.shields.io/badge/tests-629%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-0.0%25-green)
 
 
 | Module | Coverage | Lines Covered |

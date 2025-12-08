@@ -11,6 +11,38 @@ initialization, and data access operations.
 
 ## Modules
 
+### sync
+
+Database backup and synchronization module for CAsMan.
+
+Provides cloud backup/restore functionality with support for:
+- Cloudflare R2 / AWS S3 backends
+- Versioned backups with timestamps
+- Zero data loss guarantees
+- Offline-first operation with graceful degradation
+- Multi-user safety with conflict detection
+
+**Functions:**
+- `to_dict()` - No docstring available
+- `from_dict()` - No docstring available
+- `from_config()` - Load sync configuration from config
+- `backend()` - Lazy-load the storage backend
+- `backup_database()` - Backup a database to cloud storage
+- `list_backups()` - List available backups
+- `restore_database()` - Restore a database from a backup
+- `sync_from_remote()` - Sync a local database from the remote (download if newer)
+- `check_needs_sync()` - Check if a local database needs to be synced from remote
+- `maintain_storage_class()` - Perform maintenance to keep objects in Standard storage class
+- `record_scan()` - Record a scan operation
+- `reset_after_backup()` - Reset counters after a backup
+- `should_backup()` - Check if a backup should be triggered based on scan count or time
+
+**Classes:**
+- `BackupMetadata` - Metadata for a database backup
+- `SyncConfig` - Configuration for database synchronization
+- `DatabaseSyncManager` - Manages database backup and synchronization
+- `ScanTracker` - Tracks scan operations to trigger time/count-based backups
+
 ### antenna_positions
 
 Database operations for antenna grid positions.
@@ -47,6 +79,27 @@ Uniqueness constraints ensure:
 - `remove_antenna_position()` - Remove antenna position assignment
 - `load_grid_coordinates_from_csv()` - Load grid position coordinates from CSV file
 
+### quota
+
+R2 Quota tracking to enforce Cloudflare free tier limits.
+
+Tracks:
+- Storage: 10 GB limit
+- Class A operations (writes): 1 million/month limit
+- Class B operations (reads): 10 million/month limit
+
+**Functions:**
+- `record_backup()` - Record a backup operation (Class A: PUT + metadata)
+- `record_restore()` - Record a restore operation (Class B: GET)
+- `record_list()` - Record a list operation (Class A: LIST)
+- `record_sync_check()` - Record sync check operations (Class B: HEAD requests)
+- `check_quota()` - Check if operation would exceed quota limits
+- `get_usage_summary()` - Get current quota usage summary
+
+**Classes:**
+- `QuotaExceededError` - Raised when R2 quota limits are exceeded
+- `QuotaTracker` - Track R2 API usage to prevent exceeding free tier limits
+
 ### initialization
 
 Database initialization utilities for CAsMan.
@@ -78,6 +131,465 @@ This module provides utilities for database path resolution.
 
 **Functions:**
 - `get_database_path()` - Get the full path to a database file
+
+## Sync Module Details
+
+Provides cloud backup/restore functionality with support for:
+- Cloudflare R2 / AWS S3 backends
+- Versioned backups with timestamps
+- Zero data loss guarantees
+- Offline-first operation with graceful degradation
+- Multi-user safety with conflict detection
+
+## Functions
+
+### to_dict
+
+**Signature:** `to_dict() -> dict`
+
+No docstring available.
+
+---
+
+### from_dict
+
+*@classmethod*
+
+**Signature:** `from_dict(cls, data: dict) -> 'BackupMetadata'`
+
+No docstring available.
+
+---
+
+### from_config
+
+*@classmethod*
+
+**Signature:** `from_config(cls) -> 'SyncConfig'`
+
+Load sync configuration from config.yaml and environment.
+
+---
+
+### backend
+
+*@property*
+
+**Signature:** `backend()`
+
+Lazy-load the storage backend.
+
+---
+
+### backup_database
+
+**Signature:** `backup_database(db_path: str, db_name: str, operation: Optional[str], quiet: bool) -> Optional[BackupMetadata]`
+
+Backup a database to cloud storage.
+
+**Parameters:**
+
+db_path : str
+Path to the database file to backup.
+db_name : str
+Name of the database (e.g., 'parts.db').
+operation : str, optional
+Description of the operation that triggered this backup.
+quiet : bool, default False
+If True, suppress log messages.
+
+**Returns:**
+
+BackupMetadata or None
+Metadata about the backup, or None if backup failed/disabled.
+
+---
+
+### list_backups
+
+**Signature:** `list_backups(db_name: Optional[str]) -> List[Tuple[str, BackupMetadata]]`
+
+List available backups.
+
+**Parameters:**
+
+db_name : str, optional
+Filter backups for a specific database.
+
+**Returns:**
+
+List[Tuple[str, BackupMetadata]]
+List of (backup_key, metadata) tuples, sorted by timestamp (newest first).
+
+---
+
+### restore_database
+
+**Signature:** `restore_database(backup_key: str, dest_path: str, create_backup: bool) -> bool`
+
+Restore a database from a backup.
+
+**Parameters:**
+
+backup_key : str
+S3 key of the backup to restore.
+dest_path : str
+Destination path for the restored database.
+create_backup : bool, default True
+If True, backup the current database before restoring.
+
+**Returns:**
+
+bool
+True if restore succeeded, False otherwise.
+
+---
+
+### sync_from_remote
+
+**Signature:** `sync_from_remote(db_path: str, db_name: str, force: bool, quiet: bool) -> bool`
+
+Sync a local database from the remote (download if newer).
+
+**Parameters:**
+
+db_path : str
+Path to local database.
+db_name : str
+Name of the database.
+force : bool, default False
+Force download even if local is up to date.
+quiet : bool, default False
+Suppress log messages.
+
+**Returns:**
+
+bool
+True if sync occurred, False otherwise.
+
+---
+
+### check_needs_sync
+
+**Signature:** `check_needs_sync(db_path: str, db_name: str) -> bool`
+
+Check if a local database needs to be synced from remote.
+
+**Parameters:**
+
+db_path : str
+Path to local database.
+db_name : str
+Name of the database.
+
+**Returns:**
+
+bool
+True if sync is needed, False otherwise.
+
+---
+
+### maintain_storage_class
+
+**Signature:** `maintain_storage_class() -> Dict[str, any]`
+
+Perform maintenance to keep objects in Standard storage class. Touches all backup objects by reading their metadata (HEAD request) to prevent automatic transition to Infrequent Access storage. Should be called at least once per month to ensure objects remain in the free tier eligible Standard storage class.
+
+**Returns:**
+
+dict
+Summary of maintenance operation including objects touched.
+
+---
+
+### record_scan
+
+**Signature:** `record_scan()`
+
+Record a scan operation.
+
+---
+
+### reset_after_backup
+
+**Signature:** `reset_after_backup()`
+
+Reset counters after a backup.
+
+---
+
+### should_backup
+
+**Signature:** `should_backup(config: SyncConfig) -> bool`
+
+Check if a backup should be triggered based on scan count or time.
+
+**Parameters:**
+
+config : SyncConfig
+Sync configuration with thresholds.
+
+**Returns:**
+
+bool
+True if backup should be triggered.
+
+---
+
+## Classes
+
+### BackupMetadata
+
+*@dataclass*
+
+**Class:** `BackupMetadata`
+
+Metadata for a database backup.
+
+#### Methods
+
+##### to_dict
+
+**Signature:** `to_dict() -> dict`
+
+No docstring available.
+
+---
+
+##### from_dict
+
+*@classmethod*
+
+**Signature:** `from_dict(cls, data: dict) -> 'BackupMetadata'`
+
+No docstring available.
+
+---
+
+---
+
+### SyncConfig
+
+*@dataclass*
+
+**Class:** `SyncConfig`
+
+Configuration for database synchronization.
+
+#### Methods
+
+##### from_config
+
+*@classmethod*
+
+**Signature:** `from_config(cls) -> 'SyncConfig'`
+
+Load sync configuration from config.yaml and environment.
+
+---
+
+---
+
+### DatabaseSyncManager
+
+**Class:** `DatabaseSyncManager`
+
+Manages database backup and synchronization.
+
+#### Methods
+
+##### __init__
+
+**Signature:** `__init__(config: Optional[SyncConfig], db_dir: Optional[str])`
+
+No docstring available.
+
+---
+
+##### backend
+
+*@property*
+
+**Signature:** `backend()`
+
+Lazy-load the storage backend.
+
+---
+
+##### backup_database
+
+**Signature:** `backup_database(db_path: str, db_name: str, operation: Optional[str], quiet: bool) -> Optional[BackupMetadata]`
+
+Backup a database to cloud storage.
+
+**Parameters:**
+
+db_path : str
+Path to the database file to backup.
+db_name : str
+Name of the database (e.g., 'parts.db').
+operation : str, optional
+Description of the operation that triggered this backup.
+quiet : bool, default False
+If True, suppress log messages.
+
+**Returns:**
+
+BackupMetadata or None
+Metadata about the backup, or None if backup failed/disabled.
+
+---
+
+##### list_backups
+
+**Signature:** `list_backups(db_name: Optional[str]) -> List[Tuple[str, BackupMetadata]]`
+
+List available backups.
+
+**Parameters:**
+
+db_name : str, optional
+Filter backups for a specific database.
+
+**Returns:**
+
+List[Tuple[str, BackupMetadata]]
+List of (backup_key, metadata) tuples, sorted by timestamp (newest first).
+
+---
+
+##### restore_database
+
+**Signature:** `restore_database(backup_key: str, dest_path: str, create_backup: bool) -> bool`
+
+Restore a database from a backup.
+
+**Parameters:**
+
+backup_key : str
+S3 key of the backup to restore.
+dest_path : str
+Destination path for the restored database.
+create_backup : bool, default True
+If True, backup the current database before restoring.
+
+**Returns:**
+
+bool
+True if restore succeeded, False otherwise.
+
+---
+
+##### sync_from_remote
+
+**Signature:** `sync_from_remote(db_path: str, db_name: str, force: bool, quiet: bool) -> bool`
+
+Sync a local database from the remote (download if newer).
+
+**Parameters:**
+
+db_path : str
+Path to local database.
+db_name : str
+Name of the database.
+force : bool, default False
+Force download even if local is up to date.
+quiet : bool, default False
+Suppress log messages.
+
+**Returns:**
+
+bool
+True if sync occurred, False otherwise.
+
+---
+
+##### check_needs_sync
+
+**Signature:** `check_needs_sync(db_path: str, db_name: str) -> bool`
+
+Check if a local database needs to be synced from remote.
+
+**Parameters:**
+
+db_path : str
+Path to local database.
+db_name : str
+Name of the database.
+
+**Returns:**
+
+bool
+True if sync is needed, False otherwise.
+
+---
+
+##### maintain_storage_class
+
+**Signature:** `maintain_storage_class() -> Dict[str, any]`
+
+Perform maintenance to keep objects in Standard storage class. Touches all backup objects by reading their metadata (HEAD request) to prevent automatic transition to Infrequent Access storage. Should be called at least once per month to ensure objects remain in the free tier eligible Standard storage class.
+
+**Returns:**
+
+dict
+Summary of maintenance operation including objects touched.
+
+---
+
+---
+
+### ScanTracker
+
+**Class:** `ScanTracker`
+
+Tracks scan operations to trigger time/count-based backups.
+
+#### Methods
+
+##### __init__
+
+**Signature:** `__init__(db_dir: Optional[str])`
+
+No docstring available.
+
+---
+
+##### record_scan
+
+**Signature:** `record_scan()`
+
+Record a scan operation.
+
+---
+
+##### reset_after_backup
+
+**Signature:** `reset_after_backup()`
+
+Reset counters after a backup.
+
+---
+
+##### should_backup
+
+**Signature:** `should_backup(config: SyncConfig) -> bool`
+
+Check if a backup should be triggered based on scan count or time.
+
+**Parameters:**
+
+config : SyncConfig
+Sync configuration with thresholds.
+
+**Returns:**
+
+bool
+True if backup should be triggered.
+
+---
+
+---
 
 ## Antenna_Positions Module Details
 
@@ -246,7 +758,7 @@ If grid_code is invalid.
 
 ### get_all_antenna_positions
 
-**Signature:** `get_all_antenna_positions() -> list[dict]`
+**Signature:** `get_all_antenna_positions() -> List[dict]`
 
 Retrieve all antenna position assignments.
 
@@ -328,6 +840,173 @@ Summary with counts: {'updated': int, 'skipped': int, 'errors': list}
 >>> result = load_grid_coordinates_from_csv()
 >>> print(f"Updated {result['updated']} positions")
 ```
+
+---
+
+## Quota Module Details
+
+Tracks:
+- Storage: 10 GB limit
+- Class A operations (writes): 1 million/month limit
+- Class B operations (reads): 10 million/month limit
+
+## Functions
+
+### record_backup
+
+**Signature:** `record_backup(size_bytes: int, num_files: int)`
+
+Record a backup operation (Class A: PUT + metadata).
+
+---
+
+### record_restore
+
+**Signature:** `record_restore()`
+
+Record a restore operation (Class B: GET).
+
+---
+
+### record_list
+
+**Signature:** `record_list(num_requests: int)`
+
+Record a list operation (Class A: LIST).
+
+---
+
+### record_sync_check
+
+**Signature:** `record_sync_check(num_files: int)`
+
+Record sync check operations (Class B: HEAD requests).
+
+---
+
+### check_quota
+
+**Signature:** `check_quota(quota_limits: dict, operation: str) -> bool`
+
+Check if operation would exceed quota limits.
+
+**Parameters:**
+
+quota_limits : dict
+Dictionary with quota limit configuration.
+operation : str
+Type of operation: 'backup', 'restore', 'list', 'sync'
+
+**Returns:**
+
+bool
+True if operation is allowed, False otherwise.
+
+**Raises:**
+
+QuotaExceededError
+If quota would be exceeded.
+
+---
+
+### get_usage_summary
+
+**Signature:** `get_usage_summary(quota_limits: dict) -> dict`
+
+Get current quota usage summary.
+
+---
+
+## Classes
+
+### QuotaExceededError
+
+**Class:** `QuotaExceededError(Exception)`
+
+Raised when R2 quota limits are exceeded.
+
+---
+
+### QuotaTracker
+
+**Class:** `QuotaTracker`
+
+Track R2 API usage to prevent exceeding free tier limits.
+
+#### Methods
+
+##### __init__
+
+**Signature:** `__init__(db_dir: Optional[str])`
+
+No docstring available.
+
+---
+
+##### record_backup
+
+**Signature:** `record_backup(size_bytes: int, num_files: int)`
+
+Record a backup operation (Class A: PUT + metadata).
+
+---
+
+##### record_restore
+
+**Signature:** `record_restore()`
+
+Record a restore operation (Class B: GET).
+
+---
+
+##### record_list
+
+**Signature:** `record_list(num_requests: int)`
+
+Record a list operation (Class A: LIST).
+
+---
+
+##### record_sync_check
+
+**Signature:** `record_sync_check(num_files: int)`
+
+Record sync check operations (Class B: HEAD requests).
+
+---
+
+##### check_quota
+
+**Signature:** `check_quota(quota_limits: dict, operation: str) -> bool`
+
+Check if operation would exceed quota limits.
+
+**Parameters:**
+
+quota_limits : dict
+Dictionary with quota limit configuration.
+operation : str
+Type of operation: 'backup', 'restore', 'list', 'sync'
+
+**Returns:**
+
+bool
+True if operation is allowed, False otherwise.
+
+**Raises:**
+
+QuotaExceededError
+If quota would be exceeded.
+
+---
+
+##### get_usage_summary
+
+**Signature:** `get_usage_summary(quota_limits: dict) -> dict`
+
+Get current quota usage summary.
+
+---
 
 ---
 

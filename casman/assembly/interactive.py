@@ -31,7 +31,7 @@ for i, part_type in enumerate(VALID_CONNECTION_CHAIN):
 
 def validate_connection_rules(
     first_part: str, first_type: str, connected_part: str, connected_type: str
-) -> tuple[bool, str]:
+) -> Tuple[bool, str]:
     """
     Validate that the connection follows the defined chain rules.
 
@@ -57,7 +57,7 @@ def validate_connection_rules(
 
 def validate_chain_directionality(
     part_type: str, connection_direction: str
-) -> tuple[bool, str]:
+) -> Tuple[bool, str]:
     """
     Validate that parts follow proper chain directionality rules.
 

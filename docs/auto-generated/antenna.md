@@ -148,6 +148,7 @@ Example
 >>> print(f"Baseline: {baseline:.2f} meters")
 
 **Functions:**
+- `sync_database()` - Download/sync database from cloud storage
 - `has_coordinates()` - Check if this antenna has geographic coordinates
 - `get_snap_ports()` - Get SNAP port assignments by tracing assembly chains
 - `format_chain_status()` - Format assembly chain status for display
@@ -232,7 +233,7 @@ All functions raise ``ValueError`` on invalid inputs.
 
 ### load_core_layout
 
-**Signature:** `load_core_layout() -> tuple[str, int, int, int, bool]`
+**Signature:** `load_core_layout() -> Tuple[str, int, int, int, bool]`
 
 Load core array layout limits from configuration.
 
@@ -250,7 +251,7 @@ If required configuration keys are missing.
 
 ### load_array_layout
 
-**Signature:** `load_array_layout(array_name: str) -> tuple[str, int, int, int, bool]`
+**Signature:** `load_array_layout(array_name: str) -> Tuple[str, int, int, int, bool]`
 
 Load array layout limits from configuration for any grid.
 
@@ -838,6 +839,53 @@ Example
 
 ## Functions
 
+### sync_database
+
+**Signature:** `sync_database(db_name: str, db_dir: Optional[str], public_url: Optional[str]) -> dict`
+
+Download/sync database from cloud storage. Downloads the latest database from a public URL or R2 bucket. Does NOT require credentials if using public URL.
+
+**Parameters:**
+
+db_name : str, optional
+Database filename to sync (default: 'parts.db')
+db_dir : str, optional
+Database directory (default: 'database/')
+public_url : str, optional
+Public URL to download database from. If not provided, attempts
+to use URL from config.yaml (r2.public_urls). If still None,
+falls back to R2 with credentials.
+
+**Returns:**
+
+dict
+Sync result with keys:
+- 'success': bool - Whether download completed
+- 'synced': bool - Whether database was updated
+- 'message': str - Human readable status
+
+**Examples:**
+
+```python
+>>> # Auto-download from public URL in config (no credentials needed)
+>>> from casman.antenna import sync_database, AntennaArray
+>>>
+>>> result = sync_database('parts.db')  # Uses config.yaml public URL
+>>> if result['success']:
+...     array = AntennaArray.from_database('database/parts.db')
+>>>
+>>> # Override with specific URL
+>>> result = sync_database(
+...     'parts.db',
+...     public_url='https://pub-xxxxx.r2.dev/latest_parts.db'
+... )
+>>>
+>>> # Or use sync_first parameter in from_database
+>>> array = AntennaArray.from_database('database/parts.db', sync_first=True)
+```
+
+---
+
 ### has_coordinates
 
 **Signature:** `has_coordinates() -> bool`
@@ -947,7 +995,7 @@ Get zero-based east column index.
 
 *@classmethod*
 
-**Signature:** `from_database(cls, db_path: str | Path, array_id: str, db_dir: Optional[str]) -> AntennaArray`
+**Signature:** `from_database(cls, db_path: str | Path, array_id: str, db_dir: Optional[str], sync_first: bool, public_url: Optional[str]) -> AntennaArray`
 
 Load antenna array from CAsMan database.
 
@@ -959,6 +1007,10 @@ array_id : str, optional
 Array identifier to load (default: 'C' for core array)
 db_dir : str, optional
 Database directory for assembly chain lookups (default: use parent of db_path)
+sync_first : bool, optional
+If True, download database before loading (default: False)
+public_url : str, optional
+Public URL to download database from (no credentials needed).
 
 **Returns:**
 
@@ -968,14 +1020,27 @@ Loaded antenna array object
 **Raises:**
 
 FileNotFoundError
-If database file doesn't exist
+If database file doesn't exist (and sync_first=False)
 sqlite3.Error
 If database query fails
 
 **Examples:**
 
 ```python
+>>> # Load from local database
 >>> array = AntennaArray.from_database('database/parts.db')
+>>>
+>>> # Download from public URL first (no credentials needed)
+>>> array = AntennaArray.from_database(
+...     'database/parts.db',
+...     sync_first=True,
+...     public_url='https://pub-xxxxx.r2.dev/latest_parts.db'
+... )
+>>>
+>>> # Sync from R2 with credentials (if configured)
+>>> array = AntennaArray.from_database('database/parts.db', sync_first=True)
+>>>
+>>> # Load specific array
 >>> array = AntennaArray.from_database('database/parts.db', array_id='C')
 ```
 
@@ -1315,7 +1380,7 @@ Antenna position objects to include in array
 
 *@classmethod*
 
-**Signature:** `from_database(cls, db_path: str | Path, array_id: str, db_dir: Optional[str]) -> AntennaArray`
+**Signature:** `from_database(cls, db_path: str | Path, array_id: str, db_dir: Optional[str], sync_first: bool, public_url: Optional[str]) -> AntennaArray`
 
 Load antenna array from CAsMan database.
 
@@ -1327,6 +1392,10 @@ array_id : str, optional
 Array identifier to load (default: 'C' for core array)
 db_dir : str, optional
 Database directory for assembly chain lookups (default: use parent of db_path)
+sync_first : bool, optional
+If True, download database before loading (default: False)
+public_url : str, optional
+Public URL to download database from (no credentials needed).
 
 **Returns:**
 
@@ -1336,14 +1405,27 @@ Loaded antenna array object
 **Raises:**
 
 FileNotFoundError
-If database file doesn't exist
+If database file doesn't exist (and sync_first=False)
 sqlite3.Error
 If database query fails
 
 **Examples:**
 
 ```python
+>>> # Load from local database
 >>> array = AntennaArray.from_database('database/parts.db')
+>>>
+>>> # Download from public URL first (no credentials needed)
+>>> array = AntennaArray.from_database(
+...     'database/parts.db',
+...     sync_first=True,
+...     public_url='https://pub-xxxxx.r2.dev/latest_parts.db'
+... )
+>>>
+>>> # Sync from R2 with credentials (if configured)
+>>> array = AntennaArray.from_database('database/parts.db', sync_first=True)
+>>>
+>>> # Load specific array
 >>> array = AntennaArray.from_database('database/parts.db', array_id='C')
 ```
 

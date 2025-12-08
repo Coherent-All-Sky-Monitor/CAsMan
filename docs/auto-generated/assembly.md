@@ -243,7 +243,7 @@ and assembling parts.
 
 ### validate_connection_rules
 
-**Signature:** `validate_connection_rules(first_part: str, first_type: str, connected_part: str, connected_type: str) -> tuple[bool, str]`
+**Signature:** `validate_connection_rules(first_part: str, first_type: str, connected_part: str, connected_type: str) -> Tuple[bool, str]`
 
 Validate that the connection follows the defined chain rules.
 
@@ -255,7 +255,7 @@ tuple[bool, str]: (is_valid, error_message)
 
 ### validate_chain_directionality
 
-**Signature:** `validate_chain_directionality(part_type: str, connection_direction: str) -> tuple[bool, str]`
+**Signature:** `validate_chain_directionality(part_type: str, connection_direction: str) -> Tuple[bool, str]`
 
 Validate that parts follow proper chain directionality rules.
 
@@ -267,7 +267,7 @@ tuple[bool, str]: (is_valid, error_message)
 
 ### check_existing_connections
 
-**Signature:** `check_existing_connections(part_number: str) -> tuple[bool, str, list]`
+**Signature:** `check_existing_connections(part_number: str) -> Tuple[bool, str, List]`
 
 Check if a part already has existing connections to prevent duplicates/branches.
 
@@ -279,7 +279,7 @@ tuple[bool, str, list]: (can_connect, error_message, existing_connections)
 
 ### check_target_connections
 
-**Signature:** `check_target_connections(connected_part: str) -> tuple[bool, str]`
+**Signature:** `check_target_connections(connected_part: str) -> Tuple[bool, str]`
 
 Check if the target part can accept a new connection.
 
@@ -291,7 +291,7 @@ tuple[bool, str]: (can_accept, error_message)
 
 ### validate_part_in_database
 
-**Signature:** `validate_part_in_database(part_number: str) -> tuple[bool, str, str]`
+**Signature:** `validate_part_in_database(part_number: str) -> Tuple[bool, str, str]`
 
 Validate if a part exists in the parts database or SNAP mapping.
 
@@ -303,7 +303,7 @@ tuple[bool, str, str]: (is_valid, part_type, polarization)
 
 ### validate_snap_part
 
-**Signature:** `validate_snap_part(part_number: str) -> tuple[bool, str, str]`
+**Signature:** `validate_snap_part(part_number: str) -> Tuple[bool, str, str]`
 
 Validate a SNAP part format (SNAP<chassis><slot><port>).
 
