@@ -7,6 +7,7 @@ and assembling parts.
 
 import logging
 import sqlite3
+from typing import List, Tuple
 
 from casman.config import get_config
 from casman.parts.types import load_part_types
@@ -84,7 +85,7 @@ def validate_chain_directionality(
     return True, ""
 
 
-def check_existing_connections(part_number: str) -> tuple[bool, str, list]:
+def check_existing_connections(part_number: str) -> Tuple[bool, str, List]:
     """
     Check if a part already has existing connections to prevent duplicates/branches.
 
@@ -146,7 +147,7 @@ def check_existing_connections(part_number: str) -> tuple[bool, str, list]:
         return False, f"Database error: {e}", []
 
 
-def check_target_connections(connected_part: str) -> tuple[bool, str]:
+def check_target_connections(connected_part: str) -> Tuple[bool, str]:
     """
     Check if the target part can accept a new connection.
 
@@ -186,7 +187,7 @@ def check_target_connections(connected_part: str) -> tuple[bool, str]:
         return False, f"Database error: {e}"
 
 
-def validate_part_in_database(part_number: str) -> tuple[bool, str, str]:
+def validate_part_in_database(part_number: str) -> Tuple[bool, str, str]:
     """
     Validate if a part exists in the parts database or SNAP mapping.
 
@@ -225,7 +226,7 @@ def validate_part_in_database(part_number: str) -> tuple[bool, str, str]:
         return False, "", ""
 
 
-def validate_snap_part(part_number: str) -> tuple[bool, str, str]:
+def validate_snap_part(part_number: str) -> Tuple[bool, str, str]:
     """
     Validate a SNAP part format (SNAP<chassis><slot><port>).
 

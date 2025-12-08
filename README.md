@@ -153,7 +153,49 @@ casman web --visualize-only          # Launch visualization interface only (port
 # Barcode generation
 casman barcode printpages --part-type ANTENNA --start-number 1 --end-number 50
 
+# Database backup and sync (R2/S3)
+casman sync backup                   # Backup databases to cloud storage
+casman sync list                     # List available backups
+casman sync restore <backup-key>     # Restore from backup
+casman sync sync                     # Sync with latest remote version
+casman sync status                   # Show sync configuration and status
+
 ```
+
+### Database Backup & Synchronization
+
+CAsMan provides automatic cloud backup for zero data loss and multi-user collaboration:
+
+```bash
+# Setup (one-time, see docs/database_backup_quickstart.md)
+pip install boto3
+export R2_ACCOUNT_ID="your-account-id"
+export R2_ACCESS_KEY_ID="your-access-key"  
+export R2_SECRET_ACCESS_KEY="your-secret-key"
+
+# Verify setup
+casman sync status
+
+# Manual operations
+casman sync backup                   # Backup both databases
+casman sync list                     # List all backups
+casman sync sync                     # Download latest versions
+casman sync restore <backup-key>     # Restore from specific backup
+```
+
+**Automatic Backups:**
+- After part generation
+- Every 10 scans OR every 24 hours (configurable)
+- Versioned storage with timestamps
+- Works with Cloudflare R2 (recommended, ~$0.02/year) or AWS S3
+
+**Multi-User Safe:**
+- Multiple people can scan and generate parts
+- Sync before/after work: `casman sync sync`
+- Offline-first (works without internet)
+- Zero data loss guarantee
+
+See [Database Backup Quick Start](docs/database_backup_quickstart.md) for 5-minute setup guide.
 
 ### Database Management
 

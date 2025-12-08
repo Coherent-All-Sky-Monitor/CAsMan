@@ -73,11 +73,11 @@ check_prerequisites() {
         exit 1
     fi
     
-    # Check Python version (require 3.9+)
+    # Check Python version (require 3.8+)
     PYTHON_VERSION=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
-    REQUIRED_VERSION="3.9"
+    REQUIRED_VERSION="3.8"
     if [ "$(printf '%s\n' "$REQUIRED_VERSION" "$PYTHON_VERSION" | sort -V | head -n1)" != "$REQUIRED_VERSION" ]; then
-        log_error "Python 3.9 or higher is required (found $PYTHON_VERSION)"
+        log_error "Python 3.8 or higher is required (found $PYTHON_VERSION)"
         exit 1
     fi
     
@@ -141,8 +141,8 @@ create_virtual_environment() {
     sudo -u "$ACTUAL_USER" python3 -m venv .venv
     
     log_info "Installing CAsMan in virtual environment..."
-    sudo -u "$ACTUAL_USER" "$INSTALL_DIR/.venv/bin/pip" install --quiet --upgrade pip
-    sudo -u "$ACTUAL_USER" "$INSTALL_DIR/.venv/bin/pip" install --quiet -e .
+    sudo -u "$ACTUAL_USER" "$INSTALL_DIR/.venv/bin/pip" install --upgrade pip
+    sudo -u "$ACTUAL_USER" "$INSTALL_DIR/.venv/bin/pip" install -e .
     
     # Verify installation
     if "$INSTALL_DIR/.venv/bin/casman" --version &> /dev/null; then

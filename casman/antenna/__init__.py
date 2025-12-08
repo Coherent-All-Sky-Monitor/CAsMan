@@ -24,6 +24,7 @@ from .chain import (
 from .array import (
     AntennaPosition,
     AntennaArray,
+    sync_database,
 )
 from .kernel_index import (
     KernelIndexArray,
@@ -47,6 +48,7 @@ __all__ = [
     "format_snap_port",
     "AntennaPosition",
     "AntennaArray",
+    "sync_database",
     "KernelIndexArray",
     "grid_to_kernel_index",
     "kernel_index_to_grid",

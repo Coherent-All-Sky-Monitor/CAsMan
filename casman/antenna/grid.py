@@ -66,7 +66,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import re
-from typing import Optional
+from typing import Optional, Tuple
 
 from casman.config import get_config
 
@@ -125,7 +125,7 @@ class AntennaGridPosition:
             raise ValueError("grid_code mismatch with normalized components")
 
 
-def load_core_layout() -> tuple[str, int, int, int, bool]:
+def load_core_layout() -> Tuple[str, int, int, int, bool]:
     """Load core array layout limits from configuration.
 
     Returns
@@ -152,7 +152,7 @@ def load_core_layout() -> tuple[str, int, int, int, bool]:
     )
 
 
-def load_array_layout(array_name: str) -> tuple[str, int, int, int, bool]:
+def load_array_layout(array_name: str) -> Tuple[str, int, int, int, bool]:
     """Load array layout limits from configuration for any grid.
 
     Parameters

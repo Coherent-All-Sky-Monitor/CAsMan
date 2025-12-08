@@ -11,3 +11,6 @@ gunicorn>=21.0.0
 
 # NumPy for kernel index array operations
 numpy>=1.20.0
+
+# boto3 for cloud storage (R2/S3) backup and sync
+boto3>=1.26.0

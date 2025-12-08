@@ -68,6 +68,7 @@ pip install -e ".[dev]"
 from casman.antenna import AntennaArray
 
 # Load antenna array from database
+# (If you don't have the database yet, see next section to download it)
 array = AntennaArray.from_database('database/parts.db')
 
 print(f"Loaded {len(array)} antennas")
@@ -84,6 +85,79 @@ kernel_idx = grid_to_kernel_index(ant.grid_code)
 if kernel_idx is not None:
     print(f"Kernel Index: {kernel_idx}")
 ```
+
+### First Time Setup (Download Database)
+
+If you don't have a local database yet, download it first:
+
+```python
+from casman.antenna import AntennaArray
+
+# Download and load in one line (uses public URL from config.yaml)
+array = AntennaArray.from_database('database/parts.db', sync_first=True)
+print(f"Downloaded and loaded {len(array)} antennas")
+
+# Or do it separately
+from casman.antenna import sync_database
+result = sync_database('parts.db')
+if result['success']:
+    array = AntennaArray.from_database('database/parts.db')
+```
+
+**Smart Sync Behavior:**
+- If database doesn't exist → Downloads it
+- If database exists and remote is newer → Downloads update
+- If database exists and is up to date → Skips download
+- If download fails but local exists → Uses local copy
+
+**That's it!** No credentials needed - public URL is pre-configured in `config.yaml`.
+
+### Download Latest Database (No Credentials Required)
+
+Download the latest database automatically:
+
+```python
+from casman.antenna import sync_database, AntennaArray
+
+# Option 1: Auto-download using config.yaml (easiest - no credentials needed)
+# Public URL is pre-configured in config.yaml
+result = sync_database('parts.db')
+print(result['message'])
+if result['success']:
+    array = AntennaArray.from_database('database/parts.db')
+
+# Option 2: One-liner auto-download on load
+array = AntennaArray.from_database('database/parts.db', sync_first=True)
+# Uses public URL from config.yaml automatically!
+
+# Option 3: Override with specific public URL
+PUBLIC_URL = 'https://pub-xxxxx.r2.dev/backups/parts.db/latest_parts.db'
+array = AntennaArray.from_database(
+    'database/parts.db',
+    sync_first=True,
+    public_url=PUBLIC_URL
+)
+
+# Option 4: Use R2 with credentials (for maintainers only)
+# See: Database Backup Quick Start guide
+result = sync_database('parts.db')  # Falls back to R2 auth if no public URL
+```
+
+**Configuration:**
+
+Public URLs are configured in `config.yaml`:
+```yaml
+r2:
+  public_urls:
+    parts_db: "https://pub-xxxxx.r2.dev/backups/parts.db/latest_parts.db"
+    assembled_db: "https://pub-xxxxx.r2.dev/backups/assembled_casm.db/latest_assembled_casm.db"
+```
+
+**Note:** 
+- Public URL download requires **no credentials**
+- URLs are pre-configured by project maintainers
+- Just install and call `sync_database()` - it works automatically!
+- Or override with custom `public_url` parameter if needed
 
 ### Compute Baselines
 
@@ -137,16 +211,29 @@ if ant:
 
 ## API Reference
 
+### Database Sync Function
+
+**`sync_database(db_name='parts.db', db_dir=None, public_url=None)`**
+- Download/sync database from cloud storage
+- `db_name`: Database filename (default: 'parts.db')
+- `db_dir`: Database directory (default: 'database/')
+- `public_url`: Public URL for download (optional - uses config.yaml if not provided)
+- Returns: dict with 'success', 'synced', 'message' keys
+- **No credentials needed** - uses public URL from config.yaml automatically
+- Priority: explicit public_url → config.yaml public_url → R2 with credentials
+
 ### AntennaArray Class
 
 Main interface for working with antenna collections.
 
 #### Methods
 
-**`AntennaArray.from_database(db_path, array_id='C')`**
+**`AntennaArray.from_database(db_path, array_id='C', sync_first=False, public_url=None)`**
 - Load array from CAsMan database
 - `db_path`: Path to `parts.db` file
 - `array_id`: Array identifier (default: 'C' for core)
+- `sync_first`: If True, download database before loading (default: False)
+- `public_url`: Public URL for credential-free download
 - Returns: `AntennaArray` object
 
 **`get_antenna(antenna_number)`**
@@ -227,6 +314,47 @@ Represents a single antenna with all metadata.
 - `format_chain_status(polarization='P1')`: str - Format assembly chain status for display
 
 ## Examples
+
+### Download and Load Latest Database
+
+```python
+from casman.antenna import sync_database, AntennaArray
+
+# Method 1: Auto-download using pre-configured URLs (easiest!)
+print("Downloading latest database...")
+result = sync_database('parts.db')  # Uses config.yaml public URL
+
+if result['success']:
+    print(f"✓ {result['message']}")
+    array = AntennaArray.from_database('database/parts.db')
+    print(f"Loaded {len(array.antennas)} antennas")
+else:
+    print(f"✗ Download failed: {result['message']}")
+
+# Method 2: One-liner auto-download on load
+array = AntennaArray.from_database('database/parts.db', sync_first=True)
+# Automatically uses public URL from config.yaml!
+
+# Method 3: Download both databases for complete data
+sync_database('parts.db')              # Antenna positions (from config)
+sync_database('assembled_casm.db')     # Assembly chains (from config)
+
+array = AntennaArray.from_database('database/parts.db')
+
+# Now you can trace complete chains with downloaded data
+ant = array.get_antenna('ANT00001')
+chain_p1 = ant.format_chain_status('P1')
+print(f"Chain: {chain_p1}")
+
+# Method 4: Override with custom public URL
+CUSTOM_URL = 'https://custom-server.com/latest_parts.db'
+result = sync_database('parts.db', public_url=CUSTOM_URL)
+
+# Method 5: Use R2 with credentials (maintainers only)
+# Requires R2 credentials configured - see Database Backup Quick Start
+# Falls back to this if public URL not in config
+result = sync_database('parts.db')
+```
 
 ### Baseline Matrix Computation
 

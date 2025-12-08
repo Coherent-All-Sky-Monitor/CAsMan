@@ -14,6 +14,7 @@ from .assembly_commands import cmd_scan
 from .barcode_commands import cmd_barcode
 from .database_commands import cmd_database
 from .parts_commands import cmd_parts
+from .sync_commands import cmd_sync
 from .utils import (
     show_commands_list,
     show_completion_help,
@@ -82,6 +83,7 @@ def main() -> None:
         "parts": "Manage parts in the database - list, add, search, and validate parts",
         "scan": "Interactive scanning and assembly with real-time validation",
         "database": "Database management operations - clear and print databases",
+        "sync": "Database backup and synchronization with cloud storage (R2/S3)",
         "visualize": "Visualize assembly chains and connection statistics with duplicate detection",
         "web": "Launch unified web application - scanner and/or visualization (dev/production modes)",
         "barcode": "Generate barcodes and printable pages for part identification",
@@ -106,6 +108,8 @@ def main() -> None:
             cmd_web()
         elif command == "barcode":
             cmd_barcode()
+        elif command == "sync":
+            cmd_sync()
         elif command == "completion":
             show_completion_help()
         else:
@@ -129,6 +133,8 @@ def main() -> None:
             cmd_scan()
         elif command == "database":
             cmd_database()
+        elif command == "sync":
+            cmd_sync()
         elif command == "visualize":
             cmd_visualize()
         elif command == "web":
@@ -160,6 +166,8 @@ def main() -> None:
         cmd_scan()
     elif command == "database":
         cmd_database()
+    elif command == "sync":
+        cmd_sync()
     elif command == "visualize":
         cmd_visualize()
     elif command == "web":

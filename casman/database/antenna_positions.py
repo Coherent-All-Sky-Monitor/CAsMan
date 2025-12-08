@@ -25,7 +25,7 @@ Uniqueness constraints ensure:
 
 from datetime import datetime, timezone
 import sqlite3
-from typing import Optional
+from typing import List, Optional
 
 from casman.antenna.grid import parse_grid_code, to_grid_code
 from casman.database.connection import get_database_path
@@ -374,7 +374,7 @@ def get_antenna_at_position(
 
 def get_all_antenna_positions(
     *, array_id: Optional[str] = None, db_dir: Optional[str] = None
-) -> list[dict]:
+) -> List[dict]:
     """Retrieve all antenna position assignments.
 
     Parameters

@@ -12,6 +12,54 @@ PART_TYPES:
 CASMAN_ASSEMBLED_DB: database/assembled_casm.db
 CASMAN_PARTS_DB: database/parts.db
 
+# Database backup and synchronization
+database:
+  sync:
+    # Enable/disable cloud backup and sync
+    enabled: true
+    
+    # Backend: 'r2' (Cloudflare R2), 's3' (AWS S3), or 'disabled'
+    backend: r2
+    
+    # Auto-sync on package install (not on every import)
+    auto_sync_on_import: false
+    
+    # Cache TTL in seconds (1 hour = 3600)
+    cache_ttl_seconds: 3600
+    
+    # Number of backup versions to keep
+    keep_versions: 10
+    
+    # Backup triggers
+    backup_on_scan_count: 10      # Backup every N scans
+    backup_on_hours: 24.0          # Backup every N hours (if scans occurred)
+    
+    # R2 Free Tier Safety Limits (enforced to prevent exceeding quotas)
+    # Cloudflare R2 Free Tier: 10 GB storage, 1M Class A ops/month, 10M Class B ops/month
+    quota_limits:
+      storage_gb: 10.0              # Max storage (GB) - 10 GB free tier
+      class_a_operations: 1000000   # Max Class A ops/month (writes) - 1M free tier
+      class_b_operations: 10000000  # Max Class B ops/month (reads) - 10M free tier
+      warn_threshold: 0.8           # Warn at 80% usage
+      block_threshold: 0.95         # Block operations at 95% usage
+
+# Cloudflare R2 configuration
+# Set via environment variables or uncomment and set here:
+r2:
+  # account_id: your-account-id
+  # access_key_id: your-access-key-id
+  # secret_access_key: your-secret-access-key
+  bucket_name: casman-databases
+  # endpoint: https://your-account-id.r2.cloudflarestorage.com
+  region: auto
+  
+  # Public URLs for credential-free database downloads
+  # Users can download latest databases without R2 credentials
+  # Set these to your R2 public bucket URLs (after enabling public access)
+  public_urls:
+    parts_db: "https://pub-xxxxx.r2.dev/backups/parts.db/latest_parts.db"
+    assembled_db: "https://pub-xxxxx.r2.dev/backups/assembled_casm.db/latest_assembled_casm.db"
+
 # Barcode generation settings
 barcode:
   default_format: code128
