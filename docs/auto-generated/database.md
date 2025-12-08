@@ -712,10 +712,6 @@ Antenna part number (with or without polarization).
 db_dir : str, optional
 Custom database directory for testing.
 
-**Returns:**
-
-
-
 **Examples:**
 
 ```python
@@ -737,10 +733,6 @@ grid_code : str
 Grid position code (e.g. 'CN002E03').
 db_dir : str, optional
 Custom database directory for testing.
-
-**Returns:**
-
-
 
 **Raises:**
 

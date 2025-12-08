@@ -339,27 +339,32 @@ class MarkdownGenerator:
 
         # Parse and add docstring sections
         docstring_info = self.parser.parse(func_info.docstring)
-        lines.extend([docstring_info["description"], ""])
+        if docstring_info.get("description"):
+            lines.extend([docstring_info["description"], ""])
 
         # Parameters
         if "parameters" in docstring_info or "params" in docstring_info:
             params = docstring_info.get("parameters") or docstring_info.get("params")
-            lines.extend(["**Parameters:**", "", params, ""])
+            if params:
+                lines.extend(["**Parameters:**", "", params, ""])
 
         # Returns
         if "returns" in docstring_info or "return" in docstring_info:
             returns = docstring_info.get("returns") or docstring_info.get("return")
-            lines.extend(["**Returns:**", "", returns, ""])
+            if returns:
+                lines.extend(["**Returns:**", "", returns, ""])
 
         # Raises
         if "raises" in docstring_info or "exceptions" in docstring_info:
             raises = docstring_info.get("raises") or docstring_info.get("exceptions")
-            lines.extend(["**Raises:**", "", raises, ""])
+            if raises:
+                lines.extend(["**Raises:**", "", raises, ""])
 
         # Examples
         if "examples" in docstring_info or "example" in docstring_info:
             examples = docstring_info.get("examples") or docstring_info.get("example")
-            lines.extend(["**Examples:**", "", "```python", examples, "```", ""])
+            if examples:
+                lines.extend(["**Examples:**", "", "```python", examples, "```", ""])
 
         lines.extend(["---", ""])
         return lines

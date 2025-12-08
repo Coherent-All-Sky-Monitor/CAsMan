@@ -589,12 +589,6 @@ The part number to validate
 bool
 True if the part number is valid, False otherwise
 
-**Examples:**
-
-```python
-
-```
-
 ---
 
 ### validate_part_type

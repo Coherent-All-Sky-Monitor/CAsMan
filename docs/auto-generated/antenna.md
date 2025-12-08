@@ -496,10 +496,6 @@ Starting part number (e.g. 'ANT00001P1', 'LNA00005P2').
 db_dir : str, optional
 Custom database directory for testing.
 
-**Returns:**
-
-
-
 **Examples:**
 
 ```python

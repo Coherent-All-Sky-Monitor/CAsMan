@@ -102,7 +102,7 @@ Validate SNAP part number format (SNAP<chassis><slot><port>).
 
 ### validate_connection_sequence
 
-**Signature:** `validate_connection_sequence(first_type: str, second_type: str) -> tuple[bool, str]`
+**Signature:** `validate_connection_sequence(first_type: str, second_type: str) -> Tuple[bool, str]`
 
 Validate that connection follows the proper chain sequence.
 
