@@ -5,7 +5,7 @@ through the assembly to determine SNAP port assignments for both polarizations.
 """
 
 import sqlite3
-from typing import Optional
+from typing import List, Optional
 
 from casman.database.connection import get_database_path
 
@@ -34,7 +34,7 @@ def get_snap_port_for_chain(
             'chassis': int,        # 1-4
             'slot': str,           # A-K
             'port': int,           # 0-11
-            'chain': list[str]     # Full chain from start to SNAP
+            'chain': List[str]     # Full chain from start to SNAP
         }
         Returns None if chain incomplete or doesn't reach SNAP.
 

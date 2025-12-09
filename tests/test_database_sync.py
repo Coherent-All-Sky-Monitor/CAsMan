@@ -9,7 +9,7 @@ import hashlib
 import json
 import sqlite3
 import tempfile
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch, call, mock_open
 
@@ -74,7 +74,7 @@ class TestBackupMetadata:
         """Test creating backup metadata."""
         from casman.database.sync import BackupMetadata
         
-        timestamp = datetime.now(UTC)
+        timestamp = datetime.now(timezone.utc)
         metadata = BackupMetadata(
             filename="test.db",
             timestamp=timestamp,
@@ -97,7 +97,7 @@ class TestBackupMetadata:
         """Test converting metadata to dictionary."""
         from casman.database.sync import BackupMetadata
         
-        timestamp = datetime.now(UTC)
+        timestamp = datetime.now(timezone.utc)
         metadata = BackupMetadata(
             filename="test.db",
             timestamp=timestamp,

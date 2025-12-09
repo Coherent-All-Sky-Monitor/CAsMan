@@ -12,7 +12,7 @@ import json
 import os
 import sqlite3
 import tempfile
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -837,7 +837,7 @@ class TestQuotaTracker:
         tracker.data["backups_this_month"] = 100
         tracker.data["restores_this_month"] = 50
         
-        last_month = datetime.now(UTC) - timedelta(days=35)
+        last_month = datetime.now(timezone.utc) - timedelta(days=35)
         tracker.data["last_reset"] = last_month.isoformat()
         tracker._save()
         
@@ -851,7 +851,7 @@ class TestQuotaTracker:
         tracker = QuotaTracker(db_dir=temp_quota_dir)
         
         tracker.data["total_storage_bytes"] = 5000000000
-        last_month = datetime.now(UTC) - timedelta(days=35)
+        last_month = datetime.now(timezone.utc) - timedelta(days=35)
         tracker.data["last_reset"] = last_month.isoformat()
         tracker._save()
         

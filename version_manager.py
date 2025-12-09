@@ -11,7 +11,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional, Union
 
 
 class VersionManager:
@@ -19,7 +19,7 @@ class VersionManager:
 
     def __init__(self, project_root: Path):
         self.project_root = project_root
-        self.version_files: dict[str, dict[str, Path | str]] = {
+        self.version_files: Dict[str, Dict[str, Union[Path, str]]] = {
             "pyproject.toml": {
                 "path": project_root / "pyproject.toml",
                 "pattern": r'version = "([^"]+)"',

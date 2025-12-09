@@ -7,7 +7,7 @@ without connecting to actual cloud storage services.
 
 import sys
 import tempfile
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from io import StringIO
 from pathlib import Path
 from unittest.mock import MagicMock, patch, call

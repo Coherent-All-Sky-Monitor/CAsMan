@@ -911,7 +911,7 @@ Each polarization dict (if connected) contains:
 'chassis': int,        # 1-4
 'slot': str,           # A-K
 'port': int,           # 0-11
-'chain': list[str]     # Full connection chain
+'chain': List[str]     # Full connection chain
 }
 
 **Examples:**
@@ -1229,7 +1229,7 @@ Each polarization dict (if connected) contains:
 'chassis': int,        # 1-4
 'slot': str,           # A-K
 'port': int,           # 0-11
-'chain': list[str]     # Full connection chain
+'chain': List[str]     # Full connection chain
 }
 
 **Examples:**

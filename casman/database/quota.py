@@ -10,7 +10,7 @@ Tracks:
 import json
 import logging
 import os
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -39,8 +39,8 @@ class QuotaTracker:
                 with open(self.quota_file, "r") as f:
                     data = json.load(f)
                     # Check if we need to reset monthly counters
-                    last_reset = datetime.fromisoformat(data.get("last_reset", datetime.now(UTC).isoformat()))
-                    now = datetime.now(UTC)
+                    last_reset = datetime.fromisoformat(data.get("last_reset", datetime.now(timezone.utc).isoformat()))
+                    now = datetime.now(timezone.utc)
                     # Reset if in a new month
                     if last_reset.month != now.month or last_reset.year != now.year:
                         logger.info("Resetting monthly quota counters")
@@ -56,7 +56,7 @@ class QuotaTracker:
             "total_storage_bytes": 0,
             "class_a_ops_month": 0,  # Writes (PUT, POST, LIST, DELETE)
             "class_b_ops_month": 0,  # Reads (GET, HEAD)
-            "last_reset": datetime.now(UTC).isoformat(),
+            "last_reset": datetime.now(timezone.utc).isoformat(),
             "backups_this_month": 0,
             "restores_this_month": 0,
         }

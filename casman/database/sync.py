@@ -16,7 +16,7 @@ import os
 import shutil
 import sqlite3
 from dataclasses import dataclass
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -205,7 +205,7 @@ class DatabaseSyncManager:
     def _get_backup_key(self, db_name: str, timestamp: Optional[datetime] = None) -> str:
         """Generate S3 key for a backup."""
         if timestamp is None:
-            timestamp = datetime.now(UTC)
+            timestamp = datetime.now(timezone.utc)
         timestamp_str = timestamp.strftime("%Y%m%d_%H%M%S")
         return f"backups/{db_name}/{timestamp_str}_{db_name}"
 
@@ -265,7 +265,7 @@ class DatabaseSyncManager:
                     return None
 
             # Calculate metadata
-            timestamp = datetime.now(UTC)
+            timestamp = datetime.now(timezone.utc)
             checksum = self._calculate_checksum(db_path)
             size_bytes = os.path.getsize(db_path)
             record_count = self._get_record_count(db_path, db_name)
@@ -740,7 +740,7 @@ class ScanTracker:
 
     def reset_after_backup(self):
         """Reset counters after a backup."""
-        self.data["last_backup_time"] = datetime.now(UTC).isoformat()
+        self.data["last_backup_time"] = datetime.now(timezone.utc).isoformat()
         self.data["scans_since_backup"] = 0
         self._save()
 
@@ -768,7 +768,7 @@ class ScanTracker:
         # Check time threshold (only if there have been scans)
         if self.data["scans_since_backup"] > 0 and self.data["last_backup_time"]:
             last_backup = datetime.fromisoformat(self.data["last_backup_time"])
-            hours_since = (datetime.now(UTC) - last_backup).total_seconds() / 3600
+            hours_since = (datetime.now(timezone.utc) - last_backup).total_seconds() / 3600
 
             if hours_since >= config.backup_on_hours:
                 logger.info(
