@@ -31,26 +31,24 @@ graph TD
 
 ### Connection Rules
 
-- ** Sequence Enforcement**: Parts must connect in order: `ANT → LNA → COAXSHORT → COAXLONG → BACBOARD → SNAP`
+- **Sequence Enforcement**: Parts must connect in order: `ANT → LNA → COAXSHORT → COAXLONG → BACBOARD → SNAP`
 
-- ** Directionality**: ANTENNA parts can only be sources, SNAP parts can only be targets
+- **Directionality**: ANTENNA parts can only be sources, SNAP parts can only be targets
 
-- ** No Duplicates**: Each part can have only one outgoing and one incoming connection
+- **No Duplicates**: Each part can have only one outgoing and one incoming connection
 
-- ** Part Validation**: All parts validated against database and SNAP mapping files
+- **Part Validation**: All parts validated against database and SNAP mapping files
 
 ## Installation
 
 ### Quick Install Options
 
-**Minimal install (Antenna module only:):**
+**Minimal install (Antenna module only):**
 ```bash
 pip install "git+https://github.com/Coherent-All-Sky-Monitor/CAsMan.git#egg=casman[antenna]"
 ```
-- Perfect for data analysis, baseline calculations, UV coverage
-- Only PyYAML dependency (~5MB vs ~50MB full install)
-- No web interface, just Python API
-
+- For data analysis, baseline calculations, etc. 
+  
 **Full install (All features):**
 ```bash
 pip install "git+https://github.com/Coherent-All-Sky-Monitor/CAsMan.git"
@@ -151,7 +149,7 @@ casman web --scanner-only            # Launch scanner interface only (port 5000)
 casman web --visualize-only          # Launch visualization interface only (port 5000)
 
 # Barcode generation
-casman barcode printpages --part-type ANTENNA --start-number 1 --end-number 50
+casman barcode printpages --part-type ANTENNA --start-number 1 --end-number 100
 
 # Database backup and sync (R2/S3)
 casman sync backup                   # Backup databases to cloud storage
@@ -167,7 +165,7 @@ casman sync status                   # Show sync configuration and status
 CAsMan provides automatic cloud backup for zero data loss and multi-user collaboration:
 
 ```bash
-# Setup (one-time, see docs/database_backup_quickstart.md)
+# Setup (one-time, see docs/database.md for full guide)
 pip install boto3
 export R2_ACCOUNT_ID="your-account-id"
 export R2_ACCESS_KEY_ID="your-access-key"  
@@ -183,85 +181,46 @@ casman sync sync                     # Download latest versions
 casman sync restore <backup-key>     # Restore from specific backup
 ```
 
-**Automatic Backups:**
-- After part generation
-- Every 10 scans OR every 24 hours (configurable)
-- Versioned storage with timestamps
-- Works with Cloudflare R2 (recommended, ~$0.02/year) or AWS S3
-
-**Multi-User Safe:**
-- Multiple people can scan and generate parts
-- Sync before/after work: `casman sync sync`
-- Offline-first (works without internet)
-- Zero data loss guarantee
-
-See [Database Backup Quick Start](docs/database_backup_quickstart.md) for 5-minute setup guide.
+See [Database Documentation](docs/database.md) for complete setup guide and features.
 
 ### Database Management
 
-The `casman database` commands provide database operations:
+The database commands provide safe operations with double confirmation for destructive actions:
 
 ```bash
-
-# Clear database contents with double confirmation and visual warnings
-casman database clear                # Clear both parts and assembly databases
-casman database clear --parts        # Clear only the parts database
-casman database clear --assembled    # Clear only the assembly database
-
-casman database print               # Show assembly database in formatted tables
+casman database clear                # Clear both databases (with warnings)
+casman database clear --parts        # Clear only parts database
+casman database clear --assembled    # Clear only assembly database
+casman database print                # Display assembly database in tables
 ```
 
 ### Part Management
 
-The `casman parts add` command provides flexible part creation options:
+Interactive part creation with automatic numbering and barcode generation:
 
 ```bash
-
-# Interactive part addition with type selection
-casman parts add
-
-# Example session options:
-
-# 1: ANTENNA (alias: ANT)    - Add antenna parts
-
-# 2: LNA (alias: LNA)        - Add LNA parts  
-
-# 3: COAXSHORT (alias: CXS)      - Add COAXSHORT parts
-
-# 4: COAXLONG (alias: CXL)      - Add COAXLONG parts
-
-# 5: BACBOARD (alias: BAC)   - Add backboard parts
-
-# 0: ALL (add parts for all types) - Add parts for all types at once
-
-# Enter number of parts to create and polarization (1 or 2)
-
-# Parts are automatically numbered and barcodes generated
-
+casman parts add    # Choose part type (ANTENNA, LNA, COAXSHORT, COAXLONG, BACBOARD) or ALL
 ```
 
-### Enhanced Interactive Scanning
+**Available part types:**
+- ANTENNA (ANT), LNA (LNA), COAXSHORT (CXS), COAXLONG (CXL), BACBOARD (BAC)
+- Option to add all types at once
+- Specify quantity and polarization (1 or 2)
+- Automatic part numbering and barcode generation
 
-The `casman scan connect` command provides an interactive scanning experience:
+### Interactive Scanning
 
-- **Real-time part validation** against parts database
+The `casman scan connect` command provides comprehensive validation:
 
-- **SNAP part validation** using format checks (SNAP<chassis><slot><port>)  
+- Real-time part validation against database
+- SNAP part format validation (SNAP<chassis><slot><port>)
+- Connection sequence enforcement (ANT→LNA→COAXSHORT→COAXLONG→BACBOARD→SNAP)
+- Duplicate connection prevention
+- Chain directionality rules (ANTENNA sources only, SNAP targets only)
 
-- **Connection sequence validation** (enforces ANT→LNA→COAXSHORT→COAXLONG→BACBOARD→SNAP)
-
-- **Duplicate prevention** (blocks multiple connections)
-
-- **Chain directionality** (ANTENNA=sources only, SNAP=targets only), can only scan connection in one direction.
-
-```sh
-
-# Start full interactive scanning and assembly workflow
-casman scan connect
-
-# Basic connection scanning (manual entry or barcode scanner)
-casman scan connection
-
+```bash
+casman scan connect       # Full interactive workflow
+casman scan connection    # Basic connection scanning
 ```
 
 ## Key Features
@@ -616,90 +575,33 @@ For issues and questions:
 
 
 
-## Usage Examples
+## Grid Position Coordinates
 
-### List all parts
+CAsMan supports tracking latitude, longitude, and height for antenna grid positions. Coordinates are managed via CSV file for easy editing and version control.
 
-```sh
-
-casman parts list
-
-```
-
-### Add new parts interactively
-
-```sh
-
-casman parts add                     # Choose specific part type or ALL types
-
-```
-
-### Generate barcodes for a part type
-
-```sh
-
-casman barcode printpages --part-type ANTENNA --start-number 1 --end-number 10
-
-```
-
-### Interactive assembly connection scanning
-
-```sh
-
-casman scan connect                # Full interactive scanning and assembly workflow
-
-```
-
-### Visualize assembly chains in ASCII
-
-```sh
-
-casman visualize chains
-
-```
-
-### Launch web interfaces
-
-```sh
-
-# Unified web application
-casman web                           # Both scanner and visualization (dev mode, port 5000)
-casman web --mode prod               # Production mode with Gunicorn (port 8000)
-casman web --scanner-only            # Scanner interface only
-casman web --visualize-only          # Visualization interface only
-casman web --port 8080               # Custom port
-
-```
-
-### Manage grid position coordinates
-
-```sh
-
+```bash
 # Load geographic coordinates from CSV
 casman database load-coordinates                    # Load from database/grid_positions.csv
 casman database load-coordinates --csv survey.csv   # Load from custom CSV file
-
 ```
 
-CAsMan supports tracking latitude, longitude, and height for antenna grid positions. Coordinates are managed via CSV file for easy editing and version control. See [Grid Coordinates Documentation](docs/grid_coordinates.md) for details.
+See [Grid Coordinates Documentation](docs/grid_coordinates.md) for details.
 
 ---
 
 ## Testing & Coverage
 
-![Tests](https://img.shields.io/badge/tests-629%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-0.0%25-green)
+![Tests](https://img.shields.io/badge/tests-601%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-72.0%25-yellow)
 
 
 | Module | Coverage | Lines Covered |
 |--------|----------|---------------|
-| **__Init__** | 100.0% | 2/2 |
 | **Antenna __Init__** | 100.0% | 5/5 |
 | **Assembly __Init__** | 100.0% | 40/40 |
-| **Assembly Connections** | 100.0% | 24/24 |
 | **Assembly Data** | 100.0% | 15/15 |
 | **Barcode __Init__** | 100.0% | 3/3 |
 | **Cli __Init__** | 100.0% | 11/11 |
-| **Database __Init__** | 100.0% | 5/5 |
+| **Database __Init__** | 100.0% | 7/7 |
 | **Database Operations** | 100.0% | 31/31 |
 | **Parts __Init__** | 100.0% | 10/10 |
 | **Parts Db** | 100.0% | 4/4 |
@@ -712,31 +614,36 @@ CAsMan supports tracking latitude, longitude, and height for antenna grid positi
 | **Parts Validation** | 96.0% | 51/53 |
 | **Visualization __Init__** | 95.0% | 18/19 |
 | **Web App** | 95.0% | 37/39 |
-| **Antenna Grid** | 93.0% | 112/121 |
 | **Parts Interactive** | 92.0% | 111/121 |
-| **Database Antenna_Positions** | 91.0% | 146/161 |
-| **Parts Generation** | 91.0% | 59/65 |
+| **Database Quota** | 90.0% | 78/87 |
 | **Database Initialization** | 89.0% | 40/45 |
+| **Parts Generation** | 89.0% | 67/75 |
 | **Barcode Generation** | 88.0% | 90/102 |
 | **Cli Utils** | 88.0% | 28/32 |
 | **Config __Init__** | 88.0% | 23/26 |
-| **Antenna Kernel_Index** | 86.0% | 124/144 |
-| **Assembly Interactive** | 85.0% | 279/330 |
+| **Assembly Interactive** | 85.0% | 280/331 |
+| **Antenna Kernel_Index** | 82.0% | 118/144 |
+| **Database Antenna_Positions** | 82.0% | 158/193 |
+| **Antenna Grid** | 81.0% | 98/121 |
 | **Cli Web_Commands** | 80.0% | 44/55 |
+| **Antenna Chain** | 79.0% | 33/42 |
+| **Assembly Connections** | 79.0% | 30/38 |
 | **Barcode Printing** | 78.0% | 173/223 |
-| **Web Server** | 76.0% | 41/54 |
 | **Cli Barcode_Commands** | 73.0% | 22/30 |
-| **Cli Main** | 73.0% | 57/78 |
-| **Antenna Array** | 71.0% | 101/143 |
 | **Cli Database_Commands** | 69.0% | 131/189 |
+| **Cli Main** | 69.0% | 59/85 |
+| **Cli Sync_Commands** | 69.0% | 215/313 |
+| **Web Server** | 69.0% | 37/54 |
 | **Cli Visualization_Commands** | 68.0% | 23/34 |
-| **Web Scanner** | 68.0% | 210/307 |
 | **Cli Parts_Commands** | 66.0% | 51/77 |
 | **Database Connection** | 64.0% | 14/22 |
 | **Cli Assembly_Commands** | 61.0% | 99/163 |
-| **Web Visualize** | 57.0% | 119/209 |
-| **Antenna Chain** | 17.0% | 7/42 |
-| **Overall** | **80.0%** | **2650/3329** |
+| **Web Visualize** | 56.0% | 116/209 |
+| **Web Scanner** | 54.0% | 165/307 |
+| **Antenna Array** | 49.0% | 106/218 |
+| **Database Sync** | 38.0% | 140/364 |
+| **__Init__** | 21.0% | 7/34 |
+| **Overall** | **72.0%** | **3078/4266** |
 
 ### Running Tests
 

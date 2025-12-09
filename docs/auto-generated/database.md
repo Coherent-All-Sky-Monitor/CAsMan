@@ -16,7 +16,7 @@ initialization, and data access operations.
 Database backup and synchronization module for CAsMan.
 
 Provides cloud backup/restore functionality with support for:
-- Cloudflare R2 / AWS S3 backends
+- Cloudflare R2 
 - Versioned backups with timestamps
 - Zero data loss guarantees
 - Offline-first operation with graceful degradation
@@ -135,7 +135,7 @@ This module provides utilities for database path resolution.
 ## Sync Module Details
 
 Provides cloud backup/restore functionality with support for:
-- Cloudflare R2 / AWS S3 backends
+- Cloudflare R2 
 - Versioned backups with timestamps
 - Zero data loss guarantees
 - Offline-first operation with graceful degradation
