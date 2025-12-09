@@ -31,8 +31,9 @@ database:
     keep_versions: 10
     
     # Backup triggers
-    backup_on_scan_count: 10      # Backup every N scans
-    backup_on_hours: 24.0          # Backup every N hours (if scans occurred)
+    # A "scan" includes: connecting/disconnecting parts, assigning/removing antenna positions
+    backup_on_scan_count: 10      # Backup every N operations
+    backup_on_hours: 24.0          # Backup every N hours (if operations occurred)
     
     # R2 Free Tier Safety Limits (enforced to prevent exceeding quotas)
     # Cloudflare R2 Free Tier: 10 GB storage, 1M Class A ops/month, 10M Class B ops/month

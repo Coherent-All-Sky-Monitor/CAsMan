@@ -247,6 +247,36 @@ def assign_antenna_position(
             ),
         )
         conn.commit()
+    
+    # Track operation for backup triggering
+    try:
+        from casman.database.sync import ScanTracker, DatabaseSyncManager, SyncConfig
+        
+        tracker = ScanTracker(db_dir)
+        tracker.record_scan()
+        
+        # Check if backup should be triggered
+        sync_config = SyncConfig.from_config()
+        if sync_config.enabled and tracker.should_backup(sync_config):
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info("Triggering database backup after operations...")
+            sync_manager = DatabaseSyncManager(sync_config)
+            
+            # Backup parts.db
+            sync_manager.backup_database(
+                db_path if db_dir else get_database_path("parts.db", None),
+                "parts.db",
+                operation=f"Operation-triggered backup ({tracker.data['scans_since_backup']} operations)",
+                quiet=False
+            )
+            
+            tracker.reset_after_backup()
+            
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Operation tracking/backup failed (assignment still recorded): {e}")
 
     return {
         "success": True,
@@ -485,6 +515,37 @@ def remove_antenna_position(
                 (antenna_base,),
             )
             conn.commit()
+            
+            # Track operation for backup triggering
+            try:
+                from casman.database.sync import ScanTracker, DatabaseSyncManager, SyncConfig
+                
+                tracker = ScanTracker(db_dir)
+                tracker.record_scan()
+                
+                # Check if backup should be triggered
+                sync_config = SyncConfig.from_config()
+                if sync_config.enabled and tracker.should_backup(sync_config):
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.info("Triggering database backup after operations...")
+                    sync_manager = DatabaseSyncManager(sync_config)
+                    
+                    # Backup parts.db
+                    sync_manager.backup_database(
+                        db_path,
+                        "parts.db",
+                        operation=f"Operation-triggered backup ({tracker.data['scans_since_backup']} operations)",
+                        quiet=False
+                    )
+                    
+                    tracker.reset_after_backup()
+                    
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Operation tracking/backup failed (removal still recorded): {e}")
+            
             return {
                 "success": True,
                 "removed": True,

@@ -11,7 +11,7 @@ This module provides CLI commands for database backup and sync operations:
 
 import argparse
 import sys
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Optional
 
 import argcomplete
@@ -490,7 +490,7 @@ def cmd_sync_status() -> None:
             print(f"  Scans since backup:   {tracker.data['scans_since_backup']}")
             if tracker.data['last_backup_time']:
                 last_backup = datetime.fromisoformat(tracker.data['last_backup_time'])
-                hours_since = (datetime.utcnow() - last_backup).total_seconds() / 3600
+                hours_since = (datetime.now(UTC) - last_backup).total_seconds() / 3600
                 print(f"  Last backup:          {hours_since:.1f} hours ago")
             else:
                 print(f"  Last backup:          Never")
