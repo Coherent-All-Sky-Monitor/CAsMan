@@ -227,13 +227,14 @@
     }
 
     .slots-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      display: flex;
+      flex-wrap: wrap;
       gap: 20px;
       padding: 20px;
       background: rgba(255, 255, 255, 0.95);
       border-radius: 0 0 10px 10px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      justify-content: center;
     }
 
     body.dark-mode .slots-grid {
@@ -246,6 +247,8 @@
       border-radius: 8px;
       overflow: hidden;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      flex: 0 0 auto;
+      width: 280px;
     }
 
     .slot-card:hover {
@@ -271,9 +274,8 @@
     }
 
     .ports-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(4, 1fr);
+      display: flex;
+      flex-direction: column;
       gap: 1px;
       background: currentColor;
       padding: 0;
@@ -427,15 +429,10 @@
       background: #222;
     }
 
-    @media (max-width: 1400px) {
-      .slots-grid {
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-      }
-    }
-
     @media (max-width: 768px) {
-      .slots-grid {
-        grid-template-columns: 1fr;
+      .slot-card {
+        width: 100%;
+        max-width: 320px;
       }
       
       h1 {
@@ -444,6 +441,16 @@
       
       .chassis-header {
         font-size: 1.5em;
+      }
+
+      .filter-controls form {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .filter-controls select,
+      .clear-filter {
+        width: 100%;
       }
     }
   </style>
@@ -529,7 +536,8 @@
             Slot {{ slot }}
           </div>
           <div class="ports-grid">
-            {% for port in range(12) %}
+            {% for group in [range(0, 4), range(4, 8), range(8, 12)] %}
+            {% for port in group|reverse %}
             {% set port_data = snap_ports[chassis][slot][port] %}
             {% set has_p1 = port_data.get('p1') %}
             {% set has_p2 = port_data.get('p2') %}
@@ -551,6 +559,7 @@
               <div class="port-empty">—</div>
               {% endif %}
             </div>
+            {% endfor %}
             {% endfor %}
           </div>
         </div>
