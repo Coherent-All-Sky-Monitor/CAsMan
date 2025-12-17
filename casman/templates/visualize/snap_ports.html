@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SNAP Ports</title>
+  <style>
+    @font-face {
+      font-family: 'National Park';
+      src: url('/visualize/static/fonts/NationalPark-Regular.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'National Park Bold';
+      src: url('/visualize/static/fonts/NationalPark-Bold.woff') format('woff');
+      font-weight: bold;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'National Park ExtraBold';
+      src: url('/visualize/static/fonts/NationalPark-ExtraBold.woff') format('woff');
+      font-weight: 900;
+      font-style: normal;
+    }
+
+    body.light-mode {
+      font-family: 'National Park', sans-serif;
+      margin: 0;
+      background-color: #f0f0f5;
+      color: #333;
+    }
+
+    body.dark-mode {
+      font-family: 'National Park', sans-serif;
+      margin: 0;
+      background-color: #333;
+      color: #f0f0f5;
+    }
+
+    .container {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 20px 12px 0 12px;
+    }
+
+    /* Fixed Toolbar */
+    .fixed-toolbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      border-bottom: 2px solid currentColor;
+      backdrop-filter: blur(10px);
+    }
+
+    body.light-mode .fixed-toolbar {
+      background: rgba(240, 240, 245, 0.95);
+    }
+
+    body.dark-mode .fixed-toolbar {
+      background: rgba(51, 51, 51, 0.95);
+    }
+
+    .toolbar-spacer {
+      height: 70px;
+    }
+
+    .home-button {
+      padding: 10px 15px;
+      cursor: pointer;
+      border: 2px solid currentColor;
+      background: transparent;
+      text-decoration: none;
+      color: inherit;
+      font-size: 14px;
+      font-family: 'National Park', sans-serif;
+      transition: all 0.2s;
+      border-radius: 8px;
+    }
+
+    .home-button:hover {
+      background: #333;
+      color: #f0f0f5;
+    }
+
+    body.dark-mode .home-button:hover {
+      background: #f0f0f5;
+      color: #333;
+    }
+
+    .dark-mode-toggle {
+      cursor: pointer;
+      font-size: 24px;
+      padding: 10px;
+    }
+
+    .sun {
+      display: none;
+    }
+
+    .moon {
+      display: inline;
+    }
+
+    body.dark-mode .sun {
+      display: inline;
+    }
+
+    body.dark-mode .moon {
+      display: none;
+    }
+
+    .dark-mode-toggle span {
+      transition: transform 0.3s ease;
+    }
+
+    .dark-mode-toggle:hover span {
+      transform: rotate(45deg);
+    }
+
+    h1 {
+      font-family: 'National Park ExtraBold', sans-serif;
+      text-align: center;
+      margin: 20px 0;
+      font-size: 2.5em;
+      color: inherit;
+      font-weight: 900;
+    }
+
+    .filter-controls {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 2px solid currentColor;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark-mode .filter-controls {
+      background: rgba(34, 34, 34, 0.95);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .filter-controls form {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .filter-controls label {
+      font-family: 'National Park Bold', sans-serif;
+      font-weight: bold;
+    }
+
+    .filter-controls select {
+      padding: 8px 12px;
+      border: 2px solid currentColor;
+      border-radius: 4px;
+      background: transparent;
+      color: inherit;
+      font-family: 'National Park', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .filter-controls select:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark-mode .filter-controls select:focus {
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+    }
+
+    .clear-filter {
+      padding: 8px 15px;
+      cursor: pointer;
+      border: 2px solid currentColor;
+      background: transparent;
+      color: inherit;
+      font-size: 14px;
+      font-family: 'National Park', sans-serif;
+      transition: all 0.2s;
+      border-radius: 4px;
+    }
+
+    .clear-filter:hover {
+      background: #333;
+      color: #f0f0f5;
+    }
+
+    body.dark-mode .clear-filter:hover {
+      background: #f0f0f5;
+      color: #333;
+    }
+
+    .chassis-container {
+      margin-bottom: 50px;
+    }
+
+    .chassis-header {
+      background: #9e9e9e;
+      color: white;
+      padding: 15px 25px;
+      border-radius: 10px 10px 0 0;
+      font-family: 'National Park Bold', sans-serif;
+      font-size: 1.8em;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark-mode .chassis-header {
+      background: #616161;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 20px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 0 0 10px 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark-mode .slots-grid {
+      background: rgba(34, 34, 34, 0.95);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .slot-card {
+      border: 2px solid currentColor;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .slot-card:hover {
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+    }
+
+    body.dark-mode .slot-card:hover {
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .slot-header {
+      background: #bdbdbd;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      font-family: 'National Park Bold', sans-serif;
+      font-size: 1.3em;
+    }
+
+    body.dark-mode .slot-header {
+      background: #757575;
+    }
+
+    .ports-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 1px;
+      background: currentColor;
+      padding: 0;
+    }
+
+    .port-cell {
+      background: #ffffff;
+      padding: 8px;
+      min-height: 70px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      transition: all 0.2s;
+    }
+
+    body.dark-mode .port-cell {
+      background: #222;
+    }
+
+    .port-cell:hover {
+      background: #f5f5f5;
+      transform: scale(1.02);
+    }
+
+    body.dark-mode .port-cell:hover {
+      background: #444;
+    }
+
+    .port-number {
+      font-weight: bold;
+      color: #666;
+      font-size: 0.9em;
+      margin-bottom: 4px;
+    }
+
+    .antenna-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .grid-info {
+      font-size: 0.95em;
+      font-weight: bold;
+      color: inherit;
+      margin-bottom: 4px;
+      font-family: 'National Park Bold', sans-serif;
+    }
+
+    .antenna-pol {
+      font-size: 0.75em;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-weight: normal;
+    }
+
+    .pol-p1 {
+      background: #e3f2fd;
+      color: #1976d2;
+      border: 1px solid #1976d2;
+    }
+
+    .pol-p2 {
+      background: #e8f5e9;
+      color: #388e3c;
+      border: 1px solid #388e3c;
+    }
+
+    .port-empty {
+      color: #ccc;
+      font-size: 0.8em;
+      font-style: italic;
+    }
+
+    .port-p1 {
+      background: #e3f2fd !important;
+    }
+
+    body.dark-mode .port-p1 {
+      background: #1565c0 !important;
+    }
+
+    .port-p2 {
+      background: #e8f5e9 !important;
+    }
+
+    body.dark-mode .port-p2 {
+      background: #2e7d32 !important;
+    }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin: 20px 0;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 2px solid currentColor;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    body.dark-mode .legend {
+      background: rgba(34, 34, 34, 0.95);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'National Park', sans-serif;
+    }
+
+    .legend-box {
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+      border: 2px solid currentColor;
+    }
+
+    .legend-p1 {
+      background: #e3f2fd;
+    }
+
+    body.dark-mode .legend-p1 {
+      background: #1565c0;
+    }
+
+    .legend-p2 {
+      background: #e8f5e9;
+    }
+
+    body.dark-mode .legend-p2 {
+      background: #2e7d32;
+    }
+
+    .legend-empty {
+      background: white;
+    }
+
+    body.dark-mode .legend-empty {
+      background: #222;
+    }
+
+    @media (max-width: 1400px) {
+      .slots-grid {
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      }
+    }
+
+    @media (max-width: 768px) {
+      .slots-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      h1 {
+        font-size: 2em;
+      }
+      
+      .chassis-header {
+        font-size: 1.5em;
+      }
+    }
+  </style>
+</head>
+<body class="light-mode">
+  <div class="fixed-toolbar">
+    <a href="/" class="home-button" title="Home">← Home</a>
+    <a href="/visualize/grid" class="home-button" title="Antenna Grid" style="margin-left: 10px;">Core Grid</a>
+    <a href="/visualize/chains" class="home-button" title="Analog Chains" style="margin-left: 10px;">Chains</a>
+    <a href="/visualize/snap-ports" class="home-button" title="SNAP Ports" style="margin-left: 10px;">SNAP Ports</a>
+    <div class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle dark/light mode">
+      <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon">
+        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+      </svg>
+      <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+    </div>
+  </div>
+  <div class="toolbar-spacer"></div>
+
+  <div class="container">
+    <h1>SNAP Ports Visualization</h1>
+
+    <div class="filter-controls">
+      <form method="get" action="/visualize/snap-ports" id="filterForm">
+        <label for="chassis">Chassis:</label>
+        <select name="chassis" id="chassis" onchange="document.getElementById('filterForm').submit()">
+          <option value="">All Chassis</option>
+          {% for c in all_chassis_list %}
+          <option value="{{ c }}" {% if selected_chassis == c|string %}selected{% endif %}>Chassis {{ c }}</option>
+          {% endfor %}
+        </select>
+        
+        <label for="slot">Slot:</label>
+        <select name="slot" id="slot" onchange="document.getElementById('filterForm').submit()">
+          <option value="">All Slots</option>
+          {% for s in all_slot_list %}
+          <option value="{{ s }}" {% if selected_slot == s %}selected{% endif %}>Slot {{ s }}</option>
+          {% endfor %}
+        </select>
+        
+        <button type="button" onclick="window.location.href='/visualize/snap-ports'" class="clear-filter">Clear Filters</button>
+      </form>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-box legend-p1"></div>
+        <span>P1 Polarization</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-box legend-p2"></div>
+        <span>P2 Polarization</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-box legend-empty"></div>
+        <span>Empty Port</span>
+      </div>
+    </div>
+
+    {% for chassis in chassis_list %}
+    <div class="chassis-container">
+      <div class="chassis-header">
+        Chassis {{ chassis }}
+      </div>
+      <div class="slots-grid">
+        {% for slot in slot_list %}
+        <div class="slot-card">
+          <div class="slot-header">
+            Slot {{ slot }}
+          </div>
+          <div class="ports-grid">
+            {% for port in range(12) %}
+            {% set port_data = snap_ports[chassis][slot][port] %}
+            {% set has_p1 = port_data.get('p1') %}
+            {% set has_p2 = port_data.get('p2') %}
+            {% set cell_class = 'port-p1' if has_p1 else ('port-p2' if has_p2 else '') %}
+            <div class="port-cell {{ cell_class }}">
+              <div class="port-number">Port {{ port }}</div>
+              {% if has_p1 or has_p2 %}
+              <div class="antenna-info">
+                {% if has_p1 %}
+                <div class="grid-info">{{ has_p1.grid_code }} | {{ has_p1.kernel_index }}</div>
+                <div class="antenna-pol pol-p1">P1: {{ has_p1.antenna }}</div>
+                {% endif %}
+                {% if has_p2 %}
+                <div class="grid-info">{{ has_p2.grid_code }} | {{ has_p2.kernel_index }}</div>
+                <div class="antenna-pol pol-p2">P2: {{ has_p2.antenna }}</div>
+                {% endif %}
+              </div>
+              {% else %}
+              <div class="port-empty">—</div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+
+  <script>
+    function toggleDarkMode() {
+      const body = document.body;
+      const button = document.querySelector('.dark-mode-toggle');
+      if (body.classList.contains('dark-mode')) {
+        body.classList.remove('dark-mode');
+        body.classList.add('light-mode');
+        button.textContent = '🌙';
+        localStorage.setItem('theme', 'light');
+      } else {
+        body.classList.remove('light-mode');
+        body.classList.add('dark-mode');
+        button.textContent = '☀️';
+        localStorage.setItem('theme', 'dark');
+      }
+    }
+
+    // Load saved theme preference on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = localStorage.getItem('theme');
+      const body = document.body;
+      const button = document.querySelector('.dark-mode-toggle');
+      
+      if (savedTheme === 'dark') {
+        body.classList.remove('light-mode');
+        body.classList.add('dark-mode');
+        button.textContent = '☀️';
+      } else {
+        body.classList.remove('dark-mode');
+        body.classList.add('light-mode');
+        button.textContent = '🌙';
+      }
+    });
+  </script>
+</body>
+</html>

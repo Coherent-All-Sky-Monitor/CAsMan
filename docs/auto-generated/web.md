@@ -67,6 +67,7 @@ Provides web interface for viewing assembly chain connections.
 - `visualize_static()` - Serve static files for visualization (fonts, etc
 - `visualize_index()` - Render the visualization interface
 - `antenna_grid()` - Display antenna grid position visualization
+- `snap_ports()` - Display SNAP port visualization with 4x3 grids for each chassis/slot
 - `ts()` - No docstring available
 
 ### app
@@ -414,6 +415,16 @@ Render the visualization interface.
 **Signature:** `antenna_grid()`
 
 Display antenna grid position visualization.
+
+---
+
+### snap_ports
+
+*@visualize_bp.route('/snap-ports')*
+
+**Signature:** `snap_ports()`
+
+Display SNAP port visualization with 4x3 grids for each chassis/slot.
 
 ---
 

@@ -459,3 +459,151 @@ def antenna_grid():
         search_kernel=search_kernel,
         format_snap_port=format_snap_port,
     )
+
+
+@visualize_bp.route("/snap-ports")
+def snap_ports():
+    """Display SNAP port visualization with 4x3 grids for each chassis/slot."""
+    import sqlite3
+    from collections import defaultdict
+    from casman.config import get_config
+    from casman.database.antenna_positions import get_all_antenna_positions
+    from casman.antenna.kernel_index import grid_to_kernel_index
+    from casman.antenna.grid import load_core_layout
+    
+    # Get filter parameters
+    selected_chassis = request.args.get('chassis', '')
+    selected_slot = request.args.get('slot', '')
+    
+    # Get all connections from database
+    db_path = get_config("CASMAN_ASSEMBLED_DB", "database/assembled_casm.db")
+    if db_path is None:
+        raise ValueError("Database path for assembled_casm.db is not set.")
+    
+    # Get antenna positions to lookup grid codes and kernel indices
+    array_id, _, _, _, _ = load_core_layout()
+    positions = get_all_antenna_positions(array_id=array_id)
+    
+    # Create lookup dict: antenna_number -> {grid_code, kernel_index}
+    antenna_info = {}
+    for pos in positions:
+        antenna_info[pos['antenna_number']] = {
+            'grid_code': pos['grid_code'],
+            'kernel_index': grid_to_kernel_index(pos['grid_code'])
+        }
+    
+    # Build SNAP port mapping
+    # Structure: snap_ports[chassis][slot][port] = {'p1': {...}, 'p2': {...}}
+    snap_ports = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+    
+    # SNAP configuration: 4 chassis, 11 slots (A-K), 12 ports (0-11)
+    all_chassis_list = [1, 2, 3, 4]
+    all_slot_list = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K']
+    
+    # Apply filters
+    if selected_chassis:
+        try:
+            chassis_list = [int(selected_chassis)]
+        except ValueError:
+            chassis_list = all_chassis_list
+    else:
+        chassis_list = all_chassis_list
+    
+    if selected_slot:
+        slot_list = [selected_slot.upper()] if selected_slot.upper() in all_slot_list else all_slot_list
+    else:
+        slot_list = all_slot_list
+    
+    with sqlite3.connect(db_path) as conn:
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        # Get all connections that end at SNAP boards
+        cursor.execute("""
+            WITH RECURSIVE chain AS (
+                SELECT 
+                    part_number,
+                    connected_to,
+                    connected_to_type,
+                    1 as depth,
+                    part_number as start_part
+                FROM assembly
+                WHERE connection_status = 'connected'
+                
+                UNION ALL
+                
+                SELECT 
+                    a.part_number,
+                    a.connected_to,
+                    a.connected_to_type,
+                    c.depth + 1,
+                    c.start_part
+                FROM assembly a
+                JOIN chain c ON a.part_number = c.connected_to
+                WHERE a.connection_status = 'connected' AND c.depth < 10
+            )
+            SELECT DISTINCT start_part, connected_to as snap_part
+            FROM chain
+            WHERE connected_to_type = 'SNAP' OR connected_to LIKE 'SNAP%'
+        """)
+        
+        for row in cursor.fetchall():
+            start_part = row['start_part']
+            snap_part = row['snap_part']
+            
+            # Parse SNAP part: SNAP[chassis][slot][port]
+            # e.g. SNAP1A05 -> chassis=1, slot=A, port=5
+            try:
+                snap_str = snap_part[4:]  # Remove 'SNAP' prefix
+                chassis = int(snap_str[0])
+                slot = snap_str[1]
+                port = int(snap_str[2:])
+                
+                # Determine polarization from start part
+                if start_part.endswith('P1'):
+                    pol = 'p1'
+                    antenna = start_part[:-2]  # Remove P1 suffix
+                elif start_part.endswith('P2'):
+                    pol = 'p2'
+                    antenna = start_part[:-2]  # Remove P2 suffix
+                else:
+                    continue  # Skip if not a polarized antenna
+                
+                # Get grid code and kernel index for this antenna
+                info = antenna_info.get(antenna, {})
+                snap_ports[chassis][slot][port][pol] = {
+                    'antenna': antenna,
+                    'grid_code': info.get('grid_code', ''),
+                    'kernel_index': info.get('kernel_index', '')
+                }
+                
+            except (IndexError, ValueError):
+                # Malformed SNAP part number
+                continue
+    
+    # Convert to regular dicts for template
+    snap_ports_dict = {}
+    for chassis in all_chassis_list:
+        snap_ports_dict[chassis] = {}
+        for slot in all_slot_list:
+            snap_ports_dict[chassis][slot] = {}
+            for port in range(12):  # 0-11
+                snap_ports_dict[chassis][slot][port] = snap_ports[chassis][slot][port]
+    
+    # Load SNAP ports template
+    template_path = os.path.join(
+        os.path.dirname(__file__), "..", "templates", "visualize", "snap_ports.html"
+    )
+    with open(template_path, "r", encoding="utf-8") as f:
+        template = f.read()
+    
+    return render_template_string(
+        template,
+        chassis_list=chassis_list,
+        slot_list=slot_list,
+        all_chassis_list=all_chassis_list,
+        all_slot_list=all_slot_list,
+        snap_ports=snap_ports_dict,
+        selected_chassis=selected_chassis,
+        selected_slot=selected_slot,
+    )
