@@ -521,7 +521,8 @@ def snap_ports():
         # Get all connections that end at SNAP boards
         # Use same logic as chains view - only show latest status for each pair
         cursor.execute("""
-            WITH latest_connections AS (
+            WITH RECURSIVE
+            latest_connections AS (
                 SELECT 
                     CASE 
                         WHEN part_number < connected_to THEN part_number
@@ -550,7 +551,7 @@ def snap_ports():
                 )
                 AND a.scan_time = lc.latest_time
             ),
-            RECURSIVE chain AS (
+            chain AS (
                 SELECT 
                     part_number,
                     connected_to,

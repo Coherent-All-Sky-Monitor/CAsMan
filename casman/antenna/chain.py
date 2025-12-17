@@ -60,15 +60,38 @@ def get_snap_port_for_chain(
 
         for _ in range(max_depth):
             # Find next connection where current part is the source
+            # Use same logic as chains view - only get latest status for each pair
             cursor.execute(
                 """
-                SELECT connected_to, connected_to_type, connection_status
-                FROM assembly
-                WHERE part_number = ? AND connection_status = 'connected'
-                ORDER BY id DESC
+                WITH latest_connection AS (
+                    SELECT 
+                        CASE 
+                            WHEN part_number < connected_to THEN part_number
+                            ELSE connected_to
+                        END as part_a,
+                        CASE 
+                            WHEN part_number < connected_to THEN connected_to
+                            ELSE part_number
+                        END as part_b,
+                        MAX(scan_time) as latest_time
+                    FROM assembly
+                    WHERE (part_number = ? OR connected_to = ?)
+                        AND part_number IS NOT NULL 
+                        AND connected_to IS NOT NULL
+                    GROUP BY part_a, part_b
+                )
+                SELECT a.connected_to, a.connected_to_type, a.connection_status
+                FROM assembly a
+                INNER JOIN latest_connection lc
+                ON (
+                    (a.part_number = lc.part_a AND a.connected_to = lc.part_b) OR
+                    (a.part_number = lc.part_b AND a.connected_to = lc.part_a)
+                )
+                AND a.scan_time = lc.latest_time
+                WHERE a.part_number = ? AND a.connection_status = 'connected'
                 LIMIT 1
             """,
-                (current_part,),
+                (current_part, current_part, current_part),
             )
 
             row = cursor.fetchone()
