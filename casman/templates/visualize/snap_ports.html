@@ -282,6 +282,20 @@
       padding: 0;
     }
 
+    /* Desktop: order ports vertically 3,2,1,0 then 7,6,5,4 then 11,10,9,8 */
+    .port-cell[data-port="3"] { order: 0; }
+    .port-cell[data-port="2"] { order: 1; }
+    .port-cell[data-port="1"] { order: 2; }
+    .port-cell[data-port="0"] { order: 3; }
+    .port-cell[data-port="7"] { order: 4; }
+    .port-cell[data-port="6"] { order: 5; }
+    .port-cell[data-port="5"] { order: 6; }
+    .port-cell[data-port="4"] { order: 7; }
+    .port-cell[data-port="11"] { order: 8; }
+    .port-cell[data-port="10"] { order: 9; }
+    .port-cell[data-port="9"] { order: 10; }
+    .port-cell[data-port="8"] { order: 11; }
+
     .port-cell {
       background: #ffffff;
       padding: 3px 2px;
@@ -438,7 +452,21 @@
 
       .slot-card {
         width: 100%;
-        max-width: 180px;
+        max-width: none;
+      }
+
+      .ports-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 1px;
+      }
+
+      /* Mobile: reset order to natural 0-11 for grid layout */
+      .port-cell {
+        order: initial !important;
+        padding: 8px 4px;
+        min-height: 60px;
       }
       
       h1 {
@@ -542,13 +570,12 @@
             Slot {{ slot }}
           </div>
           <div class="ports-grid">
-            {% for group in [range(0, 4), range(4, 8), range(8, 12)] %}
-            {% for port in group|reverse %}
+            {% for port in range(12) %}
             {% set port_data = snap_ports[chassis][slot][port] %}
             {% set has_p1 = port_data.get('p1') %}
             {% set has_p2 = port_data.get('p2') %}
             {% set cell_class = 'port-p1' if has_p1 else ('port-p2' if has_p2 else '') %}
-            <div class="port-cell {{ cell_class }}">
+            <div class="port-cell {{ cell_class }}" data-port="{{ port }}">
               <div class="port-number">ADC {{ port }}</div>
               {% if has_p1 or has_p2 %}
               <div class="antenna-info">
@@ -565,7 +592,6 @@
               <div class="port-empty">—</div>
               {% endif %}
             </div>
-            {% endfor %}
             {% endfor %}
           </div>
         </div>
