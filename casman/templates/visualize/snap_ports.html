@@ -38,9 +38,9 @@
     }
 
     .container {
-      max-width: 1400px;
+      max-width: 100%;
       margin: 0 auto;
-      padding: 20px 12px 0 12px;
+      padding: 20px 8px 0 8px;
     }
 
     /* When filtering to single chassis/slot, use narrower max-width */
@@ -207,7 +207,7 @@
     }
 
     .chassis-container {
-      margin-bottom: 50px;
+      margin-bottom: 40px;
     }
 
     .chassis-header {
@@ -229,13 +229,13 @@
     .slots-grid {
       display: flex;
       flex-wrap: nowrap;
-      gap: 15px;
-      padding: 20px;
+      gap: 8px;
+      padding: 15px 10px;
       background: rgba(255, 255, 255, 0.95);
       border-radius: 0 0 10px 10px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       justify-content: center;
-      overflow-x: auto;
+      overflow-x: visible;
     }
 
     body.dark-mode .slots-grid {
@@ -245,11 +245,11 @@
 
     .slot-card {
       border: 2px solid currentColor;
-      border-radius: 8px;
+      border-radius: 6px;
       overflow: hidden;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       flex: 0 0 auto;
-      width: 165px;
+      width: 140px;
     }
 
     .slot-card:hover {
@@ -284,8 +284,8 @@
 
     .port-cell {
       background: #ffffff;
-      padding: 4px 3px;
-      min-height: 50px;
+      padding: 3px 2px;
+      min-height: 48px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -310,8 +310,8 @@
     .port-number {
       font-weight: bold;
       color: #666;
-      font-size: 0.8em;
-      margin-bottom: 3px;
+      font-size: 0.78em;
+      margin-bottom: 2px;
     }
 
     body.dark-mode .port-number {
@@ -321,16 +321,16 @@
     .antenna-info {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 1px;
       width: 100%;
       text-align: center;
     }
 
     .grid-info {
-      font-size: 0.85em;
+      font-size: 0.82em;
       font-weight: bold;
       color: inherit;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
       font-family: 'National Park Bold', sans-serif;
     }
 
