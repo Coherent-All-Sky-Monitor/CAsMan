@@ -400,6 +400,7 @@
       border: 2px solid currentColor;
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      flex-wrap: wrap;
     }
 
     body.dark-mode .legend {
@@ -486,6 +487,15 @@
       .filter-controls select,
       .clear-filter {
         width: 100%;
+      }
+
+      .legend {
+        gap: 15px;
+        padding: 10px;
+      }
+
+      .legend-item {
+        font-size: 0.9em;
       }
     }
   </style>
