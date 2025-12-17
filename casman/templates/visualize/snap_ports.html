@@ -248,7 +248,7 @@
       overflow: hidden;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       flex: 0 0 auto;
-      width: 280px;
+      width: 220px;
     }
 
     .slot-card:hover {
@@ -283,8 +283,8 @@
 
     .port-cell {
       background: #ffffff;
-      padding: 8px;
-      min-height: 70px;
+      padding: 6px 4px;
+      min-height: 60px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -432,7 +432,7 @@
     @media (max-width: 768px) {
       .slot-card {
         width: 100%;
-        max-width: 320px;
+        max-width: 240px;
       }
       
       h1 {
@@ -543,7 +543,7 @@
             {% set has_p2 = port_data.get('p2') %}
             {% set cell_class = 'port-p1' if has_p1 else ('port-p2' if has_p2 else '') %}
             <div class="port-cell {{ cell_class }}">
-              <div class="port-number">Port {{ port }}</div>
+              <div class="port-number">ADC {{ port }}</div>
               {% if has_p1 or has_p2 %}
               <div class="antenna-info">
                 {% if has_p1 %}
