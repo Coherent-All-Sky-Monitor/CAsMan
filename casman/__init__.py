@@ -8,7 +8,7 @@ in the CASM assembly process.
 import logging
 import os
 
-__version__ = "1.2.1"
+__version__ = "1.3.0"
 __author__ = "CASM Team"
 
 logger = logging.getLogger(__name__)
