@@ -38,9 +38,14 @@
     }
 
     .container {
-      max-width: 1800px;
+      max-width: 1400px;
       margin: 0 auto;
       padding: 20px 12px 0 12px;
+    }
+
+    /* When filtering to single chassis/slot, use narrower max-width */
+    .container.filtered {
+      max-width: 900px;
     }
 
     /* Fixed Toolbar */
@@ -472,7 +477,7 @@
   </div>
   <div class="toolbar-spacer"></div>
 
-  <div class="container">
+  <div class="container{% if selected_chassis or selected_slot %} filtered{% endif %}">
     <h1>SNAP Ports Visualization</h1>
 
     <div class="filter-controls">
