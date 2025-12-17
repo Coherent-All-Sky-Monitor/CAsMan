@@ -228,13 +228,14 @@
 
     .slots-grid {
       display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
+      flex-wrap: nowrap;
+      gap: 15px;
       padding: 20px;
       background: rgba(255, 255, 255, 0.95);
       border-radius: 0 0 10px 10px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       justify-content: center;
+      overflow-x: auto;
     }
 
     body.dark-mode .slots-grid {
@@ -430,6 +431,11 @@
     }
 
     @media (max-width: 768px) {
+      .slots-grid {
+        flex-wrap: wrap;
+        overflow-x: visible;
+      }
+
       .slot-card {
         width: 100%;
         max-width: 180px;
