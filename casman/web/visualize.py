@@ -519,28 +519,58 @@ def snap_ports():
         cursor = conn.cursor()
         
         # Get all connections that end at SNAP boards
+        # Use same logic as chains view - only show latest status for each pair
         cursor.execute("""
-            WITH RECURSIVE chain AS (
+            WITH latest_connections AS (
+                SELECT 
+                    CASE 
+                        WHEN part_number < connected_to THEN part_number
+                        ELSE connected_to
+                    END as part_a,
+                    CASE 
+                        WHEN part_number < connected_to THEN connected_to
+                        ELSE part_number
+                    END as part_b,
+                    MAX(scan_time) as latest_time
+                FROM assembly
+                WHERE part_number IS NOT NULL AND connected_to IS NOT NULL
+                GROUP BY part_a, part_b
+            ),
+            pair_status AS (
+                SELECT 
+                    a.part_number,
+                    a.connected_to,
+                    a.connected_to_type,
+                    a.connection_status
+                FROM assembly a
+                INNER JOIN latest_connections lc
+                ON (
+                    (a.part_number = lc.part_a AND a.connected_to = lc.part_b) OR
+                    (a.part_number = lc.part_b AND a.connected_to = lc.part_a)
+                )
+                AND a.scan_time = lc.latest_time
+            ),
+            RECURSIVE chain AS (
                 SELECT 
                     part_number,
                     connected_to,
                     connected_to_type,
                     1 as depth,
                     part_number as start_part
-                FROM assembly
+                FROM pair_status
                 WHERE connection_status = 'connected'
                 
                 UNION ALL
                 
                 SELECT 
-                    a.part_number,
-                    a.connected_to,
-                    a.connected_to_type,
+                    ps.part_number,
+                    ps.connected_to,
+                    ps.connected_to_type,
                     c.depth + 1,
                     c.start_part
-                FROM assembly a
-                JOIN chain c ON a.part_number = c.connected_to
-                WHERE a.connection_status = 'connected' AND c.depth < 10
+                FROM pair_status ps
+                JOIN chain c ON ps.part_number = c.connected_to
+                WHERE ps.connection_status = 'connected' AND c.depth < 10
             )
             SELECT DISTINCT start_part, connected_to as snap_part
             FROM chain
