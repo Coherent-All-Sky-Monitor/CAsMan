@@ -222,8 +222,219 @@ def format_snap_port(snap_info: dict) -> str:
     return f"Chassis {snap_info['chassis']}, Slot {snap_info['slot']}, Port {snap_info['port']}"
 
 
+def get_snap_port_mapping(
+    chassis: int, slot: str, port: int, *, db_dir: Optional[str] = None
+) -> Optional[dict]:
+    """Get complete mapping for a SNAP port including network and ADC info.
+
+    Maps a SNAP hardware location to network configuration, packet routing,
+    and ADC input information.
+
+    Parameters
+    ----------
+    chassis : int
+        SNAP chassis number (1-4).
+    slot : str
+        SNAP slot letter (A-K).
+    port : int
+        SNAP port number (0-11).
+    db_dir : str, optional
+        Custom database directory for testing.
+
+    Returns
+    -------
+    dict or None
+        Complete mapping if SNAP board configured:
+        {
+            'chassis': int,           # 1-4
+            'slot': str,              # A-K
+            'port': int,              # 0-11
+            'adc_input': int,         # Same as port (0-11)
+            'serial_number': str,     # Board SN
+            'mac_address': str,       # Board MAC
+            'ip_address': str,        # Board IP
+            'feng_id': int,           # F-engine ID (0-43)
+            'packet_index': int,      # feng_id * 12 + port (0-527)
+            'antenna': str or None,   # Connected antenna (e.g. 'ANT00001')
+            'polarization': str or None, # 'P1' or 'P2' if connected
+            'grid_code': str or None  # Grid position if antenna assigned
+        }
+        Returns None if SNAP board not configured.
+
+    Examples
+    --------
+    >>> mapping = get_snap_port_mapping(1, 'A', 5)
+    >>> mapping['ip_address']
+    '192.168.1.1'
+    >>> mapping['packet_index']
+    5
+    >>> mapping['antenna']
+    'ANT00001'
+    """
+    from casman.database.snap_boards import get_snap_board_info
+    from casman.database.antenna_positions import get_antenna_position
+
+    # Get SNAP board info
+    board_info = get_snap_board_info(chassis, slot, db_dir=db_dir)
+    if not board_info:
+        return None
+
+    sn, mac, ip, feng_id = board_info
+    packet_index = feng_id * 12 + port
+
+    # Build base mapping
+    mapping = {
+        'chassis': chassis,
+        'slot': slot,
+        'port': port,
+        'adc_input': port,  # ADC input matches port number (0-11)
+        'serial_number': sn,
+        'mac_address': mac,
+        'ip_address': ip,
+        'feng_id': feng_id,
+        'packet_index': packet_index,
+        'antenna': None,
+        'polarization': None,
+        'grid_code': None,
+    }
+
+    # Find if any antenna is connected to this SNAP port
+    snap_part = f"SNAP{chassis}{slot}{port:02d}"
+    
+    if db_dir is not None:
+        import os
+        db_path = os.path.join(db_dir, "assembled_casm.db")
+    else:
+        db_path = get_database_path("assembled_casm.db", None)
+
+    with sqlite3.connect(db_path) as conn:
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        # Find latest connection to this SNAP port
+        cursor.execute(
+            """
+            WITH latest_connection AS (
+                SELECT 
+                    CASE 
+                        WHEN part_number < connected_to THEN part_number
+                        ELSE connected_to
+                    END as part_a,
+                    CASE 
+                        WHEN part_number < connected_to THEN connected_to
+                        ELSE part_number
+                    END as part_b,
+                    MAX(scan_time) as latest_time
+                FROM assembly
+                WHERE (part_number = ? OR connected_to = ?)
+                    AND part_number IS NOT NULL 
+                    AND connected_to IS NOT NULL
+                GROUP BY part_a, part_b
+            )
+            SELECT a.part_number, a.part_type
+            FROM assembly a
+            INNER JOIN latest_connection lc
+            ON (
+                (a.part_number = lc.part_a AND a.connected_to = lc.part_b) OR
+                (a.part_number = lc.part_b AND a.connected_to = lc.part_a)
+            )
+            AND a.scan_time = lc.latest_time
+            WHERE a.connected_to = ? 
+                AND a.connection_status = 'connected'
+                AND a.part_type = 'COAXLONG'
+            LIMIT 1
+            """,
+            (snap_part, snap_part, snap_part),
+        )
+
+        coax_row = cursor.fetchone()
+        if coax_row:
+            # Trace back through the chain to find the antenna
+            coax_part = coax_row['part_number']
+            
+            # Get what connects to this coax (should be BACBOARD)
+            cursor.execute(
+                """
+                WITH latest_connection AS (
+                    SELECT 
+                        CASE 
+                            WHEN part_number < connected_to THEN part_number
+                            ELSE connected_to
+                        END as part_a,
+                        CASE 
+                            WHEN part_number < connected_to THEN connected_to
+                            ELSE part_number
+                        END as part_b,
+                        MAX(scan_time) as latest_time
+                    FROM assembly
+                    WHERE (part_number = ? OR connected_to = ?)
+                        AND part_number IS NOT NULL 
+                        AND connected_to IS NOT NULL
+                    GROUP BY part_a, part_b
+                )
+                SELECT a.part_number, a.part_type
+                FROM assembly a
+                INNER JOIN latest_connection lc
+                ON (
+                    (a.part_number = lc.part_a AND a.connected_to = lc.part_b) OR
+                    (a.part_number = lc.part_b AND a.connected_to = lc.part_a)
+                )
+                AND a.scan_time = lc.latest_time
+                WHERE a.connected_to = ? 
+                    AND a.connection_status = 'connected'
+                    AND a.part_type = 'BACBOARD'
+                LIMIT 1
+                """,
+                (coax_part, coax_part, coax_part),
+            )
+            
+            bac_row = cursor.fetchone()
+            if bac_row:
+                # Continue chain to find antenna
+                bac_part = bac_row['part_number']
+                
+                # Walk back through COAXSHORT, LNA to ANTENNA
+                cursor.execute(
+                    """
+                    WITH RECURSIVE chain(part, depth) AS (
+                        SELECT ?, 0
+                        UNION ALL
+                        SELECT a.part_number, chain.depth + 1
+                        FROM assembly a
+                        INNER JOIN chain ON a.connected_to = chain.part
+                        WHERE a.connection_status = 'connected'
+                            AND chain.depth < 5
+                    )
+                    SELECT part FROM chain 
+                    WHERE part LIKE 'ANT%'
+                    LIMIT 1
+                    """,
+                    (bac_part,),
+                )
+                
+                antenna_row = cursor.fetchone()
+                if antenna_row:
+                    antenna_part = antenna_row['part']
+                    # Extract antenna number and polarization
+                    if antenna_part.endswith('P1'):
+                        mapping['antenna'] = antenna_part[:-2]
+                        mapping['polarization'] = 'P1'
+                    elif antenna_part.endswith('P2'):
+                        mapping['antenna'] = antenna_part[:-2]
+                        mapping['polarization'] = 'P2'
+                    
+                    # Get grid position if antenna has one
+                    if mapping['antenna']:
+                        position = get_antenna_position(mapping['antenna'], db_dir=db_dir)
+                        if position:
+                            mapping['grid_code'] = position['grid_code']
+
+    return mapping
+
+
 __all__ = [
     "get_snap_port_for_chain",
     "get_snap_ports_for_antenna",
     "format_snap_port",
+    "get_snap_port_mapping",
 ]

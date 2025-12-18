@@ -623,7 +623,7 @@ See [Grid Coordinates Documentation](docs/grid_coordinates.md) for details.
 
 ## Testing & Coverage
 
-![Tests](https://img.shields.io/badge/tests-601%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-0.0%25-yellow)
+![Tests](https://img.shields.io/badge/tests-0%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-0.0%25-yellow)
 
 
 | Module | Coverage | Lines Covered |

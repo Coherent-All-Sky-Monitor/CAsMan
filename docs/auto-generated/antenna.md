@@ -101,6 +101,7 @@ through the assembly to determine SNAP port assignments for both polarizations.
 - `get_snap_port_for_chain()` - Find SNAP port at end of connection chain
 - `get_snap_ports_for_antenna()` - Get SNAP ports for both polarizations of an antenna
 - `format_snap_port()` - Format SNAP port info as human-readable string
+- `get_snap_port_mapping()` - Get complete mapping for a SNAP port including network and ADC info
 
 ### kernel_index
 
@@ -118,7 +119,7 @@ For the core array with 43 rows (N021 to S021) and 6 columns (E01-E06):
 **Functions:**
 - `grid_to_kernel_index()` - Convert grid coordinate to kernel index
 - `kernel_index_to_grid()` - Convert kernel index to grid coordinate
-- `get_antenna_kernel_idx()` - Get complete kernel index mapping with antenna and SNAP port information
+- `get_array_index_map()` - Get complete kernel index mapping with antenna and SNAP port information
 - `get_by_kernel_index()` - Get information for a specific kernel index
 - `get_by_grid_code()` - Get information for a specific grid code
 
@@ -567,6 +568,37 @@ Formatted string like "Chassis 1, Slot A, Port 5".
 
 ---
 
+### get_snap_port_mapping
+
+**Signature:** `get_snap_port_mapping(chassis: int, slot: str, port: int) -> Optional[dict]`
+
+Get complete mapping for a SNAP port including network and ADC info. Maps a SNAP hardware location to network configuration, packet routing, and ADC input information.
+
+**Parameters:**
+
+chassis : int
+SNAP chassis number (1-4).
+slot : str
+SNAP slot letter (A-K).
+port : int
+SNAP port number (0-11).
+db_dir : str, optional
+Custom database directory for testing.
+
+**Examples:**
+
+```python
+>>> mapping = get_snap_port_mapping(1, 'A', 5)
+>>> mapping['ip_address']
+'192.168.1.1'
+>>> mapping['packet_index']
+5
+>>> mapping['antenna']
+'ANT00001'
+```
+
+---
+
 ## Kernel_Index Module Details
 
 This module provides functions to convert between grid coordinates and kernel indices
@@ -646,9 +678,9 @@ None
 
 ---
 
-### get_antenna_kernel_idx
+### get_array_index_map
 
-**Signature:** `get_antenna_kernel_idx(array_name: str) -> KernelIndexArray`
+**Signature:** `get_array_index_map(array_name: str) -> 'KernelIndexArray'`
 
 Get complete kernel index mapping with antenna and SNAP port information. This function creates 2D arrays mapping kernel indices to grid coordinates, antenna part numbers, and SNAP port assignments. Arrays are sized according to the array configuration: (north_rows + south_rows + 1) × east_columns.
 
@@ -667,11 +699,13 @@ Object containing 2D numpy arrays:
 - grid_codes: str array, empty string for invalid positions
 - antenna_numbers: str array, empty string for unassigned positions
 - snap_ports: object array of tuples (chassis, slot, port), None for unassigned
+- snap_board_info: object array of dicts with SNAP board configuration
+(ip_address, mac_address, serial_number, feng_id, packet_index, adc_input)
 
 **Examples:**
 
 ```python
->>> kernel_data = get_antenna_kernel_idx()
+>>> kernel_data = get_array_index_map()
 >>> kernel_data.shape
 (43, 6)
 >>> kernel_data.kernel_indices[0, 0]  # CN021E01
@@ -681,6 +715,10 @@ Object containing 2D numpy arrays:
 >>> info = kernel_data.get_by_kernel_index(0)
 >>> info['grid_code']
 'CN021E01'
+>>> info['snap_board_info']['ip_address']
+'192.168.1.1'
+>>> info['snap_board_info']['packet_index']
+5
 ```
 
 ---
@@ -699,7 +737,11 @@ Kernel index to query (0-255)
 **Returns:**
 
 dict or None
-Dictionary with keys: 'grid_code', 'antenna_number', 'snap_port', 'ns', 'ew'
+Dictionary with keys: 'grid_code', 'antenna_number', 'snap_port',
+'snap_board_info', 'ns', 'ew'. Returns None if kernel_idx is out of
+range or unmapped.
+snap_board_info dict contains: 'ip_address', 'mac_address',
+'serial_number', 'feng_id', 'packet_index', 'adc_input'
 
 ---
 
@@ -717,7 +759,11 @@ Grid code to query (e.g., 'CN021E01')
 **Returns:**
 
 dict or None
-Dictionary with keys: 'kernel_index', 'antenna_number', 'snap_port', 'ns', 'ew'
+Dictionary with keys: 'kernel_index', 'antenna_number', 'snap_port',
+'snap_board_info', 'ns', 'ew'. Returns None if grid_code not found
+or unmapped.
+snap_board_info dict contains: 'ip_address', 'mac_address',
+'serial_number', 'feng_id', 'packet_index', 'adc_input'
 
 ---
 
@@ -743,6 +789,10 @@ antenna_numbers : np.ndarray
 snap_ports : np.ndarray
     2D array of SNAP port tuples (chassis, slot, port), shape (n_rows, n_cols).
     None indicates unassigned or unmapped positions.
+snap_board_info : np.ndarray
+    2D array of SNAP board configuration dicts, shape (n_rows, n_cols).
+    Each dict contains: ip_address, mac_address, serial_number, feng_id, 
+    packet_index, adc_input. None for unassigned positions.
 shape : tuple
     Shape of the arrays (n_rows, n_cols).
 
@@ -750,7 +800,7 @@ shape : tuple
 
 ##### __init__
 
-**Signature:** `__init__(kernel_indices: np.ndarray, grid_codes: np.ndarray, antenna_numbers: np.ndarray, snap_ports: np.ndarray)`
+**Signature:** `__init__(kernel_indices: np.ndarray, grid_codes: np.ndarray, antenna_numbers: np.ndarray, snap_ports: np.ndarray, snap_board_info: Optional[np.ndarray])`
 
 Initialize kernel index array container.
 
@@ -764,6 +814,8 @@ antenna_numbers : np.ndarray
 2D array of antenna part numbers
 snap_ports : np.ndarray
 2D array of SNAP port tuples
+snap_board_info : np.ndarray, optional
+2D array of SNAP board configuration dicts
 
 ---
 
@@ -781,7 +833,11 @@ Kernel index to query (0-255)
 **Returns:**
 
 dict or None
-Dictionary with keys: 'grid_code', 'antenna_number', 'snap_port', 'ns', 'ew'
+Dictionary with keys: 'grid_code', 'antenna_number', 'snap_port',
+'snap_board_info', 'ns', 'ew'. Returns None if kernel_idx is out of
+range or unmapped.
+snap_board_info dict contains: 'ip_address', 'mac_address',
+'serial_number', 'feng_id', 'packet_index', 'adc_input'
 
 ---
 
@@ -799,7 +855,11 @@ Grid code to query (e.g., 'CN021E01')
 **Returns:**
 
 dict or None
-Dictionary with keys: 'kernel_index', 'antenna_number', 'snap_port', 'ns', 'ew'
+Dictionary with keys: 'kernel_index', 'antenna_number', 'snap_port',
+'snap_board_info', 'ns', 'ew'. Returns None if grid_code not found
+or unmapped.
+snap_board_info dict contains: 'ip_address', 'mac_address',
+'serial_number', 'feng_id', 'packet_index', 'adc_input'
 
 ---
 

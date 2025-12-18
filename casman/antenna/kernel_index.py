@@ -34,6 +34,10 @@ class KernelIndexArray:
     snap_ports : np.ndarray
         2D array of SNAP port tuples (chassis, slot, port), shape (n_rows, n_cols).
         None indicates unassigned or unmapped positions.
+    snap_board_info : np.ndarray
+        2D array of SNAP board configuration dicts, shape (n_rows, n_cols).
+        Each dict contains: ip_address, mac_address, serial_number, feng_id, 
+        packet_index, adc_input. None for unassigned positions.
     shape : tuple
         Shape of the arrays (n_rows, n_cols).
     """
@@ -44,6 +48,7 @@ class KernelIndexArray:
         grid_codes: np.ndarray,
         antenna_numbers: np.ndarray,
         snap_ports: np.ndarray,
+        snap_board_info: Optional[np.ndarray] = None,
     ):
         """Initialize kernel index array container.
         
@@ -57,11 +62,14 @@ class KernelIndexArray:
             2D array of antenna part numbers
         snap_ports : np.ndarray
             2D array of SNAP port tuples
+        snap_board_info : np.ndarray, optional
+            2D array of SNAP board configuration dicts
         """
         self.kernel_indices = kernel_indices
         self.grid_codes = grid_codes
         self.antenna_numbers = antenna_numbers
         self.snap_ports = snap_ports
+        self.snap_board_info = snap_board_info
         self.shape = kernel_indices.shape
     
     def get_by_kernel_index(self, kernel_idx: int) -> Optional[dict]:
@@ -75,8 +83,12 @@ class KernelIndexArray:
         Returns
         -------
         dict or None
-            Dictionary with keys: 'grid_code', 'antenna_number', 'snap_port', 'ns', 'ew'
-            Returns None if kernel_idx is out of range or unmapped.
+            Dictionary with keys: 'grid_code', 'antenna_number', 'snap_port', 
+            'snap_board_info', 'ns', 'ew'. Returns None if kernel_idx is out of 
+            range or unmapped.
+            
+            snap_board_info dict contains: 'ip_address', 'mac_address', 
+            'serial_number', 'feng_id', 'packet_index', 'adc_input'
         """
         # Check if kernel_idx is valid
         if kernel_idx < 0:
@@ -92,10 +104,15 @@ class KernelIndexArray:
         snap_port = self.snap_ports[row, col]
         snap_tuple = tuple(snap_port) if snap_port is not None else None
         
+        board_info = None
+        if self.snap_board_info is not None:
+            board_info = self.snap_board_info[row, col]
+        
         return {
             'grid_code': self.grid_codes[row, col],
             'antenna_number': self.antenna_numbers[row, col],
             'snap_port': snap_tuple,
+            'snap_board_info': board_info,
             'ns': int(row),
             'ew': int(col),
         }
@@ -111,8 +128,12 @@ class KernelIndexArray:
         Returns
         -------
         dict or None
-            Dictionary with keys: 'kernel_index', 'antenna_number', 'snap_port', 'ns', 'ew'
-            Returns None if grid_code not found or unmapped.
+            Dictionary with keys: 'kernel_index', 'antenna_number', 'snap_port', 
+            'snap_board_info', 'ns', 'ew'. Returns None if grid_code not found 
+            or unmapped.
+            
+            snap_board_info dict contains: 'ip_address', 'mac_address', 
+            'serial_number', 'feng_id', 'packet_index', 'adc_input'
         """
         # Find position of grid_code in array
         positions = np.where(self.grid_codes == grid_code.upper())
@@ -128,10 +149,15 @@ class KernelIndexArray:
         snap_port = self.snap_ports[row, col]
         snap_tuple = tuple(snap_port) if snap_port is not None else None
         
+        board_info = None
+        if self.snap_board_info is not None:
+            board_info = self.snap_board_info[row, col]
+        
         return {
             'kernel_index': int(kernel_idx),
             'antenna_number': self.antenna_numbers[row, col],
             'snap_port': snap_tuple,
+            'snap_board_info': board_info,
             'ns': int(row),
             'ew': int(col),
         }
@@ -291,9 +317,9 @@ def kernel_index_to_grid(
         return None
 
 
-def get_antenna_kernel_idx(
+def get_array_index_map(
     array_name: str = "core", *, db_dir: Optional[str] = None
-) -> KernelIndexArray:
+) -> "KernelIndexArray":
     """Get complete kernel index mapping with antenna and SNAP port information.
     
     This function creates 2D arrays mapping kernel indices to grid coordinates,
@@ -315,10 +341,12 @@ def get_antenna_kernel_idx(
         - grid_codes: str array, empty string for invalid positions
         - antenna_numbers: str array, empty string for unassigned positions
         - snap_ports: object array of tuples (chassis, slot, port), None for unassigned
+        - snap_board_info: object array of dicts with SNAP board configuration
+          (ip_address, mac_address, serial_number, feng_id, packet_index, adc_input)
     
     Examples
     --------
-    >>> kernel_data = get_antenna_kernel_idx()
+    >>> kernel_data = get_array_index_map()
     >>> kernel_data.shape
     (43, 6)
     >>> kernel_data.kernel_indices[0, 0]  # CN021E01
@@ -328,6 +356,10 @@ def get_antenna_kernel_idx(
     >>> info = kernel_data.get_by_kernel_index(0)
     >>> info['grid_code']
     'CN021E01'
+    >>> info['snap_board_info']['ip_address']
+    '192.168.1.1'
+    >>> info['snap_board_info']['packet_index']
+    5
     """
     # Check if kernel index is enabled for this array
     enabled = get_config(f"grid.{array_name}.kernel_index.enabled", False)
@@ -349,6 +381,7 @@ def get_antenna_kernel_idx(
     grid_codes = np.full((n_rows, n_cols), "", dtype=object)
     antenna_numbers = np.full((n_rows, n_cols), "", dtype=object)
     snap_ports = np.full((n_rows, n_cols), None, dtype=object)
+    snap_board_info = np.full((n_rows, n_cols), None, dtype=object)
     
     # Populate grid codes and kernel indices
     for row in range(n_rows):
@@ -399,7 +432,7 @@ def get_antenna_kernel_idx(
                 # Get SNAP ports for this antenna
                 try:
                     ports = get_snap_ports_for_antenna(antenna_num, db_dir=db_dir)
-                    if ports['p1'] and ports['p2']:
+                    if ports['p1']:
                         # Store P1 port as the primary SNAP port
                         p1 = ports['p1']
                         snap_ports[row, col] = np.array([
@@ -407,6 +440,18 @@ def get_antenna_kernel_idx(
                             ord(p1['slot']) if isinstance(p1['slot'], str) else p1['slot'],
                             p1['port']
                         ], dtype=object)
+                        
+                        # Store SNAP board info if available
+                        if 'board_info' in p1:
+                            board_info = p1['board_info']
+                            snap_board_info[row, col] = {
+                                'ip_address': board_info.get('ip_address', ''),
+                                'mac_address': board_info.get('mac_address', ''),
+                                'serial_number': board_info.get('serial_number', ''),
+                                'feng_id': board_info.get('feng_id', -1),
+                                'packet_index': board_info.get('packet_index', -1),
+                                'adc_input': p1['port'],
+                            }
                 except Exception:
                     # SNAP ports not available for this antenna
                     pass
@@ -419,6 +464,7 @@ def get_antenna_kernel_idx(
         grid_codes=grid_codes,
         antenna_numbers=antenna_numbers,
         snap_ports=snap_ports,
+        snap_board_info=snap_board_info,
     )
 
 
@@ -426,5 +472,5 @@ __all__ = [
     "KernelIndexArray",
     "grid_to_kernel_index",
     "kernel_index_to_grid",
-    "get_antenna_kernel_idx",
+    "get_array_index_map",
 ]

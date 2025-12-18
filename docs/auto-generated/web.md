@@ -68,6 +68,9 @@ Provides web interface for viewing assembly chain connections.
 - `visualize_index()` - Render the visualization interface
 - `antenna_grid()` - Display antenna grid position visualization
 - `snap_ports()` - Display SNAP port visualization with 4x3 grids for each chassis/slot
+- `admin()` - Display admin panel
+- `load_grid_positions()` - Load grid positions from CSV
+- `load_snap_boards()` - Load SNAP boards from CSV
 - `ts()` - No docstring available
 
 ### app
@@ -425,6 +428,36 @@ Display antenna grid position visualization.
 **Signature:** `snap_ports()`
 
 Display SNAP port visualization with 4x3 grids for each chassis/slot.
+
+---
+
+### admin
+
+*@visualize_bp.route('/admin')*
+
+**Signature:** `admin()`
+
+Display admin panel.
+
+---
+
+### load_grid_positions
+
+*@visualize_bp.route('/admin/load-grid-positions', methods=['POST'])*
+
+**Signature:** `load_grid_positions()`
+
+Load grid positions from CSV.
+
+---
+
+### load_snap_boards
+
+*@visualize_bp.route('/admin/load-snap-boards', methods=['POST'])*
+
+**Signature:** `load_snap_boards()`
+
+Load SNAP boards from CSV.
 
 ---
 

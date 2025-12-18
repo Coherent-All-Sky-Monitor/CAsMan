@@ -30,7 +30,7 @@ from .kernel_index import (
     KernelIndexArray,
     grid_to_kernel_index,
     kernel_index_to_grid,
-    get_antenna_kernel_idx,
+    get_array_index_map,
 )
 
 __all__ = [
@@ -52,5 +52,5 @@ __all__ = [
     "KernelIndexArray",
     "grid_to_kernel_index",
     "kernel_index_to_grid",
-    "get_antenna_kernel_idx",
+    "get_array_index_map",
 ]
