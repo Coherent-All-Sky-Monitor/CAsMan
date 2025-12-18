@@ -655,6 +655,12 @@ For the core array with 43 rows (N021 to S021) and 6 columns (E01-E06):
 - Mapping follows row-major order starting from CN021E01
 - Only the first 256 positions are mapped (CS021E05 and CS021E06 are unmapped)
 
+## Constants
+
+### HAS_MATPLOTLIB
+
+**Value:** `False`
+
 ## Functions
 
 ### grid_to_kernel_index

@@ -13,6 +13,12 @@ For the core array with 43 rows (N021 to S021) and 6 columns (E01-E06):
 from typing import Optional, Tuple
 import numpy as np
 
+try:
+    import matplotlib.pyplot as plt
+    HAS_MATPLOTLIB = True
+except ImportError:
+    HAS_MATPLOTLIB = False
+
 from casman.config import get_config
 from casman.antenna.grid import parse_grid_code, format_grid_code
 
@@ -219,18 +225,36 @@ class KernelIndexArray:
         >>> ax.set_title('Custom Title')
         >>> plt.show()
         """
-        try:
-            import matplotlib.pyplot as plt
-        except ImportError:
+        if not HAS_MATPLOTLIB:
             raise ImportError("matplotlib is required for plotting. Install with: pip install matplotlib")
         
         if self.coordinates is None:
             raise ValueError("No coordinate data available. Load coordinates first.")
         
-        # Extract coordinates
+        # Extract coordinates and convert to local meters
         n_rows, n_cols = self.shape
-        longitudes = []
-        latitudes = []
+        
+        # Find CC000E01 as reference point
+        ref_lat, ref_lon = None, None
+        for row in range(n_rows):
+            for col in range(n_cols):
+                if self.grid_codes[row, col] == 'CC000E01':
+                    ref_lat = self.coordinates[row, col, 0]
+                    ref_lon = self.coordinates[row, col, 1]
+                    break
+            if ref_lat is not None:
+                break
+        
+        if ref_lat is None:
+            raise ValueError("Reference point CC000E01 not found")
+        
+        # Convert to local Easting/Northing in meters relative to CC000E01
+        # At ~37° latitude: 1° lat ≈ 111,132 m, 1° lon ≈ 88,649 m
+        meters_per_deg_lat = 111132.0
+        meters_per_deg_lon = 88649.0  # at 37° latitude
+        
+        eastings = []
+        northings = []
         grid_codes = []
         
         for row in range(n_rows):
@@ -240,15 +264,18 @@ class KernelIndexArray:
                     lat = self.coordinates[row, col, 0]
                     lon = self.coordinates[row, col, 1]
                     if lat != 0.0 or lon != 0.0:  # Skip zero coordinates
-                        latitudes.append(lat)
-                        longitudes.append(lon)
+                        # Convert to meters relative to reference
+                        easting = (lon - ref_lon) * meters_per_deg_lon
+                        northing = (lat - ref_lat) * meters_per_deg_lat
+                        eastings.append(easting)
+                        northings.append(northing)
                         grid_codes.append(grid_code)
         
         # Create figure
-        fig, ax = plt.subplots(figsize=(12, 14))
+        fig, ax = plt.subplots(figsize=(10, 10))
         
-        # Plot all points
-        ax.scatter(longitudes, latitudes, c='blue', s=20, alpha=0.6, zorder=2)
+        # Plot all points with square markers
+        ax.scatter(eastings, northings, c='blue', s=20, alpha=0.6, zorder=2, marker='s')
         
         # Parse grid codes to find specific points for labeling
         label_points = {}
@@ -266,33 +293,44 @@ class KernelIndexArray:
             
             # Store points we want to label
             key = (row_label, col_label)
-            label_points[key] = (longitudes[i], latitudes[i])
+            label_points[key] = (eastings[i], northings[i])
         
         # Label major rows on the left (at E01)
         major_rows = ['N21', 'N10', 'C00', 'S10', 'S21']
         for row_label in major_rows:
             row_key = f"{row_label[0]}{int(row_label[1:]):03d}"
-            key = (row_key, 'E1')
+            key = (row_key, 'E01')
             if key in label_points:
-                lon, lat = label_points[key]
-                ax.annotate(row_label, xy=(lon, lat), xytext=(-15, 0),
+                east, north = label_points[key]
+                ax.annotate(row_label, xy=(east, north), xytext=(-15, 0),
                            textcoords='offset points', ha='right', va='center',
                            fontsize=10, fontweight='bold', color='darkred')
         
-        # Label all columns on top (at N21)
-        for col in range(1, 7):
+        # Label only E01 and E06 columns on top (at N21)
+        for col in [1, 6]:
             col_label = f"E{col:02d}"
             key = ('N021', col_label)
             if key in label_points:
-                lon, lat = label_points[key]
-                ax.annotate(col_label, xy=(lon, lat), xytext=(0, 10),
+                east, north = label_points[key]
+                ax.annotate(col_label, xy=(east, north), xytext=(0, 10),
                            textcoords='offset points', ha='center', va='bottom',
                            fontsize=10, fontweight='bold', color='darkblue')
         
+        # Annotate CC000E01 with geographic coordinates
+        key = ('C000', 'E01')
+        if key in label_points:
+            east, north = label_points[key]
+            geo_text = f'CC000E01\n({ref_lat:.6f}°, {ref_lon:.6f}°)'
+            ax.annotate(geo_text, xy=(east, north), xytext=(-20, -10),
+                       textcoords='offset points', ha='right', va='top',
+                       fontsize=8, color='green',
+                       bbox=dict(boxstyle='round,pad=0.3', facecolor='yellow', alpha=0.7),
+                       arrowprops=dict(arrowstyle='->', color='green', lw=1))
+        
         # Styling
-        ax.set_xlabel('Longitude (°)', fontsize=12, fontweight='bold')
-        ax.set_ylabel('Latitude (°)', fontsize=12, fontweight='bold')
-        ax.set_title('CASM Grid Positions (WGS84)', fontsize=14, fontweight='bold')
+        ax.set_xlabel('Easting (m)', fontsize=12, fontweight='bold')
+        ax.set_ylabel('Northing (m)', fontsize=12, fontweight='bold')
+        ax.set_title('CASM Grid Positions (Local Coordinates)', fontsize=14, fontweight='bold')
         ax.grid(True, alpha=0.3, linestyle='--')
         ax.set_aspect('equal', adjustable='datalim')
                 

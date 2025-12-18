@@ -47,7 +47,10 @@ def meters_to_degrees_lon(meters, latitude):
 
 
 def calculate_ew_distance(col_from, col_to):
-    """Calculate cumulative East-West distance between two columns."""
+    """Calculate cumulative East-West distance between two columns.
+    
+    Columns are 1-indexed (E01-E06), but EW_DISTS uses 0-indexed keys.
+    """
     if col_from == col_to:
         return 0.0
     
@@ -56,12 +59,16 @@ def calculate_ew_distance(col_from, col_to):
     total_dist = 0.0
     
     for col in range(start, end):
+        # Convert 1-indexed column to 0-indexed for EW_DISTS lookup
+        col_0idx = col - 1
+        next_col_0idx = col_0idx + 1
+        
         # Get distance for this step
-        if (col, col + 1) in EW_DISTS:
-            total_dist += EW_DISTS[(col, col + 1)]
+        if (col_0idx, next_col_0idx) in EW_DISTS:
+            total_dist += EW_DISTS[(col_0idx, next_col_0idx)]
         else:
             # Extrapolate pattern: odd→even = 44.5cm, even→odd = 38cm
-            if col % 2 == 0:
+            if col_0idx % 2 == 0:
                 total_dist += 0.38
             else:
                 total_dist += 0.445
