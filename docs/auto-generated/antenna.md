@@ -745,10 +745,8 @@ Object containing 2D numpy arrays:
 - snap_ports: object array of tuples (chassis, slot, port), None for unassigned
 - snap_board_info: object array of dicts with SNAP board configuration
 (ip_address, mac_address, serial_number, feng_id, packet_index, adc_input)
-- latitude: float array, NaN for positions without coordinates
-- longitude: float array, NaN for positions without coordinates
-- height: float array, NaN for positions without coordinates
-- coordinate_system: str array, empty string for positions without coordinates
+- coordinates: 3D float array of shape (n_rows, n_cols, 3) containing
+[latitude, longitude, height] for all grid positions
 
 **Examples:**
 
@@ -841,18 +839,10 @@ snap_board_info : np.ndarray
     2D array of SNAP board configuration dicts, shape (n_rows, n_cols).
     Each dict contains: ip_address, mac_address, serial_number, feng_id, 
     packet_index, adc_input. None for unassigned positions.
-latitude : np.ndarray
-    2D array of latitude coordinates in decimal degrees, shape (n_rows, n_cols).
-    NaN indicates positions without coordinate data.
-longitude : np.ndarray
-    2D array of longitude coordinates in decimal degrees, shape (n_rows, n_cols).
-    NaN indicates positions without coordinate data.
-height : np.ndarray
-    2D array of height/elevation in meters, shape (n_rows, n_cols).
-    NaN indicates positions without coordinate data.
-coordinate_system : np.ndarray
-    2D array of coordinate system strings (e.g., 'WGS84'), shape (n_rows, n_cols).
-    Empty string indicates positions without coordinate data.
+coordinates : np.ndarray
+    3D array of coordinates, shape (n_rows, n_cols, 3).
+    Each position contains [latitude, longitude, height] in decimal degrees and meters.
+    Loaded from grid_positions data in the database.
 shape : tuple
     Shape of the arrays (n_rows, n_cols).
 
@@ -860,7 +850,7 @@ shape : tuple
 
 ##### __init__
 
-**Signature:** `__init__(kernel_indices: np.ndarray, grid_codes: np.ndarray, antenna_numbers: np.ndarray, snap_ports: np.ndarray, snap_board_info: Optional[np.ndarray], latitude: Optional[np.ndarray], longitude: Optional[np.ndarray], height: Optional[np.ndarray], coordinate_system: Optional[np.ndarray])`
+**Signature:** `__init__(kernel_indices: np.ndarray, grid_codes: np.ndarray, antenna_numbers: np.ndarray, snap_ports: np.ndarray, snap_board_info: Optional[np.ndarray], coordinates: Optional[np.ndarray])`
 
 Initialize kernel index array container.
 
@@ -876,14 +866,8 @@ snap_ports : np.ndarray
 2D array of SNAP port tuples
 snap_board_info : np.ndarray, optional
 2D array of SNAP board configuration dicts
-latitude : np.ndarray, optional
-2D array of latitude coordinates in decimal degrees
-longitude : np.ndarray, optional
-2D array of longitude coordinates in decimal degrees
-height : np.ndarray, optional
-2D array of height/elevation in meters
-coordinate_system : np.ndarray, optional
-2D array of coordinate system strings
+coordinates : np.ndarray, optional
+3D array of shape (n_rows, n_cols, 3) containing [lat, lon, height]
 
 ---
 
