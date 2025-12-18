@@ -129,6 +129,9 @@ def load_snap_boards_from_csv(csv_path: Optional[str] = None) -> Dict[str, int]:
 
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
+        
+        # Enable deferred foreign key checks to allow swapping unique values
+        cursor.execute("PRAGMA defer_foreign_keys = ON")
 
         # Read and process CSV
         with open(csv_path, "r") as f:
