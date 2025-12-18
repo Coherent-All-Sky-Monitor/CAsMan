@@ -87,6 +87,13 @@ def create_app(enable_scanner: bool = True, enable_visualization: bool = True) -
                     "View assembly chains and connections",
                 )
             )
+            enabled_apps.append(
+                (
+                    "Admin",
+                    "/visualize/admin",
+                    "Database management and CSV loading",
+                )
+            )
 
         if len(enabled_apps) == 1:
             return redirect(enabled_apps[0][1])

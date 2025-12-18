@@ -9,7 +9,7 @@ import os
 import sqlite3
 from typing import Dict, List, Optional, Tuple
 
-from flask import Blueprint, render_template_string, request, send_from_directory
+from flask import Blueprint, jsonify, render_template_string, request, send_from_directory
 
 from casman.config import get_config
 
@@ -688,3 +688,79 @@ def snap_ports():
         selected_chassis=selected_chassis,
         selected_slot=selected_slot,
     )
+
+
+# ============================================================================
+# ADMIN ROUTES
+# ============================================================================
+
+
+@visualize_bp.route("/admin")
+def admin():
+    """Display admin panel."""
+    template_path = os.path.join(
+        os.path.dirname(__file__), "..", "templates", "admin.html"
+    )
+    with open(template_path, "r", encoding="utf-8") as f:
+        template = f.read()
+    return render_template_string(template)
+
+
+@visualize_bp.route("/admin/load-grid-positions", methods=["POST"])
+def load_grid_positions():
+    """Load grid positions from CSV."""
+    try:
+        from casman.database.antenna_positions import load_grid_coordinates_from_csv
+        
+        result = load_grid_coordinates_from_csv()
+        
+        # Check for errors in result
+        if result.get('errors'):
+            error_msg = "; ".join(result['errors'])
+            return jsonify({
+                'success': False,
+                'error': error_msg
+            }), 400
+        
+        message = f"✓ Updated: {result['updated']} position(s), "
+        message += f"Skipped: {result['skipped']}"
+        
+        return jsonify({
+            'success': True,
+            'message': message,
+            'stats': result
+        })
+    except Exception as e:
+        logger.error(f"Error loading grid positions: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@visualize_bp.route("/admin/load-snap-boards", methods=["POST"])
+def load_snap_boards():
+    """Load SNAP boards from CSV."""
+    try:
+        from casman.database.snap_boards import load_snap_boards_from_csv
+        
+        result = load_snap_boards_from_csv()
+        
+        message = f"✓ Loaded: {result['loaded']} new board(s), "
+        message += f"Updated: {result['updated']}, "
+        message += f"Skipped: {result['skipped']}"
+        
+        if result['errors'] > 0:
+            message += f", Errors: {result['errors']}"
+        
+        return jsonify({
+            'success': True,
+            'message': message,
+            'stats': result
+        })
+    except Exception as e:
+        logger.error(f"Error loading SNAP boards: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500

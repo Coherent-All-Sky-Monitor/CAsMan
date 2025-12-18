@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAsMan - Admin</title>
+    <style>
+        @font-face {
+            font-family: 'National Park';
+            src: url('/visualize/static/fonts/NationalPark-Regular.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'National Park Bold';
+            src: url('/visualize/static/fonts/NationalPark-Bold.woff') format('woff');
+            font-weight: bold;
+            font-style: normal;
+        }
+        
+        body {
+            font-family: 'National Park', sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        body.dark-mode {
+            background: #000;
+            color: #fff;
+        }
+        
+        body.dark-mode .admin-card {
+            border-color: #fff;
+            background: #111;
+        }
+        
+        body.dark-mode .btn {
+            background: #fff;
+            color: #000;
+        }
+        
+        body.dark-mode .btn:hover {
+            background: #ddd;
+        }
+        
+        body.dark-mode .message {
+            border-color: #fff;
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .theme-toggle .sun {
+            display: none;
+        }
+        
+        .theme-toggle .moon {
+            display: inline;
+        }
+        
+        body.dark-mode .theme-toggle .sun {
+            display: inline;
+        }
+        
+        body.dark-mode .theme-toggle .moon {
+            display: none;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-family: 'National Park Bold', sans-serif;
+        }
+        
+        .subtitle {
+            text-align: center;
+            margin-bottom: 40px;
+            opacity: 0.7;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: inherit;
+            text-decoration: none;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .admin-grid {
+            display: grid;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .admin-card {
+            padding: 30px;
+            border: 2px solid;
+        }
+        
+        .admin-card h2 {
+            margin-top: 0;
+            font-family: 'National Park Bold', sans-serif;
+        }
+        
+        .admin-card p {
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            background: #000;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-family: 'National Park', sans-serif;
+            font-size: 16px;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        
+        .btn:hover:not(:disabled) {
+            background: #333;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px solid;
+            display: none;
+        }
+        
+        .message.success {
+            color: green;
+            border-color: green;
+        }
+        
+        .message.error {
+            color: red;
+            border-color: red;
+        }
+        
+        .message.show {
+            display: block;
+        }
+        
+        .loader {
+            display: none;
+            margin-top: 10px;
+        }
+        
+        .loader.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">
+        <span class="moon">🌙</span>
+        <span class="sun">☀️</span>
+    </button>
+    
+    <a href="/" class="back-link">← Back to Home</a>
+    
+    <h1>Admin Panel</h1>
+    <p class="subtitle">Database Management</p>
+    
+    <div class="admin-grid">
+        <div class="admin-card">
+            <h2>Load Grid Positions</h2>
+            <p>Reload grid coordinates from CSV file (database/grid_positions.csv)</p>
+            <button class="btn" onclick="loadGridPositions()" id="gridBtn">Load Grid Positions</button>
+            <div class="loader" id="gridLoader">Loading...</div>
+            <div class="message" id="gridMessage"></div>
+        </div>
+        
+        <div class="admin-card">
+            <h2>Load SNAP Boards</h2>
+            <p>Reload SNAP board configurations from CSV file (database/snap_boards.csv)</p>
+            <button class="btn" onclick="loadSnapBoards()" id="snapBtn">Load SNAP Boards</button>
+            <div class="loader" id="snapLoader">Loading...</div>
+            <div class="message" id="snapMessage"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Theme management
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+        }
+        
+        // Load saved theme
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+        
+        // Load grid positions
+        async function loadGridPositions() {
+            const btn = document.getElementById('gridBtn');
+            const loader = document.getElementById('gridLoader');
+            const message = document.getElementById('gridMessage');
+            
+            btn.disabled = true;
+            loader.classList.add('show');
+            message.classList.remove('show', 'success', 'error');
+            
+            try {
+                const response = await fetch('/visualize/admin/load-grid-positions', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    message.textContent = data.message;
+                    message.classList.add('success', 'show');
+                } else {
+                    message.textContent = 'Error: ' + data.error;
+                    message.classList.add('error', 'show');
+                }
+            } catch (error) {
+                message.textContent = 'Error: ' + error.message;
+                message.classList.add('error', 'show');
+            } finally {
+                btn.disabled = false;
+                loader.classList.remove('show');
+            }
+        }
+        
+        // Load SNAP boards
+        async function loadSnapBoards() {
+            const btn = document.getElementById('snapBtn');
+            const loader = document.getElementById('snapLoader');
+            const message = document.getElementById('snapMessage');
+            
+            btn.disabled = true;
+            loader.classList.add('show');
+            message.classList.remove('show', 'success', 'error');
+            
+            try {
+                const response = await fetch('/visualize/admin/load-snap-boards', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    message.textContent = data.message;
+                    message.classList.add('success', 'show');
+                } else {
+                    message.textContent = 'Error: ' + data.error;
+                    message.classList.add('error', 'show');
+                }
+            } catch (error) {
+                message.textContent = 'Error: ' + error.message;
+                message.classList.add('error', 'show');
+            } finally {
+                btn.disabled = false;
+                loader.classList.remove('show');
+            }
+        }
+    </script>
+</body>
+</html>

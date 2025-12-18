@@ -639,23 +639,41 @@ def load_grid_coordinates_from_csv(
                 coord_system = coord_sys if coord_sys else None
 
                 try:
-                    # Update coordinates for this grid position
-                    # This will update ANY antenna currently assigned to this position
+                    # Check if values have changed before updating
                     cursor.execute(
                         """
-                        UPDATE antenna_positions
-                        SET latitude = ?,
-                            longitude = ?,
-                            height = ?,
-                            coordinate_system = ?
+                        SELECT latitude, longitude, height, coordinate_system
+                        FROM antenna_positions
                         WHERE grid_code = ?
-                    """,
-                        (latitude, longitude, height_val, coord_system, grid_code),
+                        """,
+                        (grid_code,)
                     )
-
-                    if cursor.rowcount > 0:
+                    existing = cursor.fetchone()
+                    
+                    if existing:
+                        # Compare values (handle None/NULL comparison)
+                        if (existing[0] == latitude and 
+                            existing[1] == longitude and 
+                            existing[2] == height_val and 
+                            existing[3] == coord_system):
+                            skipped += 1
+                            continue
+                        
+                        # Values differ, update
+                        cursor.execute(
+                            """
+                            UPDATE antenna_positions
+                            SET latitude = ?,
+                                longitude = ?,
+                                height = ?,
+                                coordinate_system = ?
+                            WHERE grid_code = ?
+                            """,
+                            (latitude, longitude, height_val, coord_system, grid_code),
+                        )
                         updated += 1
                     else:
+                        # Grid code not found in database
                         skipped += 1
 
                 except Exception as e:
