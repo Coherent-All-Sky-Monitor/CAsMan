@@ -3,7 +3,7 @@
 Plot CASM grid positions from grid_positions.csv.
 
 Shows a scatter plot of all grid positions with labeled axes.
-Only labels major rows (S21, C00, N21) and columns (E0-E5).
+Only labels major rows (S21, C00, N21) and columns (E1-E6).
 """
 
 import csv
@@ -49,11 +49,11 @@ def plot_grid_positions(csv_file='database/grid_positions.csv'):
         key = (row_label, col_label)
         label_points[key] = (longitudes[i], latitudes[i])
     
-    # Label major rows on the left (at E0)
+    # Label major rows on the left (at E01
     major_rows = ['N21', 'N10', 'C00', 'S10', 'S21']
     for row_label in major_rows:
         row_key = f"{row_label[0]}{int(row_label[1:]):03d}"
-        key = (row_key, 'E0')
+        key = (row_key, 'E01')
         if key in label_points:
             lon, lat = label_points[key]
             ax.annotate(row_label, xy=(lon, lat), xytext=(-15, 0),
@@ -61,8 +61,8 @@ def plot_grid_positions(csv_file='database/grid_positions.csv'):
                        fontsize=10, fontweight='bold', color='darkred')
     
     # Label all columns on top (at N21)
-    for col in range(6):
-        col_label = f"E{col}"
+    for col in range(1, 7):
+        col_label = f"E{col:02d}"
         key = ('N021', col_label)
         if key in label_points:
             lon, lat = label_points[key]
@@ -80,7 +80,7 @@ def plot_grid_positions(csv_file='database/grid_positions.csv'):
     # Add info text
     info_text = f"Total positions: {len(grid_codes)}\n"
     info_text += f"Rows: S21 to N21\n"
-    info_text += f"Columns: E0 to E5"
+    info_text += f"Columns: E1 to E6"
     ax.text(0.02, 0.98, info_text, transform=ax.transAxes,
             fontsize=9, verticalalignment='top',
             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))

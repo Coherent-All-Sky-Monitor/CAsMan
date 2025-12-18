@@ -134,6 +134,7 @@ For the core array with 43 rows (N021 to S021) and 6 columns (E01-E06):
 - `get_array_index_map()` - Get complete kernel index mapping with antenna and SNAP port information
 - `get_by_kernel_index()` - Get information for a specific kernel index
 - `get_by_grid_code()` - Get information for a specific grid code
+- `plot_positions()` - Plot grid positions with labeled axes
 
 **Classes:**
 - `KernelIndexArray` - Container for kernel index mapping arrays
@@ -813,6 +814,34 @@ snap_board_info dict contains: 'ip_address', 'mac_address',
 
 ---
 
+### plot_positions
+
+**Signature:** `plot_positions(show: bool)`
+
+Plot grid positions with labeled axes. Shows a scatter plot of all grid positions with coordinates. Labels major rows (S21, S10, C00, N10, N21) and all columns (E01-E06).
+
+**Parameters:**
+
+show : bool, optional
+If True, display the plot immediately (default: True).
+If False, return the figure and axes for further customization.
+
+**Returns:**
+
+tuple of (fig, ax) if show=False, None otherwise
+
+**Examples:**
+
+```python
+>>> array_map = get_array_index_map()
+>>> array_map.plot_positions()  # Display plot
+>>> fig, ax = array_map.plot_positions(show=False)
+>>> ax.set_title('Custom Title')
+>>> plt.show()
+```
+
+---
+
 ## Classes
 
 ### KernelIndexArray
@@ -920,6 +949,34 @@ snap_board_info dict contains: 'ip_address', 'mac_address',
 **Signature:** `__repr__() -> str`
 
 String representation of kernel index array.
+
+---
+
+##### plot_positions
+
+**Signature:** `plot_positions(show: bool)`
+
+Plot grid positions with labeled axes. Shows a scatter plot of all grid positions with coordinates. Labels major rows (S21, S10, C00, N10, N21) and all columns (E01-E06).
+
+**Parameters:**
+
+show : bool, optional
+If True, display the plot immediately (default: True).
+If False, return the figure and axes for further customization.
+
+**Returns:**
+
+tuple of (fig, ax) if show=False, None otherwise
+
+**Examples:**
+
+```python
+>>> array_map = get_array_index_map()
+>>> array_map.plot_positions()  # Display plot
+>>> fig, ax = array_map.plot_positions(show=False)
+>>> ax.set_title('Custom Title')
+>>> plt.show()
+```
 
 ---
 
