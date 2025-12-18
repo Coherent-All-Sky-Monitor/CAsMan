@@ -129,11 +129,11 @@ def load_snap_boards_from_csv(csv_path: Optional[str] = None) -> Dict[str, int]:
 
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
-        
-        # Enable deferred foreign key checks to allow swapping unique values
-        cursor.execute("PRAGMA defer_foreign_keys = ON")
 
-        # Read and process CSV
+        # First pass: collect all updates and insertions
+        updates = []
+        insertions = []
+        
         with open(csv_path, "r") as f:
             reader = csv.DictReader(f)
 
@@ -179,34 +179,66 @@ def load_snap_boards_from_csv(csv_path: Optional[str] = None) -> Dict[str, int]:
                             stats["skipped"] += 1
                             continue
 
-                        # Update existing record
-                        cursor.execute(
-                            """
-                            UPDATE snap_boards
-                            SET serial_number = ?, mac_address = ?, ip_address = ?,
-                                feng_id = ?, notes = ?, date_modified = ?
-                            WHERE chassis = ? AND slot = ?
-                            """,
-                            (sn, mac, ip, feng_id, notes, timestamp, chassis, slot),
-                        )
-                        stats["updated"] += 1
+                        # Queue update
+                        updates.append((sn, mac, ip, feng_id, notes, timestamp, chassis, slot))
                     else:
-                        # Insert new record
-                        cursor.execute(
-                            """
-                            INSERT INTO snap_boards
-                            (chassis, slot, serial_number, mac_address, ip_address,
-                             feng_id, notes, date_added)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                            """,
-                            (chassis, slot, sn, mac, ip, feng_id, notes, timestamp),
-                        )
-                        stats["loaded"] += 1
+                        # Queue insertion
+                        insertions.append((chassis, slot, sn, mac, ip, feng_id, notes, timestamp))
 
-                except (ValueError, KeyError, sqlite3.IntegrityError) as e:
+                except (ValueError, KeyError) as e:
                     print(f"  Row {row_num}: Error - {e}")
                     stats["errors"] += 1
                     continue
+
+        # Second pass: temporarily clear feng_id conflicts by setting to negative values
+        for sn, mac, ip, feng_id, notes, timestamp, chassis, slot in updates:
+            try:
+                # Set feng_id to negative temporarily to avoid conflicts
+                cursor.execute(
+                    """
+                    UPDATE snap_boards
+                    SET feng_id = -1 * feng_id
+                    WHERE chassis = ? AND slot = ? AND feng_id > 0
+                    """,
+                    (chassis, slot),
+                )
+            except sqlite3.IntegrityError:
+                # Already negative, skip
+                pass
+        
+        # Third pass: apply all updates
+        for sn, mac, ip, feng_id, notes, timestamp, chassis, slot in updates:
+            try:
+                cursor.execute(
+                    """
+                    UPDATE snap_boards
+                    SET serial_number = ?, mac_address = ?, ip_address = ?,
+                        feng_id = ?, notes = ?, date_modified = ?
+                    WHERE chassis = ? AND slot = ?
+                    """,
+                    (sn, mac, ip, feng_id, notes, timestamp, chassis, slot),
+                )
+                stats["updated"] += 1
+            except sqlite3.IntegrityError as e:
+                print(f"  Error updating {chassis}{slot}: {e}")
+                stats["errors"] += 1
+        
+        # Fourth pass: insert new records
+        for chassis, slot, sn, mac, ip, feng_id, notes, timestamp in insertions:
+            try:
+                cursor.execute(
+                    """
+                    INSERT INTO snap_boards
+                    (chassis, slot, serial_number, mac_address, ip_address,
+                     feng_id, notes, date_added)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (chassis, slot, sn, mac, ip, feng_id, notes, timestamp),
+                )
+                stats["loaded"] += 1
+            except sqlite3.IntegrityError as e:
+                print(f"  Error inserting {chassis}{slot}: {e}")
+                stats["errors"] += 1
 
         conn.commit()
 
