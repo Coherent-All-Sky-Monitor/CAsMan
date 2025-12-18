@@ -272,7 +272,7 @@ class KernelIndexArray:
         major_rows = ['N21', 'N10', 'C00', 'S10', 'S21']
         for row_label in major_rows:
             row_key = f"{row_label[0]}{int(row_label[1:]):03d}"
-            key = (row_key, 'E01')
+            key = (row_key, 'E1')
             if key in label_points:
                 lon, lat = label_points[key]
                 ax.annotate(row_label, xy=(lon, lat), xytext=(-15, 0),
@@ -295,15 +295,7 @@ class KernelIndexArray:
         ax.set_title('CASM Grid Positions (WGS84)', fontsize=14, fontweight='bold')
         ax.grid(True, alpha=0.3, linestyle='--')
         ax.set_aspect('equal', adjustable='datalim')
-        
-        # Add info text
-        info_text = f"Total positions: {len(grid_codes)}\n"
-        info_text += f"Rows: S21 to N21\n"
-        info_text += f"Columns: E01 to E06"
-        ax.text(0.02, 0.98, info_text, transform=ax.transAxes,
-                fontsize=9, verticalalignment='top',
-                bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-        
+                
         plt.tight_layout()
         
         if show:

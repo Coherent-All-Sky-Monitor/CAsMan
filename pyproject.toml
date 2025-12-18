@@ -32,11 +32,13 @@ classifiers = [
 dependencies = [
     "pyyaml>=6.0.0",
     "requests>=2.28.0",
+    "matplotlib>=3.5.0",
 ]
 
 [project.optional-dependencies]
 antenna = [
     "numpy>=1.20.0",
+    "matplotlib>=3.5.0",
 ]
 web = [
     "flask>=2.0.0",
@@ -52,6 +54,7 @@ cli = [
 ]
 full = [
     "numpy>=1.20.0",
+    "matplotlib>=3.5.0",
     "flask>=2.0.0",
     "flask-cors>=3.0.0",
     "gunicorn>=21.0.0",
