@@ -195,8 +195,9 @@ def grid_to_kernel_index(
     >>> grid_to_kernel_index('CS021E06')  # Not mapped
     None
     """
-    # Check if kernel index is enabled for this array
-    enabled = get_config(f"grid.{array_name}.kernel_index.enabled", False)
+    # Check if kernel index is enabled for this array (default: True for core)
+    default_enabled = array_name == "core"  # Core array enabled by default
+    enabled = get_config(f"grid.{array_name}.kernel_index.enabled", default_enabled)
     if not enabled:
         return None
     
