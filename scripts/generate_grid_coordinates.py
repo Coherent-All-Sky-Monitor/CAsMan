@@ -100,9 +100,9 @@ def generate_grid_positions(output_file='database/grid_positions.csv'):
     # Get current date for notes
     update_date = datetime.now().strftime('%Y-%m-%d')
     
-    # Generate all positions: CN021 to CS021, E00 to E05
+    # Generate all positions: CN021 to CS021, E01 to E06
     for row in range(-21, 22):  # -21 (S21) to +21 (N21), including 0 (C)
-        for col in range(0, 6):  # E00 to E05
+        for col in range(1, 7):  # E01 to E06 (1-indexed)
             # Determine array prefix
             if row > 0:
                 prefix = 'CN'
@@ -144,7 +144,7 @@ def generate_grid_positions(output_file='database/grid_positions.csv'):
     
     # Print some samples for verification
     print("\nSample positions:")
-    samples = ['CC000E01', 'CN001E00', 'CS001E05', 'CN021E00', 'CS021E05']
+    samples = ['CC000E01', 'CN001E01', 'CS001E06', 'CN021E01', 'CS021E06']
     for grid_code in samples:
         pos = next((p for p in positions if p['grid_code'] == grid_code), None)
         if pos:
