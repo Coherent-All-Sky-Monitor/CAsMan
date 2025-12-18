@@ -122,6 +122,9 @@ def load_snap_boards_from_csv(csv_path: Optional[str] = None) -> Dict[str, int]:
     # Get database path
     db_path = get_database_path("parts.db", None)
 
+    # Ensure table exists
+    init_snap_boards_table()
+
     stats = {"loaded": 0, "updated": 0, "skipped": 0, "errors": 0}
 
     with sqlite3.connect(db_path) as conn:
