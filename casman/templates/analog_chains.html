@@ -437,7 +437,7 @@
             <div class="chain-container">
               {% for part in chain %}
                 <div class="box {% if part == selected_part %}selected{% endif %}" data-part-index="{{ loop.index0 }}" {% if part in duplicates %}style="color: red; border-color: red;"{% endif %}>
-                  {{ format_display_data(part, connections, duplicates) | safe }}
+                  {{ format_display_data(part, connections, duplicates, snap_board_info) | safe }}
                 </div>
               {% endfor %}
             </div>

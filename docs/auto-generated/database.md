@@ -132,6 +132,37 @@ This module provides utilities for database path resolution.
 **Functions:**
 - `get_database_path()` - Get the full path to a database file
 
+### snap_boards
+
+Database operations for SNAP board configurations.
+
+This module provides CRUD operations for storing and retrieving SNAP board
+information including serial numbers, MAC addresses, and IP addresses.
+
+The snap_boards table schema:
+    - id: Auto-incrementing primary key
+    - chassis: Chassis number (1-4)
+    - slot: Slot letter (A-K)
+    - serial_number: Board serial number (unique)
+    - mac_address: MAC address (unique)
+    - ip_address: IP address (unique)
+    - feng_id: F-engine ID (0-43, unique)
+    - notes: Optional field notes
+    - date_added: ISO timestamp when record was added
+    - date_modified: ISO timestamp when record was last modified
+
+Uniqueness constraints ensure:
+    - Each (chassis, slot) combination is unique
+    - Each serial number is unique
+    - Each MAC address is unique
+    - Each IP address is unique
+
+**Functions:**
+- `init_snap_boards_table()` - Initialize the snap_boards table in parts
+- `load_snap_boards_from_csv()` - Load SNAP board configurations from CSV file into database
+- `get_snap_board_info()` - Get SNAP board information for a specific chassis and slot
+- `get_all_snap_boards()` - Get all SNAP board configurations
+
 ## Sync Module Details
 
 Provides cloud backup/restore functionality with support for:
@@ -1047,7 +1078,7 @@ None
 
 **Signature:** `init_all_databases(db_dir: Optional[str]) -> None`
 
-Initialize all databases. Calls init_parts_db(), init_assembled_db(), and init_antenna_positions_table() to set up all required database tables for the CAsMan system.
+Initialize all databases. Calls init_parts_db(), init_assembled_db(), init_antenna_positions_table(), and init_snap_boards_table() to set up all required database tables for the CAsMan system.
 
 **Parameters:**
 
@@ -1135,5 +1166,115 @@ Custom database directory. If not provided, uses the project root's database dir
 
 str
 Full path to the database file.
+
+---
+
+## Snap_Boards Module Details
+
+This module provides CRUD operations for storing and retrieving SNAP board
+information including serial numbers, MAC addresses, and IP addresses.
+
+The snap_boards table schema:
+    - id: Auto-incrementing primary key
+    - chassis: Chassis number (1-4)
+    - slot: Slot letter (A-K)
+    - serial_number: Board serial number (unique)
+    - mac_address: MAC address (unique)
+    - ip_address: IP address (unique)
+    - feng_id: F-engine ID (0-43, unique)
+    - notes: Optional field notes
+    - date_added: ISO timestamp when record was added
+    - date_modified: ISO timestamp when record was last modified
+
+Uniqueness constraints ensure:
+    - Each (chassis, slot) combination is unique
+    - Each serial number is unique
+    - Each MAC address is unique
+    - Each IP address is unique
+
+## Functions
+
+### init_snap_boards_table
+
+**Signature:** `init_snap_boards_table(db_dir: Optional[str]) -> None`
+
+Initialize the snap_boards table in parts.db. Creates the table if it doesn't exist. Safe to call multiple times.
+
+**Parameters:**
+
+db_dir : str, optional
+Custom database directory. If not provided, uses configured path.
+
+**Raises:**
+
+sqlite3.Error
+If database operations fail.
+
+---
+
+### load_snap_boards_from_csv
+
+**Signature:** `load_snap_boards_from_csv(csv_path: Optional[str]) -> Dict[str, int]`
+
+Load SNAP board configurations from CSV file into database. CSV format: chassis, slot, sn, mac, ip, feng_id, notes
+
+**Parameters:**
+
+csv_path : str, optional
+Path to CSV file. If not provided, uses database/snap_boards.csv
+
+**Returns:**
+
+dict
+Statistics with 'loaded', 'updated', 'skipped', 'errors' counts
+
+**Raises:**
+
+FileNotFoundError
+If CSV file doesn't exist
+ValueError
+If CSV format is invalid
+sqlite3.Error
+If database operations fail
+
+---
+
+### get_snap_board_info
+
+**Signature:** `get_snap_board_info(chassis: int, slot: str, db_dir: Optional[str]) -> Optional[Tuple[str, str, str, int]]`
+
+Get SNAP board information for a specific chassis and slot.
+
+**Parameters:**
+
+chassis : int
+Chassis number (1-4)
+slot : str
+Slot letter (A-K)
+db_dir : str, optional
+Custom database directory
+
+**Returns:**
+
+tuple or None
+(serial_number, mac_address, ip_address, feng_id) or None if not found
+
+---
+
+### get_all_snap_boards
+
+**Signature:** `get_all_snap_boards(db_dir: Optional[str]) -> List[Dict[str, any]]`
+
+Get all SNAP board configurations.
+
+**Parameters:**
+
+db_dir : str, optional
+Custom database directory
+
+**Returns:**
+
+list
+List of dicts with keys: chassis, slot, serial_number, mac_address, ip_address
 
 ---

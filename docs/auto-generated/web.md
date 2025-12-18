@@ -381,7 +381,7 @@ Get the latest timestamp from the database.
 
 ### format_display_data
 
-**Signature:** `format_display_data(part: str, connections: Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]], duplicates: Dict[str, List[str]]) -> str`
+**Signature:** `format_display_data(part: str, connections: Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]], duplicates: Dict[str, List[str]], snap_board_info: Optional[Dict[Tuple[int, str], Dict[str, str]]]) -> str`
 
 Format part display data for visualization.
 

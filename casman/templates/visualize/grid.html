@@ -538,6 +538,14 @@
             <h3>Polarization 1 (P1)</h3>
             {% if snap_info.p1 %}
             <p><strong>SNAP Port:</strong> {{ format_snap_port(snap_info.p1) }}</p>
+            {% if snap_info.p1.board_info %}
+            <p style="font-size: 0.9em; color: #666; margin-left: 20px;">
+                SN: {{ snap_info.p1.board_info.serial_number }}<br>
+                F-Engine ID: {{ snap_info.p1.board_info.feng_id }} | Packet Index: {{ snap_info.p1.board_info.packet_index }}<br>
+                MAC: {{ snap_info.p1.board_info.mac_address }}<br>
+                IP: {{ snap_info.p1.board_info.ip_address }}
+            </p>
+            {% endif %}
             {% if snap_info.p1.chain %}
             <div class="chain-arrow">↓</div>
             <ul class="chain-list">
@@ -555,6 +563,14 @@
             <h3>Polarization 2 (P2)</h3>
             {% if snap_info.p2 %}
             <p><strong>SNAP Port:</strong> {{ format_snap_port(snap_info.p2) }}</p>
+            {% if snap_info.p2.board_info %}
+            <p style="font-size: 0.9em; color: #666; margin-left: 20px;">
+                SN: {{ snap_info.p2.board_info.serial_number }}<br>
+                F-Engine ID: {{ snap_info.p2.board_info.feng_id }} | Packet Index: {{ snap_info.p2.board_info.packet_index }}<br>
+                MAC: {{ snap_info.p2.board_info.mac_address }}<br>
+                IP: {{ snap_info.p2.board_info.ip_address }}
+            </p>
+            {% endif %}
             {% if snap_info.p2.chain %}
             <div class="chain-arrow">↓</div>
             <ul class="chain-list">

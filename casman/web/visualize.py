@@ -229,6 +229,7 @@ def format_display_data(
     part: str,
     connections: Dict[str, Tuple[Optional[str], Optional[str], Optional[str]]],
     duplicates: Dict[str, List[str]],
+    snap_board_info: Optional[Dict[Tuple[int, str], Dict[str, str]]] = None,
 ) -> str:
     """Format part display data for visualization."""
     part_class = "national-park-bold"
@@ -267,6 +268,27 @@ def format_display_data(
         f"<span class='monospace'>NOW: {ts(now_time)}</span>",
         f"<span class='monospace'>NXT: {ts(nxt_time)}</span>",
     ]
+    
+    # Add SNAP board info if this is a SNAP part
+    if part.startswith('SNAP') and snap_board_info:
+        try:
+            snap_str = part[4:]  # Remove 'SNAP' prefix
+            chassis = int(snap_str[0])
+            slot = snap_str[1]
+            port = int(snap_str[2:])
+            board_info = snap_board_info.get((chassis, slot), {})
+            
+            if board_info:
+                feng_id = board_info.get('feng_id', 0)
+                packet_index = feng_id * 12 + port
+                display_lines.append("<br>")
+                display_lines.append(f"<span class='monospace' style='font-size: 0.85em;'>SN: {board_info.get('serial_number', 'N/A')}</span>")
+                display_lines.append(f"<span class='monospace' style='font-size: 0.85em;'>FENG: {feng_id} | PKT: {packet_index}</span>")
+                display_lines.append(f"<span class='monospace' style='font-size: 0.85em;'>MAC: {board_info.get('mac_address', 'N/A')}</span>")
+                display_lines.append(f"<span class='monospace' style='font-size: 0.85em;'>IP: {board_info.get('ip_address', 'N/A')}</span>")
+        except (IndexError, ValueError):
+            pass  # Malformed SNAP part number
+    
     return "<br>".join(display_lines)
 
 
@@ -298,6 +320,7 @@ def visualize_index():
 
     # Load part types for the part builder
     from casman.parts.types import load_part_types
+    from casman.database.snap_boards import get_all_snap_boards
 
     part_types = load_part_types()
     # Exclude terminal type (highest key)
@@ -308,6 +331,18 @@ def visualize_index():
     chains, connections = get_all_chains(selected_part)
     duplicates = get_duplicate_info()
     last_update = get_last_update()
+    
+    # Get SNAP board info
+    snap_boards_list = get_all_snap_boards()
+    snap_board_info = {}
+    for board in snap_boards_list:
+        key = (board['chassis'], board['slot'])
+        snap_board_info[key] = {
+            'serial_number': board['serial_number'],
+            'mac_address': board['mac_address'],
+            'ip_address': board['ip_address'],
+            'feng_id': board['feng_id']
+        }
 
     template = load_viz_template()
     return render_template_string(
@@ -319,6 +354,7 @@ def visualize_index():
         selected_part=selected_part,
         last_update=last_update,
         format_display_data=format_display_data,
+        snap_board_info=snap_board_info,
         part_types=part_types_for_builder,
     )
 
@@ -468,6 +504,7 @@ def snap_ports():
     from collections import defaultdict
     from casman.config import get_config
     from casman.database.antenna_positions import get_all_antenna_positions
+    from casman.database.snap_boards import get_all_snap_boards
     from casman.antenna.kernel_index import grid_to_kernel_index
     from casman.antenna.grid import load_core_layout
     
@@ -490,6 +527,18 @@ def snap_ports():
         antenna_info[pos['antenna_number']] = {
             'grid_code': pos['grid_code'],
             'kernel_index': grid_to_kernel_index(pos['grid_code'])
+        }
+    
+    # Get SNAP board info
+    snap_boards_list = get_all_snap_boards()
+    snap_board_info = {}
+    for board in snap_boards_list:
+        key = (board['chassis'], board['slot'])
+        snap_board_info[key] = {
+            'serial_number': board['serial_number'],
+            'mac_address': board['mac_address'],
+            'ip_address': board['ip_address'],
+            'feng_id': board['feng_id']
         }
     
     # Build SNAP port mapping
@@ -635,6 +684,7 @@ def snap_ports():
         all_chassis_list=all_chassis_list,
         all_slot_list=all_slot_list,
         snap_ports=snap_ports_dict,
+        snap_board_info=snap_board_info,
         selected_chassis=selected_chassis,
         selected_slot=selected_slot,
     )

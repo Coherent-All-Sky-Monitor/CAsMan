@@ -35,7 +35,8 @@ def cmd_database() -> None:
         "Subcommands:\n"
         "  clear            - Safely clear database contents with confirmations\n"
         "  print            - Display formatted database tables and records\n"
-        "  load-coordinates - Load grid coordinates from CSV file\n\n"
+        "  load-coordinates - Load grid coordinates from CSV file\n"
+        "  load-snap-boards - Load SNAP board configurations from CSV file\n\n"
         "Examples:\n"
         "  casman database clear --parts     # Clear only parts database\n"
         "  casman database clear --assembled # Clear only assembly database\n"
@@ -126,6 +127,35 @@ def cmd_database() -> None:
         help="Path to CSV file (default: database/grid_positions.csv)",
     )
 
+    # Load SNAP boards subcommand
+    snap_parser = subparsers.add_parser(
+        "load-snap-boards",
+        help="Load SNAP board configurations from CSV file",
+        description="Load SNAP board configurations from database/snap_boards.csv and update\n"
+        "the snap_boards table with serial numbers, MAC addresses, IP addresses, and F-engine IDs.\n\n"
+        "CSV Format:\n"
+        "  chassis,slot,sn,mac,ip,feng_id,notes\n"
+        "  1,A,SN01,00:11:22:33:01:00,192.168.1.1,0,Generated on 2025-01-01\n\n"
+        "Packet Index Calculation:\n"
+        "  packet_index = feng_id * 12 + port_number\n"
+        "  Example: SNAP1A (feng_id=0) port 5 → packet_index = 5\n"
+        "  Example: SNAP2A (feng_id=11) port 5 → packet_index = 137\n\n"
+        "Features:\n"
+        "- Creates new SNAP board records\n"
+        "- Updates existing records if data changed\n"
+        "- Reports load/update/skip counts and errors\n"
+        "- Validates chassis (1-4), slot (A-K), and feng_id (0-43) values\n\n"
+        "Examples:\n"
+        "  casman database load-snap-boards                    # Load default CSV\n"
+        "  casman database load-snap-boards --csv boards.csv   # Load custom CSV",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    snap_parser.add_argument(
+        "--csv",
+        type=str,
+        help="Path to CSV file (default: database/snap_boards.csv)",
+    )
+
     argcomplete.autocomplete(parser)
 
     # Parse arguments with the cleaned argument list
@@ -160,6 +190,15 @@ def cmd_database() -> None:
                 coords_index + 1 :
             ]  # Everything after "load-coordinates"
         cmd_database_load_coordinates(coords_parser, coords_args)
+    elif args.subcommand == "load-snap-boards":
+        # Reconstruct arguments for the load-snap-boards subcommand
+        snap_args = []
+        if "load-snap-boards" in args_to_parse:
+            snap_index = args_to_parse.index("load-snap-boards")
+            snap_args = args_to_parse[
+                snap_index + 1 :
+            ]  # Everything after "load-snap-boards"
+        cmd_database_load_snap_boards(snap_parser, snap_args)
     else:
         parser.print_help()
 
@@ -461,4 +500,54 @@ def cmd_database_load_coordinates(
         sys.exit(1)
     except Exception as e:
         print(f"\n✗ Error loading coordinates: {e}")
+        sys.exit(1)
+
+
+def cmd_database_load_snap_boards(
+    parser: argparse.ArgumentParser, remaining_args: list
+) -> None:
+    """
+    Handle database load-snap-boards subcommand.
+
+    Parameters
+    ----------
+    parser : argparse.ArgumentParser
+        The parser for the load-snap-boards subcommand
+    remaining_args : list
+        Remaining command line arguments
+    """
+    args = parser.parse_args(remaining_args)
+
+    from ..database.snap_boards import load_snap_boards_from_csv
+
+    print("Loading SNAP board configurations from CSV...")
+    print("=" * 50)
+
+    try:
+        result = load_snap_boards_from_csv(csv_path=args.csv)
+
+        print(f"\n✓ Loaded:  {result['loaded']} new board(s)")
+        print(f"  Updated: {result['updated']} board(s)")
+        print(f"  Skipped: {result['skipped']} board(s) (no changes)")
+
+        if result["errors"]:
+            print(f"\n⚠ Errors:  {result['errors']} board(s) failed")
+
+        if result["loaded"] > 0 or result["updated"] > 0:
+            print("\n✓ SNAP board data loaded successfully")
+        else:
+            print("\n⚠ No boards were loaded or updated")
+            print("  Make sure:")
+            print("  - CSV file has valid board data")
+            print("  - CSV format: chassis,slot,sn,mac,ip,notes")
+            print("  - Chassis values are 1-4")
+            print("  - Slot values are A-K")
+
+    except FileNotFoundError as e:
+        print(f"\n✗ Error: {e}")
+        print("  Default CSV path: database/snap_boards.csv")
+        print("  Use --csv to specify a different file")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n✗ Error loading SNAP boards: {e}")
         sys.exit(1)

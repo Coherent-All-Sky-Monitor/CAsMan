@@ -208,6 +208,33 @@ casman parts add    # Choose part type (ANTENNA, LNA, COAXSHORT, COAXLONG, BACBO
 - Specify quantity and polarization (1 or 2)
 - Automatic part numbering and barcode generation
 
+### SNAP Board Configuration
+
+Manage SNAP board configurations including F-engine IDs and packet indices:
+
+```bash
+# Generate SNAP board CSV with 44 boards
+python scripts/generate_snap_boards.py
+
+# Load SNAP board configurations into database
+casman database load-snap-boards
+
+# Load with custom CSV
+casman database load-snap-boards --csv custom_boards.csv
+```
+
+**SNAP Board Configuration:**
+- 4 chassis × 11 slots (A-K) = 44 SNAP boards
+- Each board has: Serial Number, MAC Address, IP Address, F-engine ID (0-43)
+- Each port's packet index = `feng_id × 12 + port_number`
+- Example: SNAP1A (feng_id=0) port 5 → packet_index = 5
+- Example: SNAP2A (feng_id=11) port 5 → packet_index = 137
+
+**Visualizations display:**
+- Serial numbers and network configuration
+- F-engine ID and calculated packet index for each port
+- Board info shown in chains, core grid, and SNAP ports pages
+
 ### Interactive Scanning
 
 The `casman scan connect` command provides comprehensive validation:
@@ -449,6 +476,11 @@ casman/
 
 CAsMan uses SQLite databases stored in the `database/` directory:
 
+- **parts.db** - Parts inventory, antenna positions, and SNAP board configurations
+- **assembled_casm.db** - Assembly tracking and connection chains
+- **grid_positions.csv** - Geographic coordinates for antenna positions
+- **snap_boards.csv** - SNAP board configurations (serial numbers, network info, F-engine IDs)
+
 - `parts.db` - Part information and metadata
 
 - `assembled_casm.db` - Assembly connections and scan history
@@ -591,7 +623,7 @@ See [Grid Coordinates Documentation](docs/grid_coordinates.md) for details.
 
 ## Testing & Coverage
 
-![Tests](https://img.shields.io/badge/tests-601%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-71.0%25-yellow)
+![Tests](https://img.shields.io/badge/tests-601%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-0.0%25-yellow)
 
 
 | Module | Coverage | Lines Covered |

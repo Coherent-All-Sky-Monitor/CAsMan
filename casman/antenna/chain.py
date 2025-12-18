@@ -162,12 +162,40 @@ def get_snap_ports_for_antenna(
     None  # P2 chain not assembled yet
     """
     from casman.database.antenna_positions import strip_polarization
+    from casman.database.snap_boards import get_snap_board_info
 
     antenna_base = strip_polarization(antenna_number)
 
     # Try both polarizations
     p1_port = get_snap_port_for_chain(f"{antenna_base}P1", db_dir=db_dir)
     p2_port = get_snap_port_for_chain(f"{antenna_base}P2", db_dir=db_dir)
+    
+    # Add board info to each port if found
+    if p1_port:
+        board_info = get_snap_board_info(p1_port['chassis'], p1_port['slot'], db_dir=db_dir)
+        if board_info:
+            feng_id = board_info[3]
+            packet_index = feng_id * 12 + p1_port['port']
+            p1_port['board_info'] = {
+                'serial_number': board_info[0],
+                'mac_address': board_info[1],
+                'ip_address': board_info[2],
+                'feng_id': feng_id,
+                'packet_index': packet_index
+            }
+    
+    if p2_port:
+        board_info = get_snap_board_info(p2_port['chassis'], p2_port['slot'], db_dir=db_dir)
+        if board_info:
+            feng_id = board_info[3]
+            packet_index = feng_id * 12 + p2_port['port']
+            p2_port['board_info'] = {
+                'serial_number': board_info[0],
+                'mac_address': board_info[1],
+                'ip_address': board_info[2],
+                'feng_id': feng_id,
+                'packet_index': packet_index
+            }
 
     return {"antenna": antenna_base, "p1": p1_port, "p2": p2_port}
 
