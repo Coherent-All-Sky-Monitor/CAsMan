@@ -710,9 +710,13 @@ def admin():
 def load_grid_positions():
     """Load grid positions from CSV."""
     try:
-        from casman.database.antenna_positions import load_grid_coordinates_from_csv
+        from casman.database.antenna_positions import load_grid_positions_from_csv
+        from casman.database.initialization import init_grid_positions_table
         
-        result = load_grid_coordinates_from_csv()
+        # Initialize table first
+        init_grid_positions_table()
+        
+        result = load_grid_positions_from_csv()
         
         # Check for errors in result
         if result.get('errors'):
@@ -722,7 +726,7 @@ def load_grid_positions():
                 'error': error_msg
             }), 400
         
-        message = f"✓ Updated: {result['updated']} position(s), "
+        message = f"✓ Loaded: {result['loaded']} position(s), "
         message += f"Skipped: {result['skipped']}"
         
         return jsonify({
