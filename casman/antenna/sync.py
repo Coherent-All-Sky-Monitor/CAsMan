@@ -185,8 +185,8 @@ def force_sync() -> bool:
             return False
         
         print(f"Latest release: {latest_release.release_name}")
-        print(f"  Published: {latest_release.published_at}")
-        print(f"  Size: {latest_release.size_mb:.2f} MB")
+        print(f"  Published: {latest_release.timestamp.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+        print(f"  Size: {latest_release.size_bytes / (1024 * 1024):.2f} MB")
         
         # Check if local is up-to-date
         if has_local_dbs and sync_manager._is_local_up_to_date(latest_release):
