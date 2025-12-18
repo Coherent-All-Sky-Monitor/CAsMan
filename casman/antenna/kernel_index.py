@@ -38,6 +38,18 @@ class KernelIndexArray:
         2D array of SNAP board configuration dicts, shape (n_rows, n_cols).
         Each dict contains: ip_address, mac_address, serial_number, feng_id, 
         packet_index, adc_input. None for unassigned positions.
+    latitude : np.ndarray
+        2D array of latitude coordinates in decimal degrees, shape (n_rows, n_cols).
+        NaN indicates positions without coordinate data.
+    longitude : np.ndarray
+        2D array of longitude coordinates in decimal degrees, shape (n_rows, n_cols).
+        NaN indicates positions without coordinate data.
+    height : np.ndarray
+        2D array of height/elevation in meters, shape (n_rows, n_cols).
+        NaN indicates positions without coordinate data.
+    coordinate_system : np.ndarray
+        2D array of coordinate system strings (e.g., 'WGS84'), shape (n_rows, n_cols).
+        Empty string indicates positions without coordinate data.
     shape : tuple
         Shape of the arrays (n_rows, n_cols).
     """
@@ -49,6 +61,10 @@ class KernelIndexArray:
         antenna_numbers: np.ndarray,
         snap_ports: np.ndarray,
         snap_board_info: Optional[np.ndarray] = None,
+        latitude: Optional[np.ndarray] = None,
+        longitude: Optional[np.ndarray] = None,
+        height: Optional[np.ndarray] = None,
+        coordinate_system: Optional[np.ndarray] = None,
     ):
         """Initialize kernel index array container.
         
@@ -64,12 +80,24 @@ class KernelIndexArray:
             2D array of SNAP port tuples
         snap_board_info : np.ndarray, optional
             2D array of SNAP board configuration dicts
+        latitude : np.ndarray, optional
+            2D array of latitude coordinates in decimal degrees
+        longitude : np.ndarray, optional
+            2D array of longitude coordinates in decimal degrees
+        height : np.ndarray, optional
+            2D array of height/elevation in meters
+        coordinate_system : np.ndarray, optional
+            2D array of coordinate system strings
         """
         self.kernel_indices = kernel_indices
         self.grid_codes = grid_codes
         self.antenna_numbers = antenna_numbers
         self.snap_ports = snap_ports
         self.snap_board_info = snap_board_info
+        self.latitude = latitude
+        self.longitude = longitude
+        self.height = height
+        self.coordinate_system = coordinate_system
         self.shape = kernel_indices.shape
     
     def get_by_kernel_index(self, kernel_idx: int) -> Optional[dict]:
@@ -108,6 +136,20 @@ class KernelIndexArray:
         if self.snap_board_info is not None:
             board_info = self.snap_board_info[row, col]
         
+        # Get coordinates (convert NaN to None)
+        lat = self.latitude[row, col] if self.latitude is not None else None
+        lon = self.longitude[row, col] if self.longitude is not None else None
+        hgt = self.height[row, col] if self.height is not None else None
+        coord_sys = self.coordinate_system[row, col] if self.coordinate_system is not None else None
+        
+        # Convert NaN to None for cleaner output
+        if lat is not None and np.isnan(lat):
+            lat = None
+        if lon is not None and np.isnan(lon):
+            lon = None
+        if hgt is not None and np.isnan(hgt):
+            hgt = None
+        
         return {
             'grid_code': self.grid_codes[row, col],
             'antenna_number': self.antenna_numbers[row, col],
@@ -115,6 +157,10 @@ class KernelIndexArray:
             'snap_board_info': board_info,
             'ns': int(row),
             'ew': int(col),
+            'latitude': lat,
+            'longitude': lon,
+            'height': hgt,
+            'coordinate_system': coord_sys,
         }
     
     def get_by_grid_code(self, grid_code: str) -> Optional[dict]:
@@ -153,6 +199,20 @@ class KernelIndexArray:
         if self.snap_board_info is not None:
             board_info = self.snap_board_info[row, col]
         
+        # Get coordinates (convert NaN to None)
+        lat = self.latitude[row, col] if self.latitude is not None else None
+        lon = self.longitude[row, col] if self.longitude is not None else None
+        hgt = self.height[row, col] if self.height is not None else None
+        coord_sys = self.coordinate_system[row, col] if self.coordinate_system is not None else None
+        
+        # Convert NaN to None for cleaner output
+        if lat is not None and np.isnan(lat):
+            lat = None
+        if lon is not None and np.isnan(lon):
+            lon = None
+        if hgt is not None and np.isnan(hgt):
+            hgt = None
+        
         return {
             'kernel_index': int(kernel_idx),
             'antenna_number': self.antenna_numbers[row, col],
@@ -160,6 +220,10 @@ class KernelIndexArray:
             'snap_board_info': board_info,
             'ns': int(row),
             'ew': int(col),
+            'latitude': lat,
+            'longitude': lon,
+            'height': hgt,
+            'coordinate_system': coord_sys,
         }
     
     def __repr__(self) -> str:
@@ -344,6 +408,10 @@ def get_array_index_map(
         - snap_ports: object array of tuples (chassis, slot, port), None for unassigned
         - snap_board_info: object array of dicts with SNAP board configuration
           (ip_address, mac_address, serial_number, feng_id, packet_index, adc_input)
+        - latitude: float array, NaN for positions without coordinates
+        - longitude: float array, NaN for positions without coordinates
+        - height: float array, NaN for positions without coordinates
+        - coordinate_system: str array, empty string for positions without coordinates
     
     Examples
     --------
@@ -384,6 +452,10 @@ def get_array_index_map(
     antenna_numbers = np.full((n_rows, n_cols), "", dtype=object)
     snap_ports = np.full((n_rows, n_cols), None, dtype=object)
     snap_board_info = np.full((n_rows, n_cols), None, dtype=object)
+    latitude = np.full((n_rows, n_cols), np.nan, dtype=np.float64)
+    longitude = np.full((n_rows, n_cols), np.nan, dtype=np.float64)
+    height = np.full((n_rows, n_cols), np.nan, dtype=np.float64)
+    coordinate_system = np.full((n_rows, n_cols), "", dtype=object)
     
     # Populate grid codes and kernel indices
     for row in range(n_rows):
@@ -431,6 +503,16 @@ def get_array_index_map(
                 row, col = matches[0][0], matches[1][0]
                 antenna_numbers[row, col] = antenna_num
                 
+                # Store coordinate data if available
+                if pos.get('latitude') is not None:
+                    latitude[row, col] = pos['latitude']
+                if pos.get('longitude') is not None:
+                    longitude[row, col] = pos['longitude']
+                if pos.get('height') is not None:
+                    height[row, col] = pos['height']
+                if pos.get('coordinate_system'):
+                    coordinate_system[row, col] = pos['coordinate_system']
+                
                 # Get SNAP ports for this antenna
                 try:
                     ports = get_snap_ports_for_antenna(antenna_num, db_dir=db_dir)
@@ -467,6 +549,10 @@ def get_array_index_map(
         antenna_numbers=antenna_numbers,
         snap_ports=snap_ports,
         snap_board_info=snap_board_info,
+        latitude=latitude,
+        longitude=longitude,
+        height=height,
+        coordinate_system=coordinate_system,
     )
 
 
