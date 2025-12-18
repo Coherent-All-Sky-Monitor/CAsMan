@@ -361,8 +361,9 @@ def get_array_index_map(
     >>> info['snap_board_info']['packet_index']
     5
     """
-    # Check if kernel index is enabled for this array
-    enabled = get_config(f"grid.{array_name}.kernel_index.enabled", False)
+    # Check if kernel index is enabled for this array (default: True for core)
+    default_enabled = array_name == "core"  # Core array enabled by default
+    enabled = get_config(f"grid.{array_name}.kernel_index.enabled", default_enabled)
     if not enabled:
         raise ValueError(f"Kernel index mapping not enabled for array '{array_name}'")
     
