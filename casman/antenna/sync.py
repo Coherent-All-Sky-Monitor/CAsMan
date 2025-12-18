@@ -155,23 +155,63 @@ def force_sync() -> bool:
     """
     Force download of databases from GitHub Releases.
 
-    This function can be called manually to force a database update,
-    ignoring the local version check.
+    This function checks if the local database is current, displays status information,
+    and only downloads if an update is available.
 
     Returns:
-        True if sync successful, False otherwise
+        True if sync successful or databases are up-to-date, False otherwise
     """
     try:
         from casman.database.github_sync import get_github_sync_manager
 
         sync_manager = get_github_sync_manager()
         if sync_manager is None:
-            logger.error("Could not initialize GitHub sync manager")
+            print("✗ Could not initialize GitHub sync manager")
             return False
 
-        logger.info("Force syncing databases from GitHub...")
-        return sync_manager.download_databases(force=True)
+        print("Checking database status...")
+        
+        # Check if we have local databases
+        has_local_dbs = _check_local_databases(sync_manager.local_db_dir)
+        
+        # Get latest release info
+        latest_release = sync_manager.get_latest_release()
+        
+        if latest_release is None:
+            print("✗ Could not fetch latest release from GitHub")
+            if has_local_dbs:
+                print("  Using local databases")
+                return True
+            return False
+        
+        print(f"Latest release: {latest_release.release_name}")
+        print(f"  Published: {latest_release.published_at}")
+        print(f"  Size: {latest_release.size_mb:.2f} MB")
+        
+        # Check if local is up-to-date
+        if has_local_dbs and sync_manager._is_local_up_to_date(latest_release):
+            print("✓ Local databases are already up-to-date")
+            print("  No download needed")
+            return True
+        
+        # Download needed
+        if has_local_dbs:
+            print("⟳ Downloading updated databases...")
+        else:
+            print("⟳ Downloading databases (first time)...")
+        
+        success = sync_manager.download_databases(snapshot=latest_release)
+        
+        if success:
+            print(f"✓ Database sync completed: {latest_release.release_name}")
+        else:
+            print("✗ Failed to download databases")
+            if has_local_dbs:
+                print("  Using existing local databases")
+                return True
+        
+        return success
 
     except Exception as e:
-        logger.error(f"Failed to force sync databases: {e}")
+        print(f"✗ Failed to sync databases: {e}")
         return False

@@ -203,11 +203,11 @@ True if sync successful or local databases are up-to-date, False otherwise
 
 **Signature:** `force_sync() -> bool`
 
-Force download of databases from GitHub Releases. This function can be called manually to force a database update, ignoring the local version check.
+Force download of databases from GitHub Releases. This function checks if the local database is current, displays status information, and only downloads if an update is available.
 
 **Returns:**
 
-True if sync successful, False otherwise
+True if sync successful or databases are up-to-date, False otherwise
 
 ---
 
