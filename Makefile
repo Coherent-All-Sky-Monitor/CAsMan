@@ -24,11 +24,11 @@ install: venv
 	@if [ -z "$$VIRTUAL_ENV" ]; then \
 		echo "Installing in virtual environment..."; \
 		.venv/bin/pip install --upgrade pip; \
-		.venv/bin/pip install -e . && echo "✅ Installation complete"; \
+		.venv/bin/pip install -e ".[full]" && echo "✅ Installation complete"; \
 	else \
 		echo "Installing in active virtual environment..."; \
 		python3 -m pip install --upgrade pip; \
-		python3 -m pip install -e . && echo "✅ Installation complete"; \
+		python3 -m pip install -e ".[full]" && echo "✅ Installation complete"; \
 	fi
 
 install-antenna: venv
