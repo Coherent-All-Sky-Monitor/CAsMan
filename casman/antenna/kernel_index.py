@@ -435,11 +435,11 @@ def get_array_index_map(
                     if ports['p1']:
                         # Store P1 port as the primary SNAP port
                         p1 = ports['p1']
-                        snap_ports[row, col] = np.array([
+                        snap_ports[row, col] = (
                             p1['chassis'],
-                            ord(p1['slot']) if isinstance(p1['slot'], str) else p1['slot'],
+                            p1['slot'],
                             p1['port']
-                        ], dtype=object)
+                        )
                         
                         # Store SNAP board info if available
                         if 'board_info' in p1:
