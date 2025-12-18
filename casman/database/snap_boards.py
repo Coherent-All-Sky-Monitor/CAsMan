@@ -162,7 +162,10 @@ def load_snap_boards_from_csv(csv_path: Optional[str] = None) -> Dict[str, int]:
 
         timestamp = datetime.now(timezone.utc).isoformat()
 
-        # Process each row
+        # First pass: identify what to update vs insert
+        to_update = []
+        to_insert = []
+        
         for chassis, slot, sn, mac, ip, feng_id, notes in csv_data:
             try:
                 # Check if record exists
@@ -187,38 +190,58 @@ def load_snap_boards_from_csv(csv_path: Optional[str] = None) -> Dict[str, int]:
                         stats["skipped"] += 1
                         continue
 
-                    # For updates: delete old record and insert new one to avoid constraint issues
-                    cursor.execute(
-                        "DELETE FROM snap_boards WHERE chassis = ? AND slot = ?",
-                        (chassis, slot),
-                    )
-                    cursor.execute(
-                        """
-                        INSERT INTO snap_boards
-                        (chassis, slot, serial_number, mac_address, ip_address,
-                         feng_id, notes, date_added, date_modified)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """,
-                        (chassis, slot, sn, mac, ip, feng_id, notes, existing[0] and timestamp or timestamp, timestamp),
-                    )
-                    stats["updated"] += 1
+                    to_update.append((chassis, slot, sn, mac, ip, feng_id, notes))
                 else:
-                    # Insert new record
-                    cursor.execute(
-                        """
-                        INSERT INTO snap_boards
-                        (chassis, slot, serial_number, mac_address, ip_address,
-                         feng_id, notes, date_added)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                        """,
-                        (chassis, slot, sn, mac, ip, feng_id, notes, timestamp),
-                    )
-                    stats["loaded"] += 1
+                    to_insert.append((chassis, slot, sn, mac, ip, feng_id, notes))
 
-            except sqlite3.IntegrityError as e:
-                print(f"  Error with {chassis}{slot}: {e}")
+            except Exception as e:
+                print(f"  Error checking {chassis}{slot}: {e}")
                 stats["errors"] += 1
-                continue
+
+        # Second pass: delete all records that will be updated
+        for chassis, slot, sn, mac, ip, feng_id, notes in to_update:
+            try:
+                cursor.execute(
+                    "DELETE FROM snap_boards WHERE chassis = ? AND slot = ?",
+                    (chassis, slot),
+                )
+            except Exception as e:
+                print(f"  Error deleting {chassis}{slot}: {e}")
+                stats["errors"] += 1
+
+        # Third pass: insert all updated records
+        for chassis, slot, sn, mac, ip, feng_id, notes in to_update:
+            try:
+                cursor.execute(
+                    """
+                    INSERT INTO snap_boards
+                    (chassis, slot, serial_number, mac_address, ip_address,
+                     feng_id, notes, date_added, date_modified)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (chassis, slot, sn, mac, ip, feng_id, notes, timestamp, timestamp),
+                )
+                stats["updated"] += 1
+            except sqlite3.IntegrityError as e:
+                print(f"  Error updating {chassis}{slot}: {e}")
+                stats["errors"] += 1
+
+        # Fourth pass: insert new records
+        for chassis, slot, sn, mac, ip, feng_id, notes in to_insert:
+            try:
+                cursor.execute(
+                    """
+                    INSERT INTO snap_boards
+                    (chassis, slot, serial_number, mac_address, ip_address,
+                     feng_id, notes, date_added)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (chassis, slot, sn, mac, ip, feng_id, notes, timestamp),
+                )
+                stats["loaded"] += 1
+            except sqlite3.IntegrityError as e:
+                print(f"  Error inserting {chassis}{slot}: {e}")
+                stats["errors"] += 1
 
         conn.commit()
 
