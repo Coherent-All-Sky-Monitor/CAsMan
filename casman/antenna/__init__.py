@@ -5,6 +5,8 @@ grid-based array layouts, tracing connections to SNAP ports, and mapping
 grid coordinates to correlator kernel indices.
 """
 
+import logging
+
 from .grid import (
     AntennaGridPosition,
     direction_from_row,
@@ -32,6 +34,28 @@ from .kernel_index import (
     kernel_index_to_grid,
     get_array_index_map,
 )
+
+# Auto-sync databases on module import (optional, non-blocking)
+logger = logging.getLogger(__name__)
+
+# Only auto-sync if explicitly enabled in config
+try:
+    from casman.config import get_config
+    
+    auto_sync_enabled = get_config().get("database", {}).get("sync", {}).get("auto_sync_on_import", False)
+    
+    if auto_sync_enabled:
+        try:
+            from .sync import sync_databases
+            
+            # Perform quiet sync on import (check every time, use stale on failure)
+            sync_databases(quiet=True)
+        except Exception as e:
+            # Log warning but don't fail import if sync fails
+            logger.debug(f"Auto-sync skipped: {e}")
+except Exception:
+    # Silently skip if config not available (e.g., during tests)
+    pass
 
 __all__ = [
     "AntennaGridPosition",

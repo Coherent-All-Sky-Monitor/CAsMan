@@ -71,6 +71,8 @@ Provides web interface for viewing assembly chain connections.
 - `admin()` - Display admin panel
 - `load_grid_positions()` - Load grid positions from CSV
 - `load_snap_boards()` - Load SNAP boards from CSV
+- `sync_to_github()` - Push databases to GitHub Releases (server-side)
+- `sync_status()` - Get current sync status
 - `ts()` - No docstring available
 
 ### app
@@ -458,6 +460,26 @@ Load grid positions from CSV.
 **Signature:** `load_snap_boards()`
 
 Load SNAP boards from CSV.
+
+---
+
+### sync_to_github
+
+*@visualize_bp.route('/admin/sync-to-github', methods=['POST'])*
+
+**Signature:** `sync_to_github()`
+
+Push databases to GitHub Releases (server-side).
+
+---
+
+### sync_status
+
+*@visualize_bp.route('/admin/sync-status', methods=['GET'])*
+
+**Signature:** `sync_status()`
+
+Get current sync status.
 
 ---
 

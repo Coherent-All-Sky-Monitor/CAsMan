@@ -79,6 +79,31 @@ Uniqueness constraints ensure:
 - `remove_antenna_position()` - Remove antenna position assignment
 - `load_grid_coordinates_from_csv()` - Load grid position coordinates from CSV file
 
+### github_sync
+
+GitHub Releases-based database synchronization for CAsMan.
+
+Provides database sync using GitHub Releases:
+- Download databases from GitHub Releases (client-side)
+- Upload databases to GitHub Releases (server-side)
+- Timestamp-based release naming
+- Fallback to stale local copy on failure
+- No authentication required for public repos
+
+**Functions:**
+- `get_github_sync_manager()` - Get a GitHubSyncManager instance from config
+- `to_dict()` - No docstring available
+- `from_dict()` - No docstring available
+- `get_latest_release()` - Get the latest database snapshot from GitHub Releases
+- `download_databases()` - Download databases from GitHub Releases
+- `get_last_check_time()` - Get the timestamp of the last sync check
+- `create_release()` - Create a new GitHub Release with database snapshots
+- `cleanup_old_releases()` - Delete old database snapshot releases, keeping only the most recent ones
+
+**Classes:**
+- `DatabaseSnapshot` - Metadata for a database snapshot on GitHub Releases
+- `GitHubSyncManager` - Manages database synchronization with GitHub Releases
+
 ### quota
 
 R2 Quota tracking to enforce Cloudflare free tier limits.
@@ -128,6 +153,7 @@ from the CAsMan databases.
 Database connection utilities for CAsMan.
 
 This module provides utilities for database path resolution.
+Supports both local project databases and synced XDG user databases.
 
 **Functions:**
 - `get_database_path()` - Get the full path to a database file
@@ -866,6 +892,209 @@ Summary with counts: {'updated': int, 'skipped': int, 'errors': list}
 
 ---
 
+## Github_Sync Module Details
+
+Provides database sync using GitHub Releases:
+- Download databases from GitHub Releases (client-side)
+- Upload databases to GitHub Releases (server-side)
+- Timestamp-based release naming
+- Fallback to stale local copy on failure
+- No authentication required for public repos
+
+## Functions
+
+### get_github_sync_manager
+
+**Signature:** `get_github_sync_manager() -> Optional[GitHubSyncManager]`
+
+Get a GitHubSyncManager instance from config.
+
+**Returns:**
+
+GitHubSyncManager if configured, None otherwise
+
+---
+
+### to_dict
+
+**Signature:** `to_dict() -> dict`
+
+No docstring available.
+
+---
+
+### from_dict
+
+*@classmethod*
+
+**Signature:** `from_dict(cls, data: dict) -> 'DatabaseSnapshot'`
+
+No docstring available.
+
+---
+
+### get_latest_release
+
+**Signature:** `get_latest_release() -> Optional[DatabaseSnapshot]`
+
+Get the latest database snapshot from GitHub Releases.
+
+**Returns:**
+
+DatabaseSnapshot if found, None otherwise
+
+---
+
+### download_databases
+
+**Signature:** `download_databases(snapshot: Optional[DatabaseSnapshot], force: bool) -> bool`
+
+Download databases from GitHub Releases.
+
+**Returns:**
+
+True if download successful, False otherwise
+
+---
+
+### get_last_check_time
+
+**Signature:** `get_last_check_time() -> Optional[datetime]`
+
+Get the timestamp of the last sync check.
+
+---
+
+### create_release
+
+**Signature:** `create_release(db_paths: List[Path], description: Optional[str]) -> Optional[str]`
+
+Create a new GitHub Release with database snapshots.
+
+**Returns:**
+
+Release tag name if successful, None otherwise
+
+---
+
+### cleanup_old_releases
+
+**Signature:** `cleanup_old_releases(keep_count: int) -> int`
+
+Delete old database snapshot releases, keeping only the most recent ones.
+
+**Returns:**
+
+Number of releases deleted
+
+---
+
+## Classes
+
+### DatabaseSnapshot
+
+*@dataclass*
+
+**Class:** `DatabaseSnapshot`
+
+Metadata for a database snapshot on GitHub Releases.
+
+#### Methods
+
+##### to_dict
+
+**Signature:** `to_dict() -> dict`
+
+No docstring available.
+
+---
+
+##### from_dict
+
+*@classmethod*
+
+**Signature:** `from_dict(cls, data: dict) -> 'DatabaseSnapshot'`
+
+No docstring available.
+
+---
+
+---
+
+### GitHubSyncManager
+
+**Class:** `GitHubSyncManager`
+
+Manages database synchronization with GitHub Releases.
+
+#### Methods
+
+##### __init__
+
+**Signature:** `__init__(repo_owner: str, repo_name: str, github_token: Optional[str], local_db_dir: Optional[Path])`
+
+Initialize GitHub sync manager.
+
+---
+
+##### get_latest_release
+
+**Signature:** `get_latest_release() -> Optional[DatabaseSnapshot]`
+
+Get the latest database snapshot from GitHub Releases.
+
+**Returns:**
+
+DatabaseSnapshot if found, None otherwise
+
+---
+
+##### download_databases
+
+**Signature:** `download_databases(snapshot: Optional[DatabaseSnapshot], force: bool) -> bool`
+
+Download databases from GitHub Releases.
+
+**Returns:**
+
+True if download successful, False otherwise
+
+---
+
+##### get_last_check_time
+
+**Signature:** `get_last_check_time() -> Optional[datetime]`
+
+Get the timestamp of the last sync check.
+
+---
+
+##### create_release
+
+**Signature:** `create_release(db_paths: List[Path], description: Optional[str]) -> Optional[str]`
+
+Create a new GitHub Release with database snapshots.
+
+**Returns:**
+
+Release tag name if successful, None otherwise
+
+---
+
+##### cleanup_old_releases
+
+**Signature:** `cleanup_old_releases(keep_count: int) -> int`
+
+Delete old database snapshot releases, keeping only the most recent ones.
+
+**Returns:**
+
+Number of releases deleted
+
+---
+
+---
+
 ## Quota Module Details
 
 Tracks:
@@ -1146,6 +1375,7 @@ List of part records as tuples of             (id, part_number, part_type, polar
 ## Connection Module Details
 
 This module provides utilities for database path resolution.
+Supports both local project databases and synced XDG user databases.
 
 ## Functions
 
@@ -1153,14 +1383,14 @@ This module provides utilities for database path resolution.
 
 **Signature:** `get_database_path(db_name: str, db_dir: Optional[str]) -> str`
 
-Get the full path to a database file.
+Get the full path to a database file. Path resolution order: 1. Explicit db_dir parameter (for tests/custom setups) 2. Environment variables (CASMAN_PARTS_DB, CASMAN_ASSEMBLED_DB) 3. config.yaml settings (CASMAN_PARTS_DB, CASMAN_ASSEMBLED_DB) 4. XDG user data directory (~/.local/share/casman/databases/) 5. Project root database directory (development) 6. Fallback to cwd/database
 
 **Parameters:**
 
 db_name : str
 Name of the database file.
 db_dir : str, optional
-Custom database directory. If not provided, uses the project root's database directory.
+Custom database directory. If not provided, uses automatic resolution.
 
 **Returns:**
 

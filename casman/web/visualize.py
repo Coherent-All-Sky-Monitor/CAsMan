@@ -764,3 +764,105 @@ def load_snap_boards():
             'success': False,
             'error': str(e)
         }), 500
+
+
+@visualize_bp.route("/admin/sync-to-github", methods=["POST"])
+def sync_to_github():
+    """Push databases to GitHub Releases (server-side)."""
+    try:
+        from pathlib import Path
+        from casman.database.github_sync import get_github_sync_manager
+        from casman.database.connection import get_database_path
+        
+        # Get sync manager
+        sync_manager = get_github_sync_manager()
+        if sync_manager is None:
+            return jsonify({
+                'success': False,
+                'error': 'GitHub sync not configured. Set GITHUB_TOKEN environment variable.'
+            }), 500
+        
+        if not sync_manager.github_token:
+            return jsonify({
+                'success': False,
+                'error': 'GitHub token required for uploads. Set GITHUB_TOKEN environment variable.'
+            }), 401
+        
+        # Get database paths
+        parts_db_path = Path(get_database_path("parts.db"))
+        assembled_db_path = Path(get_database_path("assembled_casm.db"))
+        
+        # Create GitHub Release with databases
+        logger.info("Creating GitHub Release with database snapshots...")
+        tag_name = sync_manager.create_release(
+            db_paths=[parts_db_path, assembled_db_path],
+            description="Manual sync from web admin panel"
+        )
+        
+        if tag_name:
+            message = f"✓ Successfully created release: {tag_name}"
+            return jsonify({
+                'success': True,
+                'message': message,
+                'release': tag_name
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Failed to create GitHub Release. Check logs for details.'
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"Error syncing to GitHub: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@visualize_bp.route("/admin/sync-status", methods=["GET"])
+def sync_status():
+    """Get current sync status."""
+    try:
+        from casman.database.github_sync import get_github_sync_manager
+        
+        sync_manager = get_github_sync_manager()
+        if sync_manager is None:
+            return jsonify({
+                'success': False,
+                'error': 'GitHub sync not configured'
+            }), 500
+        
+        # Get latest release info
+        latest_release = sync_manager.get_latest_release()
+        
+        # Get last check time
+        last_check = sync_manager.get_last_check_time()
+        
+        status = {
+            'configured': True,
+            'has_token': sync_manager.github_token is not None,
+            'last_check': last_check.isoformat() if last_check else None,
+        }
+        
+        if latest_release:
+            status['latest_release'] = {
+                'name': latest_release.release_name,
+                'timestamp': latest_release.timestamp.isoformat(),
+                'size_mb': round(latest_release.size_bytes / (1024 * 1024), 2),
+                'assets': latest_release.assets,
+            }
+        else:
+            status['latest_release'] = None
+        
+        return jsonify({
+            'success': True,
+            'status': status
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting sync status: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500

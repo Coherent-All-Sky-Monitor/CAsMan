@@ -201,6 +201,15 @@
             <div class="loader" id="snapLoader">Loading...</div>
             <div class="message" id="snapMessage"></div>
         </div>
+        
+        <div class="admin-card">
+            <h2>Sync to GitHub</h2>
+            <p>Push database snapshot to GitHub Releases (requires GITHUB_TOKEN environment variable)</p>
+            <button class="btn" onclick="syncToGitHub()" id="syncBtn">Sync to GitHub</button>
+            <div class="loader" id="syncLoader">Uploading...</div>
+            <div class="message" id="syncMessage"></div>
+            <div id="syncStatus" style="margin-top: 10px; font-size: 14px; opacity: 0.7;"></div>
+        </div>
     </div>
     
     <script>
@@ -278,6 +287,68 @@
                 loader.classList.remove('show');
             }
         }
+        
+        // Sync to GitHub
+        async function syncToGitHub() {
+            const btn = document.getElementById('syncBtn');
+            const loader = document.getElementById('syncLoader');
+            const message = document.getElementById('syncMessage');
+            
+            btn.disabled = true;
+            loader.classList.add('show');
+            message.classList.remove('show', 'success', 'error');
+            
+            try {
+                const response = await fetch('/visualize/admin/sync-to-github', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    message.textContent = data.message;
+                    message.classList.add('success', 'show');
+                    // Refresh sync status after successful upload
+                    setTimeout(loadSyncStatus, 1000);
+                } else {
+                    message.textContent = 'Error: ' + data.error;
+                    message.classList.add('error', 'show');
+                }
+            } catch (error) {
+                message.textContent = 'Error: ' + error.message;
+                message.classList.add('error', 'show');
+            } finally {
+                btn.disabled = false;
+                loader.classList.remove('show');
+            }
+        }
+        
+        // Load sync status
+        async function loadSyncStatus() {
+            const statusDiv = document.getElementById('syncStatus');
+            
+            try {
+                const response = await fetch('/visualize/admin/sync-status');
+                const data = await response.json();
+                
+                if (data.success && data.status.latest_release) {
+                    const release = data.status.latest_release;
+                    const timestamp = new Date(release.timestamp).toLocaleString();
+                    statusDiv.innerHTML = `Latest release: ${release.name}<br>` +
+                                         `Uploaded: ${timestamp}<br>` +
+                                         `Size: ${release.size_mb} MB`;
+                } else if (data.success) {
+                    statusDiv.textContent = 'No releases found';
+                } else {
+                    statusDiv.textContent = '';
+                }
+            } catch (error) {
+                console.error('Failed to load sync status:', error);
+                statusDiv.textContent = '';
+            }
+        }
+        
+        // Load sync status on page load
+        loadSyncStatus();
     </script>
 </body>
 </html>

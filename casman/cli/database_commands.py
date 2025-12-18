@@ -30,20 +30,26 @@ def cmd_database() -> None:
     parser = argparse.ArgumentParser(
         description="CAsMan Database Management\n\n"
         "Comprehensive database operations for parts and assembly management.\n"
-        "Provides safe database clearing, formatted content display, and\n"
-        "interactive scanning workflows with validation.\n\n"
+        "Provides safe database clearing, formatted content display, interactive\n"
+        "scanning workflows with validation, and GitHub-based synchronization.\n\n"
         "Subcommands:\n"
         "  clear            - Safely clear database contents with confirmations\n"
         "  print            - Display formatted database tables and records\n"
         "  load-coordinates - Load grid coordinates from CSV file\n"
-        "  load-snap-boards - Load SNAP board configurations from CSV file\n\n"
+        "  load-snap-boards - Load SNAP board configurations from CSV file\n"
+        "  push             - Push databases to GitHub Releases (server-side)\n"
+        "  pull             - Download databases from GitHub Releases\n"
+        "  status           - Show database sync status\n\n"
         "Examples:\n"
         "  casman database clear --parts     # Clear only parts database\n"
-        "  casman database clear --assembled # Clear only assembly database\n"
-        "  casman database print             # Show assembly database contents\n\n"
-        "Safety Features:\n"
+        "  casman database print             # Show assembly database contents\n"
+        "  casman database push              # Upload databases to GitHub\n"
+        "  casman database pull              # Download latest databases\n"
+        "  casman database status            # Show sync status\n\n"
+        "Features:\n"
         "- Double confirmation for destructive operations\n"
         "- Visual warnings for database clearing\n"
+        "- GitHub Releases-based synchronization\n"
         "- Validation and error handling\n"
         "- Database existence checks",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -156,6 +162,75 @@ def cmd_database() -> None:
         help="Path to CSV file (default: database/snap_boards.csv)",
     )
 
+    # Sync push subcommand
+    push_parser = subparsers.add_parser(
+        "push",
+        help="Push databases to GitHub Releases",
+        description="Upload database snapshots to GitHub Releases for distribution.\n"
+        "Creates a new release with timestamp-based tag (database-snapshot-YYYYMMDD-HHMMSS)\n"
+        "and uploads both parts.db and assembled_casm.db as release assets.\n\n"
+        "Requirements:\n"
+        "- GITHUB_TOKEN environment variable must be set\n"
+        "- Token needs 'repo' scope for creating releases\n"
+        "- Repository must be configured in config.yaml\n\n"
+        "Features:\n"
+        "- Timestamp-based release naming\n"
+        "- Automatic checksum calculation\n"
+        "- Database validation before upload\n"
+        "- Progress reporting\n\n"
+        "Examples:\n"
+        "  export GITHUB_TOKEN=ghp_xxxxx\n"
+        "  casman database push                  # Push databases to GitHub\n"
+        "  casman database push --cleanup 10     # Push and keep only 10 recent releases",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    push_parser.add_argument(
+        "--cleanup",
+        type=int,
+        metavar="N",
+        help="Delete old releases, keeping only N most recent (default: 10)",
+        default=10,
+    )
+
+    # Sync pull subcommand
+    pull_parser = subparsers.add_parser(
+        "pull",
+        help="Download databases from GitHub Releases",
+        description="Download the latest database snapshots from GitHub Releases.\n"
+        "Fetches the most recent release and downloads both databases to the\n"
+        "configured XDG data directory (~/.local/share/casman/databases/).\n\n"
+        "Features:\n"
+        "- Downloads latest release automatically\n"
+        "- Validates SQLite database integrity\n"
+        "- Atomic updates (temp file then move)\n"
+        "- Progress reporting\n\n"
+        "Examples:\n"
+        "  casman database pull              # Download latest databases\n"
+        "  casman database pull --force      # Force re-download even if up-to-date",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    pull_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force download even if local databases are up-to-date",
+    )
+
+    # Sync status subcommand
+    status_parser = subparsers.add_parser(
+        "status",
+        help="Show database sync status",
+        description="Display information about database synchronization status.\n"
+        "Shows the latest GitHub Release, local database status, and sync configuration.\n\n"
+        "Information Displayed:\n"
+        "- Latest GitHub Release details (name, timestamp, size)\n"
+        "- Local database paths and sizes\n"
+        "- Last sync check timestamp\n"
+        "- Sync configuration (auto-push settings)\n\n"
+        "Examples:\n"
+        "  casman database status            # Show sync status",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
     argcomplete.autocomplete(parser)
 
     # Parse arguments with the cleaned argument list
@@ -199,6 +274,27 @@ def cmd_database() -> None:
                 snap_index + 1 :
             ]  # Everything after "load-snap-boards"
         cmd_database_load_snap_boards(snap_parser, snap_args)
+    elif args.subcommand == "push":
+        # Reconstruct arguments for the push subcommand
+        push_args = []
+        if "push" in args_to_parse:
+            push_index = args_to_parse.index("push")
+            push_args = args_to_parse[push_index + 1 :]
+        cmd_database_push(push_parser, push_args)
+    elif args.subcommand == "pull":
+        # Reconstruct arguments for the pull subcommand
+        pull_args = []
+        if "pull" in args_to_parse:
+            pull_index = args_to_parse.index("pull")
+            pull_args = args_to_parse[pull_index + 1 :]
+        cmd_database_pull(pull_parser, pull_args)
+    elif args.subcommand == "status":
+        # Reconstruct arguments for the status subcommand
+        status_args = []
+        if "status" in args_to_parse:
+            status_index = args_to_parse.index("status")
+            status_args = args_to_parse[status_index + 1 :]
+        cmd_database_status(status_parser, status_args)
     else:
         parser.print_help()
 
@@ -551,3 +647,245 @@ def cmd_database_load_snap_boards(
     except Exception as e:
         print(f"\n✗ Error loading SNAP boards: {e}")
         sys.exit(1)
+
+
+def cmd_database_push(parser: argparse.ArgumentParser, remaining_args: list) -> None:
+    """
+    Handle database push subcommand (push to GitHub Releases).
+
+    Parameters
+    ----------
+    parser : argparse.ArgumentParser
+        The parser for the push subcommand
+    remaining_args : list
+        Remaining command line arguments
+    """
+    args = parser.parse_args(remaining_args)
+
+    from pathlib import Path
+
+    from ..database.connection import get_database_path
+    from ..database.github_sync import get_github_sync_manager
+
+    print("Pushing databases to GitHub Releases...")
+    print("=" * 50)
+
+    # Get sync manager
+    sync_manager = get_github_sync_manager()
+    if sync_manager is None:
+        print("\n✗ Error: GitHub sync not configured")
+        print("  Check config.yaml for github_owner and github_repo settings")
+        sys.exit(1)
+
+    if not sync_manager.github_token:
+        print("\n✗ Error: GitHub token required for uploads")
+        print("  Set GITHUB_TOKEN environment variable:")
+        print("  export GITHUB_TOKEN=ghp_xxxxxxxxxxxxx")
+        sys.exit(1)
+
+    # Get database paths
+    try:
+        parts_db_path = Path(get_database_path("parts.db"))
+        assembled_db_path = Path(get_database_path("assembled_casm.db"))
+
+        # Check that databases exist
+        if not parts_db_path.exists():
+            print(f"\n✗ Error: parts.db not found at {parts_db_path}")
+            sys.exit(1)
+
+        if not assembled_db_path.exists():
+            print(f"\n✗ Error: assembled_casm.db not found at {assembled_db_path}")
+            sys.exit(1)
+
+        # Show database sizes
+        parts_size_mb = parts_db_path.stat().st_size / (1024 * 1024)
+        assembled_size_mb = assembled_db_path.stat().st_size / (1024 * 1024)
+
+        print(f"\nDatabases to upload:")
+        print(f"  parts.db:          {parts_size_mb:.2f} MB")
+        print(f"  assembled_casm.db: {assembled_size_mb:.2f} MB")
+        print(f"  Total:             {parts_size_mb + assembled_size_mb:.2f} MB")
+
+        # Create GitHub Release with databases
+        print(f"\nCreating GitHub Release...")
+        tag_name = sync_manager.create_release(
+            db_paths=[parts_db_path, assembled_db_path],
+            description="Database snapshot from CLI",
+        )
+
+        if tag_name:
+            print(f"\n✓ Successfully created release: {tag_name}")
+            print(f"  Repository: {sync_manager.repo_owner}/{sync_manager.repo_name}")
+
+            # Cleanup old releases if requested
+            if args.cleanup:
+                print(f"\nCleaning up old releases (keeping {args.cleanup} most recent)...")
+                deleted_count = sync_manager.cleanup_old_releases(
+                    keep_count=args.cleanup
+                )
+                print(f"✓ Deleted {deleted_count} old release(s)")
+
+        else:
+            print("\n✗ Failed to create GitHub Release")
+            print("  Check logs for details")
+            sys.exit(1)
+
+    except Exception as e:
+        print(f"\n✗ Error pushing databases: {e}")
+        sys.exit(1)
+
+
+def cmd_database_pull(parser: argparse.ArgumentParser, remaining_args: list) -> None:
+    """
+    Handle database pull subcommand (download from GitHub Releases).
+
+    Parameters
+    ----------
+    parser : argparse.ArgumentParser
+        The parser for the pull subcommand
+    remaining_args : list
+        Remaining command line arguments
+    """
+    args = parser.parse_args(remaining_args)
+
+    from ..database.github_sync import get_github_sync_manager
+
+    print("Downloading databases from GitHub Releases...")
+    print("=" * 50)
+
+    # Get sync manager
+    sync_manager = get_github_sync_manager()
+    if sync_manager is None:
+        print("\n✗ Error: GitHub sync not configured")
+        print("  Check config.yaml for github_owner and github_repo settings")
+        sys.exit(1)
+
+    try:
+        # Get latest release info
+        latest_release = sync_manager.get_latest_release()
+
+        if latest_release is None:
+            print("\n✗ No database snapshots found on GitHub Releases")
+            print(f"  Repository: {sync_manager.repo_owner}/{sync_manager.repo_name}")
+            sys.exit(1)
+
+        print(f"\nLatest release: {latest_release.release_name}")
+        print(f"  Timestamp: {latest_release.timestamp}")
+        print(f"  Size:      {latest_release.size_bytes / (1024 * 1024):.2f} MB")
+        print(f"  Assets:    {', '.join(latest_release.assets)}")
+
+        # Check if we need to download
+        if not args.force and sync_manager._is_local_up_to_date(latest_release):
+            print("\n✓ Local databases are already up-to-date")
+            print(f"  Location: {sync_manager.local_db_dir}")
+            return
+
+        # Download databases
+        print(f"\nDownloading to {sync_manager.local_db_dir}...")
+        success = sync_manager.download_databases(
+            snapshot=latest_release, force=args.force
+        )
+
+        if success:
+            print("\n✓ Databases downloaded successfully")
+            print(f"  Location: {sync_manager.local_db_dir}")
+        else:
+            print("\n✗ Failed to download databases")
+            print("  Check logs for details")
+            sys.exit(1)
+
+    except Exception as e:
+        print(f"\n✗ Error downloading databases: {e}")
+        sys.exit(1)
+
+
+def cmd_database_status(
+    parser: argparse.ArgumentParser, remaining_args: list
+) -> None:
+    """
+    Handle database status subcommand (show sync status).
+
+    Parameters
+    ----------
+    parser : argparse.ArgumentParser
+        The parser for the status subcommand
+    remaining_args : list
+        Remaining command line arguments
+    """
+    parser.parse_args(remaining_args)
+
+    from pathlib import Path
+
+    from ..database.connection import get_database_path
+    from ..database.github_sync import get_github_sync_manager
+
+    print("Database Sync Status")
+    print("=" * 50)
+
+    # Get sync manager
+    sync_manager = get_github_sync_manager()
+    if sync_manager is None:
+        print("\n✗ GitHub sync not configured")
+        print("  Check config.yaml for github_owner and github_repo settings")
+        sys.exit(1)
+
+    print(f"\nRepository: {sync_manager.repo_owner}/{sync_manager.repo_name}")
+    print(f"GitHub Token: {'✓ Set' if sync_manager.github_token else '✗ Not set'}")
+
+    # Get latest release info
+    try:
+        latest_release = sync_manager.get_latest_release()
+
+        if latest_release:
+            print(f"\nLatest GitHub Release:")
+            print(f"  Name:      {latest_release.release_name}")
+            print(f"  Timestamp: {latest_release.timestamp}")
+            print(f"  Size:      {latest_release.size_bytes / (1024 * 1024):.2f} MB")
+            print(f"  Assets:    {', '.join(latest_release.assets)}")
+        else:
+            print("\n⚠ No releases found on GitHub")
+
+    except Exception as e:
+        print(f"\n✗ Error fetching GitHub releases: {e}")
+
+    # Get local database info
+    print(f"\nLocal Databases:")
+    print(f"  XDG Path:  {sync_manager.local_db_dir}")
+
+    for db_name in ["parts.db", "assembled_casm.db"]:
+        try:
+            db_path = Path(get_database_path(db_name))
+            if db_path.exists():
+                size_mb = db_path.stat().st_size / (1024 * 1024)
+                print(f"  {db_name:<18} {size_mb:>8.2f} MB  ({db_path})")
+            else:
+                print(f"  {db_name:<18}  Not found")
+        except Exception as e:
+            print(f"  {db_name:<18}  Error: {e}")
+
+    # Get last check time
+    last_check = sync_manager.get_last_check_time()
+    if last_check:
+        print(f"\nLast sync check: {last_check}")
+    else:
+        print(f"\nLast sync check: Never")
+
+    # Show sync configuration
+    try:
+        enabled = get_config("database.sync.enabled", False)
+        backend = get_config("database.sync.backend", "unknown")
+        auto_sync = get_config("database.sync.auto_sync_on_import", False)
+        auto_push = get_config("database.sync.server.auto_push_enabled", False)
+        push_scans = get_config("database.sync.server.push_after_scans", 30)
+        push_hours = get_config("database.sync.server.push_after_hours", 1.0)
+
+        print(f"\nSync Configuration:")
+        print(f"  Enabled:           {enabled}")
+        print(f"  Backend:           {backend}")
+        print(f"  Auto-sync:         {auto_sync}")
+        print(f"  Auto-push:         {auto_push}")
+        print(f"  Push after scans:  {push_scans}")
+        print(f"  Push after hours:  {push_hours}")
+
+    except Exception:
+        pass
