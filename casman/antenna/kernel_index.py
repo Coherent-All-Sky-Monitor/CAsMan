@@ -459,11 +459,10 @@ def get_array_index_map(
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             
-            # Get coordinates for all grid positions
+            # Get coordinates for all grid positions from grid_positions table
             cursor.execute("""
                 SELECT grid_code, latitude, longitude, height
-                FROM antenna_positions
-                WHERE latitude IS NOT NULL AND longitude IS NOT NULL AND height IS NOT NULL
+                FROM grid_positions
             """)
             
             for row_data in cursor.fetchall():
@@ -475,7 +474,7 @@ def get_array_index_map(
                     coordinates[row, col, 1] = row_data['longitude']
                     coordinates[row, col, 2] = row_data['height']
     except Exception:
-        # Database not available, coordinates will be zero
+        # Database not available or table doesn't exist, coordinates will be zero
         pass
     
     # Get antenna position assignments from database

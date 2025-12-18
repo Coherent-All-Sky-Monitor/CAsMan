@@ -685,6 +685,101 @@ def load_grid_coordinates_from_csv(
     return {"updated": updated, "skipped": skipped, "errors": errors}
 
 
+def load_grid_positions_from_csv(
+    csv_path: Optional[str] = None, *, db_dir: Optional[str] = None
+) -> dict:
+    """Load grid position coordinates from CSV into grid_positions table.
+    
+    This loads coordinates for ALL grid positions into a separate table,
+    independent of antenna assignments.
+    
+    CSV format:
+        grid_code,latitude,longitude,height,coordinate_system,notes
+        CN002E03,37.8719,-122.2585,10.5,WGS84,North row 2
+    
+    Parameters
+    ----------
+    csv_path : str, optional
+        Path to CSV file. If not provided, uses database/grid_positions.csv
+    db_dir : str, optional
+        Custom database directory for testing.
+    
+    Returns
+    -------
+    dict
+        Summary with counts: {'loaded': int, 'skipped': int, 'errors': list}
+    """
+    import csv
+    import os
+    
+    # Determine CSV path
+    if csv_path is None:
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        csv_path = os.path.join(project_root, "database", "grid_positions.csv")
+    
+    if not os.path.exists(csv_path):
+        return {
+            "loaded": 0,
+            "skipped": 0,
+            "errors": [f"CSV file not found: {csv_path}"],
+        }
+    
+    # Get database path
+    if db_dir is not None:
+        db_path = os.path.join(db_dir, "parts.db")
+    else:
+        db_path = get_database_path("parts.db", None)
+    
+    loaded = 0
+    skipped = 0
+    errors = []
+    
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        
+        with open(csv_path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            
+            for row in reader:
+                grid_code = row.get("grid_code", "").strip().upper()
+                if not grid_code:
+                    skipped += 1
+                    continue
+                
+                lat = row.get("latitude", "").strip()
+                lon = row.get("longitude", "").strip()
+                height = row.get("height", "").strip()
+                coord_sys = row.get("coordinate_system", "").strip()
+                notes = row.get("notes", "").strip()
+                
+                try:
+                    latitude = float(lat) if lat else None
+                    longitude = float(lon) if lon else None
+                    height_val = float(height) if height else None
+                    
+                    if latitude is None or longitude is None or height_val is None:
+                        skipped += 1
+                        continue
+                    
+                    # Insert or replace
+                    cursor.execute(
+                        """
+                        INSERT OR REPLACE INTO grid_positions
+                        (grid_code, latitude, longitude, height, coordinate_system, notes)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                        """,
+                        (grid_code, latitude, longitude, height_val, coord_sys or None, notes or None),
+                    )
+                    loaded += 1
+                except Exception as e:
+                    errors.append(f"{grid_code}: {str(e)}")
+                    skipped += 1
+        
+        conn.commit()
+    
+    return {"loaded": loaded, "skipped": skipped, "errors": errors}
+
+
 __all__ = [
     "init_antenna_positions_table",
     "strip_polarization",
@@ -694,4 +789,5 @@ __all__ = [
     "get_all_antenna_positions",
     "remove_antenna_position",
     "load_grid_coordinates_from_csv",
+    "load_grid_positions_from_csv",
 ]

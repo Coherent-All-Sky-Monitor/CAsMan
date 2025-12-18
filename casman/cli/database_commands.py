@@ -564,15 +564,19 @@ def cmd_database_load_coordinates(
     """
     args = parser.parse_args(remaining_args)
 
-    from ..database.antenna_positions import load_grid_coordinates_from_csv
+    from ..database.antenna_positions import load_grid_positions_from_csv
+    from ..database.initialization import init_grid_positions_table
 
     print("Loading grid coordinates from CSV...")
     print("=" * 50)
 
     try:
-        result = load_grid_coordinates_from_csv(csv_path=args.csv)
+        # Initialize the table first
+        init_grid_positions_table()
+        
+        result = load_grid_positions_from_csv(csv_path=args.csv)
 
-        print(f"\n✓ Updated: {result['updated']} position(s)")
+        print(f"\n✓ Loaded:  {result['loaded']} position(s)")
         print(f"  Skipped: {result['skipped']} position(s)")
 
         if result["errors"]:
@@ -580,14 +584,13 @@ def cmd_database_load_coordinates(
             for error in result["errors"]:
                 print(f"  - {error}")
 
-        if result["updated"] > 0:
+        if result["loaded"] > 0:
             print("\n✓ Coordinate data loaded successfully")
         else:
-            print("\n⚠ No positions were updated")
+            print("\n⚠ No positions were loaded")
             print("  Make sure:")
             print("  - CSV file has valid coordinate data")
-            print("  - Grid positions exist in antenna_positions table")
-            print("  - CSV grid_code values match database records")
+            print("  - CSV format: grid_code,latitude,longitude,height,coordinate_system,notes")
 
     except FileNotFoundError as e:
         print(f"\n✗ Error: {e}")

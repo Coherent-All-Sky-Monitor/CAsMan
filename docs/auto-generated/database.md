@@ -78,6 +78,7 @@ Uniqueness constraints ensure:
 - `get_all_antenna_positions()` - Retrieve all antenna position assignments
 - `remove_antenna_position()` - Remove antenna position assignment
 - `load_grid_coordinates_from_csv()` - Load grid position coordinates from CSV file
+- `load_grid_positions_from_csv()` - Load grid position coordinates from CSV into grid_positions table
 
 ### github_sync
 
@@ -133,6 +134,7 @@ This module provides functions to initialize and set up database tables
 for both parts and assembly tracking.
 
 **Functions:**
+- `init_grid_positions_table()` - Initialize the grid_positions table for storing coordinates of all grid positions
 - `init_parts_db()` - Initialize the parts
 - `init_assembled_db()` - Initialize the assembled_casm
 - `init_all_databases()` - Initialize all databases
@@ -892,6 +894,26 @@ Summary with counts: {'updated': int, 'skipped': int, 'errors': list}
 
 ---
 
+### load_grid_positions_from_csv
+
+**Signature:** `load_grid_positions_from_csv(csv_path: Optional[str]) -> dict`
+
+Load grid position coordinates from CSV into grid_positions table. This loads coordinates for ALL grid positions into a separate table, independent of antenna assignments. CSV format: grid_code,latitude,longitude,height,coordinate_system,notes CN002E03,37.8719,-122.2585,10.5,WGS84,North row 2
+
+**Parameters:**
+
+csv_path : str, optional
+Path to CSV file. If not provided, uses database/grid_positions.csv
+db_dir : str, optional
+Custom database directory for testing.
+
+**Returns:**
+
+dict
+Summary with counts: {'loaded': int, 'skipped': int, 'errors': list}
+
+---
+
 ## Github_Sync Module Details
 
 Provides database sync using GitHub Releases:
@@ -1269,6 +1291,19 @@ for both parts and assembly tracking.
 
 ## Functions
 
+### init_grid_positions_table
+
+**Signature:** `init_grid_positions_table(db_dir: Optional[str]) -> None`
+
+Initialize the grid_positions table for storing coordinates of all grid positions. This table stores coordinates for ALL grid positions, independent of antenna assignments.
+
+**Parameters:**
+
+db_dir : str, optional
+Custom database directory for testing
+
+---
+
 ### init_parts_db
 
 **Signature:** `init_parts_db(db_dir: Optional[str]) -> None`
@@ -1307,7 +1342,7 @@ None
 
 **Signature:** `init_all_databases(db_dir: Optional[str]) -> None`
 
-Initialize all databases. Calls init_parts_db(), init_assembled_db(), init_antenna_positions_table(), and init_snap_boards_table() to set up all required database tables for the CAsMan system.
+Initialize all databases. Calls init_parts_db(), init_assembled_db(), init_antenna_positions_table(), init_snap_boards_table(), and init_grid_positions_table() to set up all required database tables for the CAsMan system.
 
 **Parameters:**
 

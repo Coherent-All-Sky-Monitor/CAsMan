@@ -14,6 +14,39 @@ from .antenna_positions import init_antenna_positions_table
 from .snap_boards import init_snap_boards_table
 
 
+def init_grid_positions_table(db_dir: Optional[str] = None) -> None:
+    """Initialize the grid_positions table for storing coordinates of all grid positions.
+    
+    This table stores coordinates for ALL grid positions, independent of antenna assignments.
+    
+    Parameters
+    ----------
+    db_dir : str, optional
+        Custom database directory for testing
+    """
+    if db_dir is not None:
+        db_path = os.path.join(db_dir, "parts.db")
+    else:
+        db_path = get_database_path("parts.db", None)
+    
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS grid_positions (
+            grid_code TEXT PRIMARY KEY,
+            latitude REAL NOT NULL,
+            longitude REAL NOT NULL,
+            height REAL NOT NULL,
+            coordinate_system TEXT,
+            notes TEXT
+        )
+    """)
+    
+    conn.commit()
+    conn.close()
+
+
 def init_parts_db(db_dir: Optional[str] = None) -> None:
     """
     Initialize the parts.db database and create necessary tables if they don't exist.
@@ -150,8 +183,8 @@ def init_all_databases(db_dir: Optional[str] = None) -> None:
     Initialize all databases.
 
     Calls init_parts_db(), init_assembled_db(), init_antenna_positions_table(),
-    and init_snap_boards_table() to set up all required database tables for the
-    CAsMan system.
+    init_snap_boards_table(), and init_grid_positions_table() to set up all required
+    database tables for the CAsMan system.
 
     Parameters
     ----------
@@ -166,3 +199,4 @@ def init_all_databases(db_dir: Optional[str] = None) -> None:
     init_assembled_db(db_dir)
     init_antenna_positions_table(db_dir)
     init_snap_boards_table(db_dir)
+    init_grid_positions_table(db_dir)
