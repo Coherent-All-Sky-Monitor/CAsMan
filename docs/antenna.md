@@ -655,11 +655,7 @@ grid:
     east_columns: 4
     allow_expansion: false
 
-# Database sync (public URLs - no credentials required)
-r2:
-  public_urls:
-    parts_db: "https://pub-xxxxx.r2.dev/backups/parts.db/latest_parts.db"
-    assembled_db: "https://pub-xxxxx.r2.dev/backups/assembled_casm.db/latest_assembled_casm.db"
+
 ```
 
 **Note:** Configuration file should be in project root or discoverable via `CASMAN_CONFIG` environment variable.
@@ -706,27 +702,9 @@ r2:
 - Verify coordinates loaded: `ant.has_coordinates()`
 - Try grid-based: `compute_baseline(..., use_coordinates=False)`
 
-### Performance Notes
-
-- Database loading: ~10 ms for 256 antennas
-- Baseline computation: ~0.01 ms per pair (geodetic)
-- All baselines (256 antennas): ~300 ms (32,640 pairs)
-- Memory usage: ~50 KB per antenna
 
 ---
 
-## Summary
-
-The CAsMan antenna module provides:
-
-✅ **Lightweight** - Minimal dependencies (PyYAML only)  
-✅ **Database Sync** - Auto-download with public URLs (no credentials)  
-✅ **Grid Positions** - Parse and validate antenna positions  
-✅ **Kernel Mapping** - Convert between grid codes and kernel indices  
-✅ **Baselines** - Geodetic (Haversine) and grid-based calculations  
-✅ **Geographic Coordinates** - Full coordinate support with multiple systems  
-✅ **SNAP Ports** - Trace assembly chains for port assignments  
-✅ **Multi-Array** - Support for core, outriggers, and custom arrays  
 
 ### Quick Reference
 
