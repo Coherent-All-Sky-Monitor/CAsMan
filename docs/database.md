@@ -6,7 +6,7 @@ Complete guide to CAsMan's database system, including schema, backup/sync, and m
 
 1. [Overview](#overview)
 2. [Database Schema](#database-schema)
-6. [Implementation Details](#implementation-details)
+
 
 ---
 
