@@ -37,4 +37,4 @@ chassis,slot,sn,mac,ip,feng_id,notes
 4,C,100,00:00:00:00:00:36,192.168.0.36,36,SN not found in DB DSA110 spare
 4,D,072,00:00:00:00:00:37,192.168.0.37,37,SN not found in DB DSA110 spare
 4,E,064,00:00:00:00:00:38,192.168.0.38,38,SN not found in DB DSA110 spare
-4,F,084,00:00:00:00:00:39,192.168.0.39,39,SN not found in DB DSA110 spare
+4,F,084,00:00:00:00:00:39,192.168.0.39,40,SN not found in DB DSA110 spare
