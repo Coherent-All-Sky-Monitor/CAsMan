@@ -572,3 +572,151 @@ casman database pull
 export GITHUB_TOKEN="your-token"
 casman database push
 ```
+=======
+
+
+
+#### 1. Download Latest Database
+
+```bash
+# Download latest database from GitHub
+casman database pull
+
+# Force re-download even if up-to-date
+casman database pull --force
+```
+
+This downloads the latest database release from GitHub to your project `database/` directory (full install) or `~/.local/share/casman/databases/` (standalone antenna module). Creates automatic timestamped backups before overwriting existing files.
+
+#### 2. Restore from Backups (if needed)
+
+```bash
+# Restore both databases from latest backups
+casman database restore --latest
+
+# Restore only parts.db
+casman database restore --latest --parts
+
+# Restore only assembled_casm.db
+casman database restore --latest --assembled
+```
+
+
+#### 3. Check Sync Status
+
+```bash
+casman database status
+```
+
+Shows:
+- Current GitHub Release version
+- Local database status and sizes
+- Download location
+- Last sync check time
+
+#### 4. Verify Setup
+
+The `AntennaArray` class can automatically sync on initialization:
+
+```python
+from casman.antenna import AntennaArray
+
+# Automatically downloads latest database if needed
+array = AntennaArray.from_database(
+    'database/parts.db',
+    sync_first=True  # Downloads from GitHub if not present locally
+)
+```
+
+
+
+### CLI Commands Reference
+
+| Command | Description | Authentication Required |
+|---------|-------------|-------------------------|
+| `casman database pull` | Download latest database from GitHub | No |
+| `casman database push` | Upload database to GitHub Releases | Yes (GitHub token) |
+| `casman database status` | Show sync status and GitHub Release info | No |
+
+### GitHub Authentication (Upload Only)
+
+For database administrators who need to upload:
+
+1. **Create GitHub Personal Access Token**:
+   - Go to GitHub Settings → Developer settings → Personal access tokens
+   - Generate new token with `repo` scope
+
+2. **Set Environment Variable**:
+   ```bash
+   export GITHUB_TOKEN="your-github-token"
+   ```
+
+3. **Upload Database**:
+   ```bash
+   casman database push
+   ```
+
+---
+
+## Download Location
+
+Downloaded databases are stored in:
+- **macOS/Linux**: `~/.local/share/casman/databases/`
+- **Windows**: `%LOCALAPPDATA%\casman\databases\`
+
+The `AntennaArray.from_database()` method with `sync_first=True` will:
+1. Check if database exists locally
+2. If not found, download from latest GitHub Release
+3. Extract to the appropriate local directory
+4. Load the database for use
+
+---
+
+### System Architecture
+
+The sync system provides database distribution via GitHub Releases:
+
+```
+┌────────────────────────────────────┐
+│  Local Databases                   │
+│  - parts.db (~340 KB)              │
+│  - assembled_casm.db (~10 MB)      │
+│  - Located in project database/    │
+└────────────────────────────────────┘
+         ↕ Upload (requires GitHub token)
+┌────────────────────────────────────┐
+│  GitHub Releases                   │
+│  - Public download access          │
+│  - Versioned releases              │
+│  - Tag-based organization          │
+└────────────────────────────────────┘
+         ↕ Download (public, no auth)
+┌────────────────────────────────────┐
+│  Field Sites / Remote Users        │
+│  - ~/.local/share/casman/databases │
+│  - Offline-capable                 │
+└────────────────────────────────────┘
+```
+
+---
+
+## Summary
+
+### Quick Actions
+
+**Setup** (1 minute):
+```bash
+casman database pull
+```
+
+**Daily Use**:
+- Work normally with local databases
+- `casman database pull` to get latest version when needed
+- Databases auto-sync when using `AntennaArray.from_database(..., sync_first=True)`
+
+**For Database Administrators**:
+```bash
+# Upload updated database
+export GITHUB_TOKEN="your-token"
+casman database push
+```
