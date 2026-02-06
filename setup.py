@@ -20,7 +20,7 @@ with open(os.path.join(here, "requirements.txt"), encoding="utf-8") as f:
 
 setup(
     name="casman",
-    version="1.5.2",
+    version="1.5.3",
     description="CASM Assembly Manager - \
         A collection of tools to manage and visualize CASM assembly",
     long_description=long_description,

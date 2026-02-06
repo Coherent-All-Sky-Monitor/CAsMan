@@ -14,15 +14,7 @@ grid coordinates to correlator kernel indices.
 
 ### sync
 
-Lightweight database synchronization for casman-antenna package.
-
-This module provides auto-sync functionality for antenna-only users
-who install casman-antenna via pip. It automatically downloads the latest
-databases from GitHub Releases on import.
-
-**Functions:**
-- `sync_databases()` - Synchronize databases from GitHub Releases
-- `force_sync()` - Force download of databases from GitHub Releases
+Error analyzing module: unexpected character after line continuation character (<unknown>, line 206)
 
 ### grid
 
@@ -162,7 +154,7 @@ Example
 >>> print(f"Baseline: {baseline:.2f} meters")
 
 **Functions:**
-- `sync_database()` - Download/sync database from cloud storage
+- `sync_database()` - Download database from GitHub Releases
 - `has_coordinates()` - Check if this antenna has geographic coordinates
 - `get_snap_ports()` - Get SNAP port assignments by tracing assembly chains
 - `format_chain_status()` - Format assembly chain status for display
@@ -179,38 +171,6 @@ Example
 **Classes:**
 - `AntennaPosition` - Complete antenna position information including coordinates and SNAP mapping
 - `AntennaArray` - Collection of antenna positions with baseline computation capabilities
-
-## Sync Module Details
-
-This module provides auto-sync functionality for antenna-only users
-who install casman-antenna via pip. It automatically downloads the latest
-databases from GitHub Releases on import.
-
-## Functions
-
-### sync_databases
-
-**Signature:** `sync_databases(quiet: bool) -> bool`
-
-Synchronize databases from GitHub Releases. This function is called automatically when the antenna module is imported. It downloads the latest databases if they're not already up-to-date.
-
-**Returns:**
-
-True if sync successful or local databases are up-to-date, False otherwise
-
----
-
-### force_sync
-
-**Signature:** `force_sync() -> bool`
-
-Force download of databases from GitHub Releases. This function checks if the local database is current, displays status information, and only downloads if an update is available.
-
-**Returns:**
-
-True if sync successful or databases are up-to-date, False otherwise
-
----
 
 ## Grid Module Details
 
@@ -1012,9 +972,9 @@ Example
 
 ### sync_database
 
-**Signature:** `sync_database(db_name: str, db_dir: Optional[str], public_url: Optional[str]) -> dict`
+**Signature:** `sync_database(db_name: str, db_dir: Optional[str]) -> dict`
 
-Download/sync database from cloud storage. Downloads the latest database from a public URL or R2 bucket. Does NOT require credentials if using public URL.
+Download database from GitHub Releases. Uses the same GitHub Releases sync as the antenna module. Falls back to local copy if GitHub unavailable.
 
 **Parameters:**
 
@@ -1022,10 +982,6 @@ db_name : str, optional
 Database filename to sync (default: 'parts.db')
 db_dir : str, optional
 Database directory (default: 'database/')
-public_url : str, optional
-Public URL to download database from. If not provided, attempts
-to use URL from config.yaml (r2.public_urls). If still None,
-falls back to R2 with credentials.
 
 **Returns:**
 
@@ -1038,18 +994,11 @@ Sync result with keys:
 **Examples:**
 
 ```python
->>> # Auto-download from public URL in config (no credentials needed)
 >>> from casman.antenna import sync_database, AntennaArray
 >>>
->>> result = sync_database('parts.db')  # Uses config.yaml public URL
+>>> result = sync_database('parts.db')
 >>> if result['success']:
 ...     array = AntennaArray.from_database('database/parts.db')
->>>
->>> # Override with specific URL
->>> result = sync_database(
-...     'parts.db',
-...     public_url='https://pub-xxxxx.r2.dev/latest_parts.db'
-... )
 >>>
 >>> # Or use sync_first parameter in from_database
 >>> array = AntennaArray.from_database('database/parts.db', sync_first=True)
@@ -1166,7 +1115,7 @@ Get zero-based east column index.
 
 *@classmethod*
 
-**Signature:** `from_database(cls, db_path: str | Path, array_id: str, db_dir: Optional[str], sync_first: bool, public_url: Optional[str]) -> AntennaArray`
+**Signature:** `from_database(cls, db_path: str | Path, array_id: str, db_dir: Optional[str], sync_first: bool) -> AntennaArray`
 
 Load antenna array from CAsMan database.
 
@@ -1179,9 +1128,7 @@ Array identifier to load (default: 'C' for core array)
 db_dir : str, optional
 Database directory for assembly chain lookups (default: use parent of db_path)
 sync_first : bool, optional
-If True, download database before loading (default: False)
-public_url : str, optional
-Public URL to download database from (no credentials needed).
+If True, download database from GitHub Releases before loading (default: False)
 
 **Returns:**
 
@@ -1201,14 +1148,7 @@ If database query fails
 >>> # Load from local database
 >>> array = AntennaArray.from_database('database/parts.db')
 >>>
->>> # Download from public URL first (no credentials needed)
->>> array = AntennaArray.from_database(
-...     'database/parts.db',
-...     sync_first=True,
-...     public_url='https://pub-xxxxx.r2.dev/latest_parts.db'
-... )
->>>
->>> # Sync from R2 with credentials (if configured)
+>>> # Download from GitHub Releases first
 >>> array = AntennaArray.from_database('database/parts.db', sync_first=True)
 >>>
 >>> # Load specific array
@@ -1551,7 +1491,7 @@ Antenna position objects to include in array
 
 *@classmethod*
 
-**Signature:** `from_database(cls, db_path: str | Path, array_id: str, db_dir: Optional[str], sync_first: bool, public_url: Optional[str]) -> AntennaArray`
+**Signature:** `from_database(cls, db_path: str | Path, array_id: str, db_dir: Optional[str], sync_first: bool) -> AntennaArray`
 
 Load antenna array from CAsMan database.
 
@@ -1564,9 +1504,7 @@ Array identifier to load (default: 'C' for core array)
 db_dir : str, optional
 Database directory for assembly chain lookups (default: use parent of db_path)
 sync_first : bool, optional
-If True, download database before loading (default: False)
-public_url : str, optional
-Public URL to download database from (no credentials needed).
+If True, download database from GitHub Releases before loading (default: False)
 
 **Returns:**
 
@@ -1586,14 +1524,7 @@ If database query fails
 >>> # Load from local database
 >>> array = AntennaArray.from_database('database/parts.db')
 >>>
->>> # Download from public URL first (no credentials needed)
->>> array = AntennaArray.from_database(
-...     'database/parts.db',
-...     sync_first=True,
-...     public_url='https://pub-xxxxx.r2.dev/latest_parts.db'
-... )
->>>
->>> # Sync from R2 with credentials (if configured)
+>>> # Download from GitHub Releases first
 >>> array = AntennaArray.from_database('database/parts.db', sync_first=True)
 >>>
 >>> # Load specific array
