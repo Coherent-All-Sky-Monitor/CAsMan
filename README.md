@@ -151,35 +151,47 @@ casman web --visualize-only          # Launch visualization interface only (port
 # Barcode generation
 casman barcode printpages --part-type ANTENNA --start-number 1 --end-number 100
 
-# Database backup and sync (R2/S3)
-casman sync backup                   # Backup databases to cloud storage
-casman sync list                     # List available backups
-casman sync restore <backup-key>     # Restore from backup
-casman sync sync                     # Sync with latest remote version
-casman sync status                   # Show sync configuration and status
+# Database synchronization (GitHub Releases)
+casman database pull                 # Download latest database from GitHub
+casman database push                 # Upload database to GitHub (requires token)
+casman database status               # Show sync status and GitHub Release info
+casman database restore --latest     # Restore from latest timestamped backups
 
 ```
 
-### Database Backup & Synchronization
+### Database Synchronization
 
-CAsMan provides automatic cloud backup for zero data loss and multi-user collaboration:
+CAsMan uses GitHub Releases for database distribution, enabling multi-user access without cloud credentials:
 
 ```bash
-# Setup (one-time, see docs/database.md for full guide)
-pip install boto3
-export R2_ACCOUNT_ID="your-account-id"
-export R2_ACCESS_KEY_ID="your-access-key"  
-export R2_SECRET_ACCESS_KEY="your-secret-key"
+# Download latest database (no authentication required)
+# Downloads directly to project database/ directory with automatic backups
+casman database pull
 
-# Verify setup
-casman sync status
+# Force re-download even if up-to-date
+casman database pull --force
 
-# Manual operations
-casman sync backup                   # Backup both databases
-casman sync list                     # List all backups
-casman sync sync                     # Download latest versions
-casman sync restore <backup-key>     # Restore from specific backup
+# Restore from latest timestamped backups
+casman database restore --latest              # Restore both DBs
+casman database restore --latest --parts      # Restore only parts.db
+casman database restore --latest --assembled  # Restore only assembled_casm.db
+
+# Check sync status
+casman database status
+
+# Upload database (requires GitHub token - administrators only)
+export GITHUB_TOKEN="your-github-token"
+casman database push
 ```
+
+**Features:**
+- Public download access (no credentials needed)
+- Downloads to project `database/` directory (full install) or XDG location (standalone antenna module)
+- Automatic timestamped backups before overwriting databases
+- Version control via GitHub Releases
+- Offline-capable operation
+- Restore from backups with `casman database restore`
+- Auto-sync on load with `AntennaArray.from_database(..., sync_first=True)`
 
 See [Database Documentation](docs/database.md) for complete setup guide and features.
 
@@ -306,7 +318,7 @@ grid:
     array_id: "C"           # Core array identifier
     north_rows: 21          # Rows north of center (N001-N021)
     south_rows: 21          # Rows south of center (S001-S021)
-    east_columns: 6         # East columns (E00-E05)
+    east_columns: 6         # East columns (E01-E06)
     allow_expansion: true   # Allow grid codes beyond core bounds
 ```
 

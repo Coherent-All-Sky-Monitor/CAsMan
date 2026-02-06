@@ -14,7 +14,6 @@ from .assembly_commands import cmd_scan
 from .barcode_commands import cmd_barcode
 from .database_commands import cmd_database
 from .parts_commands import cmd_parts
-from .sync_commands import cmd_sync
 from .utils import (
     show_commands_list,
     show_completion_help,
@@ -44,10 +43,6 @@ def main() -> None:
     """
     parser = argparse.ArgumentParser(
         description="CAsMan - CASM Assembly Manager\n\n"
-        "A comprehensive toolkit for managing CASM assembly processes with connection validation,\n"
-        "part tracking, barcode generation, and interactive visualization.\n\n"
-        "Features: Interactive scanning, connection validation, duplicate detection,\n"
-        "ASCII/web visualization, and comprehensive part management.\n\n"
         "Available Commands:\n"
         "  parts      - Manage parts in the database (list, add, search, validate)\n"
         "  scan       - Interactive scanning and assembly with real-time validation\n"
@@ -55,9 +50,14 @@ def main() -> None:
         "    └─ disconnection  Start interactive disconnection scanning\n"
         "    └─ connect        Full interactive part scanning and assembly operations\n"
         "    └─ disconnect     Full interactive part disconnection operations\n"
-        "  database   - Database management operations (clear, print)\n"
-        "    └─ clear       Safely clear database contents with confirmations\n"
-        "    └─ print       Display formatted database tables and records\n"
+        "  database   - Database management operations\n"
+        "    └─ clear            Safely clear database contents with confirmations\n"
+        "    └─ print            Display formatted database tables and records\n"
+        "    └─ load-coordinates Load grid coordinates from CSV file\n"
+        "    └─ load-snap-boards Load SNAP board configurations from CSV file\n"
+        "    └─ push             Upload databases to GitHub Releases (requires token)\n"
+        "    └─ pull             Download latest databases from GitHub Releases\n"
+        "    └─ status           Show database sync status and GitHub Release info\n"
         "  visualize  - Visualize assembly chains and connection statistics\n"
         "    └─ chains      Display ASCII visualization with duplicate detection\n"
         "  web        - Launch unified web application (scanner + visualization)\n"
@@ -80,14 +80,13 @@ def main() -> None:
     argcomplete.autocomplete(parser)
 
     commands = {
-        "parts": "Manage parts in the database - list, add, search, and validate parts",
-        "scan": "Interactive scanning and assembly with real-time validation",
-        "database": "Database management operations - clear and print databases",
-        "sync": "Database backup and synchronization with cloud storage (R2/S3)",
-        "visualize": "Visualize assembly chains and connection statistics with duplicate detection",
-        "web": "Launch unified web application - scanner and/or visualization (dev/production modes)",
-        "barcode": "Generate barcodes and printable pages for part identification",
-        "completion": "Show shell completion setup instructions for enhanced CLI experience",
+        "parts": "Manage parts - list, add, search, validate",
+        "scan": "Interactive scanning and assembly",
+        "database": "Database operations - clear, print, load data, GitHub sync",
+        "visualize": "Visualize assembly chains and connections",
+        "web": "Launch web application - scanner and/or visualization",
+        "barcode": "Generate barcodes and printable pages",
+        "completion": "Shell completion setup instructions",
     }
 
     # Check if a command with help is requested before full parsing
@@ -108,8 +107,6 @@ def main() -> None:
             cmd_web()
         elif command == "barcode":
             cmd_barcode()
-        elif command == "sync":
-            cmd_sync()
         elif command == "completion":
             show_completion_help()
         else:
@@ -133,8 +130,6 @@ def main() -> None:
             cmd_scan()
         elif command == "database":
             cmd_database()
-        elif command == "sync":
-            cmd_sync()
         elif command == "visualize":
             cmd_visualize()
         elif command == "web":
@@ -166,8 +161,6 @@ def main() -> None:
         cmd_scan()
     elif command == "database":
         cmd_database()
-    elif command == "sync":
-        cmd_sync()
     elif command == "visualize":
         cmd_visualize()
     elif command == "web":

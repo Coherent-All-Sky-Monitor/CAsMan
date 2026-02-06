@@ -18,8 +18,6 @@ from .antenna_positions import (
     remove_antenna_position,
     strip_polarization,
 )
-from .quota import QuotaTracker, QuotaExceededError
-from .sync import DatabaseSyncManager, SyncConfig, ScanTracker
 
 # Export all public functions
 __all__ = [
@@ -40,10 +38,4 @@ __all__ = [
     "get_all_antenna_positions",
     "remove_antenna_position",
     "strip_polarization",
-    # Backup and sync
-    "DatabaseSyncManager",
-    "SyncConfig",
-    "ScanTracker",
-    "QuotaTracker",
-    "QuotaExceededError",
 ]

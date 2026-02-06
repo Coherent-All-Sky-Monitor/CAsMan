@@ -462,9 +462,9 @@ class DocumentationGenerator:
 
                 output_file = self.docs_path / f"{package_name}.md"
                 self._write_docs(output_file, docs)
-                logger.info(f"✓ Generated {package_name}.md")
+                logger.info(f"[OK] Generated {package_name}.md")
             else:
-                logger.warning(f"✗ Module {package_name}.py not found")
+                logger.warning(f"[ERROR] Module {package_name}.py not found")
             return
 
         # It's a package directory
@@ -487,7 +487,7 @@ class DocumentationGenerator:
 
         output_file = self.docs_path / f"{package_name}.md"
         self._write_docs(output_file, docs)
-        logger.info(f"✓ Generated {package_name}.md (package)")
+        logger.info(f"[OK] Generated {package_name}.md (package)")
 
     def _generate_package_overview(
         self, package_name: str, modules: List[ModuleInfo]
@@ -603,7 +603,7 @@ class DocumentationGenerator:
 
         output_file = self.docs_path / "api_reference.md"
         self._write_docs(output_file, "\n".join(lines))
-        logger.info("✓ Generated api_reference.md")
+        logger.info("[OK] Generated api_reference.md")
 
     def _generate_cli_docs(self) -> None:
         """Generate CLI documentation."""
@@ -668,7 +668,7 @@ class DocumentationGenerator:
 
         output_file = self.docs_path / "cli.md"
         self._write_docs(output_file, "\n".join(lines))
-        logger.info("✓ Generated cli.md")
+        logger.info("[OK] Generated cli.md")
 
     def _write_docs(self, output_file: Path, content: str) -> None:
         """Write documentation content to a file."""

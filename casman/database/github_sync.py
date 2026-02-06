@@ -82,19 +82,51 @@ class GitHubSyncManager:
         if local_db_dir:
             self.local_db_dir = Path(local_db_dir)
         else:
-            # Use XDG standard location: ~/.local/share/casman/databases/
-            xdg_data_home = os.environ.get("XDG_DATA_HOME")
-            if xdg_data_home:
-                base_dir = Path(xdg_data_home)
+            # Prefer project database directory when running in full project environment
+            project_db_dir = self._detect_project_db_dir()
+            if project_db_dir is not None:
+                self.local_db_dir = project_db_dir
             else:
-                base_dir = Path.home() / ".local" / "share"
-            self.local_db_dir = base_dir / "casman" / "databases"
+                # Fallback to XDG standard location: ~/.local/share/casman/databases/
+                xdg_data_home = os.environ.get("XDG_DATA_HOME")
+                if xdg_data_home:
+                    base_dir = Path(xdg_data_home)
+                else:
+                    base_dir = Path.home() / ".local" / "share"
+                self.local_db_dir = base_dir / "casman" / "databases"
 
         self.local_db_dir.mkdir(parents=True, exist_ok=True)
 
         # Track last sync check
         self.last_check_file = self.local_db_dir / ".last_sync_check"
         self.metadata_file = self.local_db_dir / ".sync_metadata.json"
+
+    def _detect_project_db_dir(self) -> Optional[Path]:
+        """
+        Detect the project's database directory by scanning upward for a repository root
+        that contains both 'pyproject.toml' and a 'database' folder.
+
+        Returns:
+            Path to project database directory if found, else None.
+        """
+        try:
+            current = Path(__file__).resolve()
+            for parent in [current.parent] + list(current.parents):
+                # Go up to possible repo root (two levels above casman/database)
+                # and check for pyproject.toml and database directory
+                # We consider both parent and its parents during the walk
+                repo_root = parent
+                pyproject = repo_root / "pyproject.toml"
+                database_dir = repo_root / "database"
+                if pyproject.exists() and database_dir.exists() and database_dir.is_dir():
+                    return database_dir
+            # Also check CWD fallback
+            cwd_db = Path(os.getcwd()) / "database"
+            if (Path(os.getcwd()) / "pyproject.toml").exists() and cwd_db.exists():
+                return cwd_db
+        except Exception:
+            pass
+        return None
 
     def _get_headers(self, include_auth: bool = False) -> Dict[str, str]:
         """Get HTTP headers for GitHub API requests."""
@@ -242,6 +274,16 @@ class GitHubSyncManager:
                         tmp_path.unlink()
                         success = False
                         continue
+
+                    # Backup existing local database before overwrite
+                    try:
+                        if local_path.exists():
+                            ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+                            backup_path = local_path.with_name(f"{local_path.name}.{ts}.bak")
+                            shutil.copy2(str(local_path), str(backup_path))
+                            logger.info(f"Backup created: {backup_path}")
+                    except Exception as be:
+                        logger.warning(f"Failed to create backup for {local_path.name}: {be}")
 
                     # Move to final location
                     shutil.move(str(tmp_path), str(local_path))

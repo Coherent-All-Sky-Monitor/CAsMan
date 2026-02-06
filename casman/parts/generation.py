@@ -115,19 +115,4 @@ def generate_part_numbers(
     conn.commit()
     conn.close()
     
-    # Backup database after parts generation (zero data loss guarantee)
-    try:
-        from casman.database.sync import DatabaseSyncManager
-        sync_manager = DatabaseSyncManager()
-        if sync_manager.config.enabled:
-            logger.info(f"Backing up database after generating {count} parts...")
-            sync_manager.backup_database(
-                db_path, 
-                "parts.db", 
-                operation=f"Generated {count} {part_type} P{polarization} parts",
-                quiet=False
-            )
-    except Exception as e:
-        logger.warning(f"Database backup failed (parts will still be saved locally): {e}")
-    
     return new_part_numbers

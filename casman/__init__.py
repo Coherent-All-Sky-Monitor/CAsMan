@@ -16,11 +16,10 @@ logger = logging.getLogger(__name__)
 
 def _auto_sync_on_install():
     """
-    Auto-sync databases on package install/import if configured.
+    Auto-sync databases from GitHub Releases on package install/import if configured.
     
     This runs once when the package is first imported to sync databases
-    from remote storage. Fails gracefully if sync is not configured or
-    offline.
+    from GitHub Releases. Fails gracefully if sync is not configured or offline.
     """
     # Check if this is the first import (use marker file)
     import tempfile
@@ -31,31 +30,24 @@ def _auto_sync_on_install():
         return
     
     try:
-        from casman.database.sync import DatabaseSyncManager, SyncConfig
-        from casman.database.connection import get_database_path
+        from casman.database.github_sync import get_github_sync_manager
+        from casman.config import get_config
         
-        config = SyncConfig.from_config()
-        
-        # Only auto-sync if explicitly enabled and configured
-        if not config.enabled or not config.auto_sync_on_import:
+        # Check if auto-sync enabled
+        auto_sync = get_config("database.sync.auto_sync_on_import")
+        if not auto_sync:
             return
         
-        sync_manager = DatabaseSyncManager(config)
-        
-        # Check if backend is available
-        if sync_manager.backend is None:
-            logger.debug("Database sync backend not available, skipping auto-sync")
+        sync_manager = get_github_sync_manager()
+        if sync_manager is None:
+            logger.debug("GitHub sync not configured, skipping auto-sync")
             return
         
-        # Try to sync both databases
-        for db_name in ["parts.db", "assembled_casm.db"]:
-            try:
-                db_path = get_database_path(db_name)
-                if sync_manager.check_needs_sync(db_path, db_name):
-                    logger.info(f"Auto-syncing {db_name} on package import...")
-                    sync_manager.sync_from_remote(db_path, db_name, quiet=True)
-            except Exception as e:
-                logger.debug(f"Could not auto-sync {db_name}: {e}")
+        # Get latest release and download databases
+        latest_release = sync_manager.get_latest_release()
+        if latest_release:
+            logger.info(f"Auto-syncing databases from GitHub Releases on package import...")
+            sync_manager.download_databases(snapshot=latest_release)
         
         # Mark as synced for this session
         with open(marker_file, 'w') as f:

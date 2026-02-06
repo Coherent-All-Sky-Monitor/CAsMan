@@ -11,15 +11,15 @@ import csv
 import math
 from datetime import datetime
 
-# Reference point (CC000E01)
-REF_LAT = 37.234167
-REF_LON = -118.283333
-REF_ELEV = 1206.84
+# Reference point (CC000E01) 37.234286, -118.283416
+REF_LAT = 37.234286
+REF_LON = -118.283416
+REF_ELEV = 1183.8092
 REF_ROW = 0  # Center row
 REF_COL = 1  # East column 1
 
 # Distances in meters
-NS_DIST = 0.50  # 50cm between rows (N-S)
+NS_DIST = 0.50088  # ~50.cm between rows (N-S)
 
 # East-West distances (alternating pattern)
 # E0→E1: 38cm, E1→E2: 44.5cm, E2→E3: 38cm, E3→E4: 44.5cm, E4→E5: 38cm
@@ -129,8 +129,8 @@ def generate_grid_positions(output_file='database/grid_positions.csv'):
             
             positions.append({
                 'grid_code': grid_code,
-                'latitude': round(lat, 8),
-                'longitude': round(lon, 8),
+                'latitude': f'{lat:.9f}',
+                'longitude': f'{lon:.9f}',
                 'height': round(height, 2),
                 'coordinate_system': 'WGS84',
                 'notes': f'Generated from CC000E01 reference on {update_date}'
@@ -155,8 +155,8 @@ def generate_grid_positions(output_file='database/grid_positions.csv'):
     for grid_code in samples:
         pos = next((p for p in positions if p['grid_code'] == grid_code), None)
         if pos:
-            print(f"  {grid_code}: LAT {pos['latitude']:.8f}°, "
-                  f"LON {pos['longitude']:.8f}°, ELEV {pos['height']:.2f}m")
+            print(f"  {grid_code}: LAT {pos['latitude']}°, "
+                f"LON {pos['longitude']}°, ELEV {pos['height']:.2f}m")
 
 
 if __name__ == '__main__':

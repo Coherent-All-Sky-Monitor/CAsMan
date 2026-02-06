@@ -19,25 +19,6 @@ Complete guide to the antenna positioning module for array management, baseline 
 
 The `casman.antenna` module provides lightweight antenna array management with minimal dependencies, perfect for data analysis, baseline computation, and interferometry applications.
 
-### Features
-
-- **Antenna position loading** from CAsMan database
-- **Multi-array support** (core array, outriggers, custom arrays)
-- **Grid position parsing** with validation (1-based indexing)
-- **Kernel index mapping** for correlator processing (0-255)
-- **Geographic coordinates** (latitude, longitude, height)
-- **SNAP port mappings** for polarizations
-- **Baseline calculations** (geodetic and grid-based)
-- **Minimal dependencies** (PyYAML, NumPy optional)
-
-### Use Cases
-
-- Data analysis scripts
-- Baseline computation pipelines
-- UV coverage calculations
-- Interferometry applications
-- Remote/HPC environments without GUI dependencies
-
 ---
 
 ## Installation
@@ -58,7 +39,7 @@ cd CAsMan
 pip install -e ".[antenna]"
 ```
 
-**Dependencies:** PyYAML only (~5 MB)
+**Dependencies:** PyYAML, numpy, requests, matplotlib (~15 MB)
 
 ### Option 2: Full CAsMan Installation
 
@@ -104,11 +85,13 @@ if ant:
 
 ### Geographic Coordinates
 
+Coordinates are stored in decimal degrees with up to 9 decimal places (WGS84). The generated CSV from [scripts/generate_grid_coordinates.py](scripts/generate_grid_coordinates.py) writes [database/grid_positions.csv](database/grid_positions.csv) with fixed 9-decimal precision.
+
 ```python
 # Check if antenna has coordinates
 if ant.has_coordinates():
-    print(f"Lat: {ant.latitude:.6f}°")
-    print(f"Lon: {ant.longitude:.6f}°")
+  print(f"Lat: {ant.latitude:.9f}°")
+  print(f"Lon: {ant.longitude:.9f}°")
     print(f"Height: {ant.height:.2f}m")
     print(f"System: {ant.coordinate_system}")
 
@@ -183,11 +166,7 @@ if result['success']:
     array = AntennaArray.from_database('database/parts.db')
     print(f"Loaded {len(array)} antennas")
 
-# Option 2: Override with custom public URL
-PUBLIC_URL = 'https://pub-xxxxx.r2.dev/backups/parts.db/latest_parts.db'
-result = sync_database('parts.db', public_url=PUBLIC_URL)
-
-# Option 3: Download both databases for complete data
+# Option 2: Download both databases for complete data
 sync_database('parts.db')              # Antenna positions
 sync_database('assembled_casm.db')     # Assembly chains (for SNAP ports)
 ```
@@ -204,13 +183,15 @@ The sync system intelligently handles updates:
 **Configuration** (in `config.yaml`):
 
 ```yaml
-r2:
-  public_urls:
-    parts_db: "https://pub-xxxxx.r2.dev/backups/parts.db/latest_parts.db"
-    assembled_db: "https://pub-xxxxx.r2.dev/backups/assembled_casm.db/latest_assembled_casm.db"
+database:
+  sync:
+    enabled: true
+    backend: github
+    github_owner: Coherent-All-Sky-Monitor
+    github_repo: CAsMan
 ```
 
-**Note:** Public URLs require no credentials and are pre-configured by maintainers.
+**Note:** GitHub Releases provide public download access with no credentials required.
 
 ---
 
@@ -301,7 +282,7 @@ Download/sync database from cloud storage.
 - `synced` (bool): Whether database was updated
 - `message` (str): Status message
 
-**Priority:** explicit public_url → config.yaml public_url → R2 with credentials
+**Priority:** explicit public_url → config.yaml GitHub settings → auto-discovery
 
 ### AntennaArray Class
 
@@ -410,7 +391,7 @@ Convert kernel index to grid coordinate.
 
 **Returns:** str (grid code) or None if invalid
 
-**`get_antenna_kernel_idx(array_name='core', db_dir=None)`** → `KernelIndexArray`
+**`get_array_index_map(array_name='core', db_dir=None)`** → `KernelIndexArray`
 
 Get complete kernel index mapping with antenna data.
 
@@ -419,6 +400,8 @@ Get complete kernel index mapping with antenna data.
 - `grid_codes`: str array
 - `antenna_numbers`: str array
 - `snap_ports`: tuple array (chassis, slot, port)
+- `snap_board_info`: dict array with SNAP board configuration
+- `coordinates`: 3D float array [latitude, longitude, height]
 
 **Methods:**
 - `get_by_kernel_index(kernel_idx)`: Query by kernel index
@@ -440,10 +423,10 @@ print(f"Loaded {len(array)} antennas")
 # Method 2: Explicit sync then load
 result = sync_database('parts.db')
 if result['success']:
-    print(f"✓ {result['message']}")
+    print(f"Success: {result['message']}")
     array = AntennaArray.from_database('database/parts.db')
 else:
-    print(f"✗ Download failed: {result['message']}")
+    print(f"Failed: {result['message']}")
 
 # Method 3: Download both databases for complete functionality
 sync_database('parts.db')              # Antenna positions
@@ -507,11 +490,11 @@ print(f"Max: {baseline_matrix.max():.2f}m")
 ### Example 4: Kernel Index Mapping
 
 ```python
-from casman.antenna import get_antenna_kernel_idx
+from casman.antenna import get_array_index_map
 import numpy as np
 
 # Get complete mapping with antenna assignments
-kernel_data = get_antenna_kernel_idx()
+kernel_data = get_array_index_map()
 
 print(f"Array shape: {kernel_data.shape}")  # (43, 6)
 print(f"Mapped positions: {np.sum(kernel_data.kernel_indices >= 0)}")  # 256
@@ -621,8 +604,8 @@ casman database load-coordinates --csv grid_positions.csv
 CSV format:
 ```csv
 grid_code,latitude,longitude,height,coordinate_system,notes
-CN021E00,37.871899,-122.258477,10.5,WGS84,Survey point 1
-CN021E01,37.871912,-122.258321,10.6,WGS84,Survey point 2
+CN021E01,37.871899,-122.258477,10.5,WGS84,Survey point 1
+CN021E02,37.871912,-122.258321,10.6,WGS84,Survey point 2
 ```
 
 ---
@@ -655,11 +638,13 @@ grid:
     east_columns: 4
     allow_expansion: false
 
-# Database sync (public URLs - no credentials required)
-r2:
-  public_urls:
-    parts_db: "https://pub-xxxxx.r2.dev/backups/parts.db/latest_parts.db"
-    assembled_db: "https://pub-xxxxx.r2.dev/backups/assembled_casm.db/latest_assembled_casm.db"
+# Database sync via GitHub Releases (no credentials required for download)
+database:
+  sync:
+    enabled: true
+    backend: github
+    github_owner: Coherent-All-Sky-Monitor
+    github_repo: CAsMan
 ```
 
 **Note:** Configuration file should be in project root or discoverable via `CASMAN_CONFIG` environment variable.
@@ -719,14 +704,14 @@ r2:
 
 The CAsMan antenna module provides:
 
-✅ **Lightweight** - Minimal dependencies (PyYAML only)  
-✅ **Database Sync** - Auto-download with public URLs (no credentials)  
-✅ **Grid Positions** - Parse and validate antenna positions  
-✅ **Kernel Mapping** - Convert between grid codes and kernel indices  
-✅ **Baselines** - Geodetic (Haversine) and grid-based calculations  
-✅ **Geographic Coordinates** - Full coordinate support with multiple systems  
-✅ **SNAP Ports** - Trace assembly chains for port assignments  
-✅ **Multi-Array** - Support for core, outriggers, and custom arrays  
+- **Lightweight** - Minimal dependencies (PyYAML only)  
+- **Database Sync** - Auto-download with public URLs (no credentials)  
+- **Grid Positions** - Parse and validate antenna positions  
+- **Kernel Mapping** - Convert between grid codes and kernel indices  
+- **Baselines** - Geodetic (Haversine) and grid-based calculations  
+- **Geographic Coordinates** - Full coordinate support with multiple systems  
+- **SNAP Ports** - Trace assembly chains for port assignments  
+- **Multi-Array** - Support for core, outriggers, and custom arrays  
 
 ### Quick Reference
 

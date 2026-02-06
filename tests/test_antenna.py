@@ -32,7 +32,7 @@ from casman.antenna.grid import (
 )
 from casman.antenna.kernel_index import (
     KernelIndexArray,
-    get_antenna_kernel_idx,
+    get_array_index_map,
     grid_to_kernel_index,
     kernel_index_to_grid,
 )
@@ -131,15 +131,20 @@ def temp_db_with_chains():
             ("BAC00005P1", "BACBOARD", 1, "SNAP4K100", "SNAP", 1, "connected"),
         ]
         
+        from datetime import datetime, timezone
+        scan_time = datetime.now(timezone.utc).isoformat()
+        
         for parts in test_chains:
             cursor.execute(
                 """
                 INSERT INTO assembly 
-                (part_number, part_type, polarization, connected_to, 
-                 connected_to_type, connected_polarization, connection_status)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                (part_number, part_type, polarization, scan_time,
+                 connected_to, connected_to_type, connected_polarization, 
+                 connected_scan_time, connection_status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                parts
+                (parts[0], parts[1], parts[2], scan_time, 
+                 parts[3], parts[4], parts[5], scan_time, parts[6])
             )
         
         conn.commit()
@@ -652,18 +657,18 @@ class TestRoundTripKernelConversion:
             assert back_to_idx == kernel_idx
 
 
-class TestGetAntennaKernelIdx:
-    """Tests for get_antenna_kernel_idx function."""
+class TestGetArrayIndexMap:
+    """Tests for get_array_index_map function."""
 
     def test_array_shape(self):
         """Test returned array has correct shape."""
-        kernel_data = get_antenna_kernel_idx()
+        kernel_data = get_array_index_map()
         assert kernel_data.shape == (43, 6)
         assert kernel_data.kernel_indices.shape == (43, 6)
 
     def test_kernel_indices_range(self):
         """Test kernel indices are in valid range or -1."""
-        kernel_data = get_antenna_kernel_idx()
+        kernel_data = get_array_index_map()
         
         valid_mask = (kernel_data.kernel_indices >= 0) & (kernel_data.kernel_indices <= 255)
         unmapped_mask = kernel_data.kernel_indices == -1
@@ -672,13 +677,13 @@ class TestGetAntennaKernelIdx:
 
     def test_unmapped_positions(self):
         """Test that CS021E05 and CS021E06 are unmapped."""
-        kernel_data = get_antenna_kernel_idx()
+        kernel_data = get_array_index_map()
         assert kernel_data.kernel_indices[42, 4] == -1
         assert kernel_data.kernel_indices[42, 5] == -1
 
     def test_unique_kernel_indices(self):
         """Test all kernel indices are unique (no duplicates)."""
-        kernel_data = get_antenna_kernel_idx()
+        kernel_data = get_array_index_map()
         
         mapped_indices = kernel_data.kernel_indices[kernel_data.kernel_indices >= 0]
         unique_indices = np.unique(mapped_indices)
@@ -692,7 +697,7 @@ class TestKernelIndexArray:
 
     def test_get_by_kernel_index_valid(self):
         """Test getting information by valid kernel index."""
-        kernel_data = get_antenna_kernel_idx()
+        kernel_data = get_array_index_map()
         
         info = kernel_data.get_by_kernel_index(0)
         assert info is not None
@@ -700,13 +705,13 @@ class TestKernelIndexArray:
 
     def test_get_by_kernel_index_invalid(self):
         """Test getting information for invalid kernel index."""
-        kernel_data = get_antenna_kernel_idx()
+        kernel_data = get_array_index_map()
         assert kernel_data.get_by_kernel_index(256) is None
         assert kernel_data.get_by_kernel_index(-1) is None
 
     def test_get_by_grid_code_valid(self):
         """Test getting information by valid grid code."""
-        kernel_data = get_antenna_kernel_idx()
+        kernel_data = get_array_index_map()
         
         info = kernel_data.get_by_grid_code('CN021E01')
         assert info is not None
@@ -714,7 +719,7 @@ class TestKernelIndexArray:
 
     def test_get_by_grid_code_case_insensitive(self):
         """Test grid code lookup is case insensitive."""
-        kernel_data = get_antenna_kernel_idx()
+        kernel_data = get_array_index_map()
         
         info_upper = kernel_data.get_by_grid_code('CN021E01')
         info_lower = kernel_data.get_by_grid_code('cn021e01')

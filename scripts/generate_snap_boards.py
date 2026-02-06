@@ -83,7 +83,7 @@ def generate_snap_boards():
                 'notes': f'Generated on {update_date}'
             })
     
-    print(f"✓ Generated SNAP board configuration: {output_path}")
+    print(f"[OK] Generated SNAP board configuration: {output_path}")
     print(f"  Total boards: {len(boards)}")
     print("\nSample entries:")
     print(f"  Chassis 1, Slot A: SN={boards[0]['sn']}, FENG_ID={boards[0]['feng_id']}, MAC={boards[0]['mac']}, IP={boards[0]['ip']}")

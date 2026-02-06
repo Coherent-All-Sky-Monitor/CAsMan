@@ -218,7 +218,7 @@ def main() -> None:
                 )
                 continue
 
-        print(f"✓ Valid first part: {part_number}")
+        print(f"[OK] Valid first part: {part_number}")
 
         # Step 2: Check for existing connections with latest status
         try:
@@ -248,7 +248,7 @@ def main() -> None:
                 connections = cursor.fetchall()
 
             if not connections:
-                print(f"\n✗ Error: Part '{part_number}' is not connected to anything.")
+                print(f"\n[ERROR] Error: Part '{part_number}' is not connected to anything.")
                 print("Cannot disconnect a part that has no connections.")
                 print("Please scan a different part or exit.")
                 continue
@@ -312,7 +312,7 @@ def main() -> None:
                     print(f"Error: Could not retrieve details for {second_part_number}")
                     continue
 
-            print(f"✓ Selected connection: {part_number} -X-> {second_part_number}")
+            print(f"[OK] Selected connection: {part_number} -X-> {second_part_number}")
 
         except (sqlite3.Error, OSError) as e:
             print(f"Error checking connections: {e}")
@@ -335,11 +335,11 @@ def main() -> None:
 
         if success:
             print(
-                f"\n✓ Successfully recorded disconnection: {part_number} -X-> {second_part_number}"
+                f"\n[OK] Successfully recorded disconnection: {part_number} -X-> {second_part_number}"
             )
         else:
             print(
-                f"\n✗ Error recording disconnection: {part_number} -X-> {second_part_number}"
+                f"\n[ERROR] Error recording disconnection: {part_number} -X-> {second_part_number}"
             )
 
         # Ask if user wants to continue

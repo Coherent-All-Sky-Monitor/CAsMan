@@ -12,66 +12,17 @@ PART_TYPES:
 CASMAN_ASSEMBLED_DB: database/assembled_casm.db
 CASMAN_PARTS_DB: database/parts.db
 
-# Database backup and synchronization
+# Database synchronization via GitHub Releases
 database:
   sync:
-    # Enable/disable database synchronization
-    enabled: true
-    
-    # Backend: 'github' (GitHub Releases), 'r2' (Cloudflare R2 - deprecated), or 'disabled'
-    backend: github
-    
     # GitHub Releases configuration
     github_owner: Coherent-All-Sky-Monitor
     github_repo: CAsMan
     # github_token: ghp_xxxxx  # Optional: Set via GITHUB_TOKEN env var (required for server-side uploads)
     
-    # Auto-sync on package import (antenna module) - DISABLED by default for safety
-    # Enable this for pip-installed casman-antenna users who need auto-updates
-    auto_sync_on_import: false
-    
-    # Client-side sync settings (for pip-installed casman-antenna users)
-    client:
-      # Check for updates on every import (recommended)
-      check_on_import: true
-      # Fallback to stale local copy if GitHub API fails
-      use_stale_on_failure: true
-    
-    # Server-side sync settings (for full CAsMan installation)
-    server:
-      # Auto-push databases to GitHub Releases after changes
-      auto_push_enabled: true
-      # Push after N scans (connect/disconnect/position operations)
-      push_after_scans: 30
-      # OR push after N hours (whichever comes first)
-      push_after_hours: 1.0
-      # Number of old releases to keep (cleanup old snapshots)
-      keep_releases: 10
-    
-    # Backup triggers (legacy settings for backward compatibility)
-    # A "scan" includes: connecting/disconnecting parts, assigning/removing antenna positions
-    backup_on_scan_count: 30      # Backup every N operations
-    backup_on_hours: 1.0           # Backup every N hours (if operations occurred)
-    
-    # Number of backup versions to keep
-    keep_versions: 10
-
-# Cloudflare R2 configuration
-# Set via environment variables or uncomment and set here:
-r2:
-  # account_id: your-account-id
-  # access_key_id: your-access-key-id
-  # secret_access_key: your-secret-access-key
-  bucket_name: casman-databases
-  # endpoint: https://your-account-id.r2.cloudflarestorage.com
-  region: auto
-  
-  # Public URLs for credential-free database downloads
-  # Users can download latest databases without R2 credentials
-  # Set these to your R2 public bucket URLs (after enabling public access)
-  public_urls:
-    parts_db: "https://pub-xxxxx.r2.dev/backups/parts.db/latest_parts.db"
-    assembled_db: "https://pub-xxxxx.r2.dev/backups/assembled_casm.db/latest_assembled_casm.db"
+    # Auto-sync databases on package import (antenna module)
+    # Downloads latest databases from GitHub Releases when casman.antenna is imported
+    auto_sync_on_import: true
 
 # Barcode generation settings
 barcode:
@@ -164,13 +115,13 @@ grid:
       # CS021E01 -> 252, CS021E02 -> 253, ..., CS021E06 -> 257 (but max is 255)
       # So CS021E05 and CS021E06 are NOT mapped (exceed max_index)
   
-  # Example: Outrigger array configuration (uncomment to enable)
-  # outriggers:
-  #   array_id: "O"        # Leading letter for outrigger positions
-  #   north_rows: 10       # Number of rows north of center (N001..N010)
-  #   south_rows: 10       # Number of rows south of center (S001..S010)
-  #   east_columns: 4      # Number of east columns (E01..E04)
-  #   allow_expansion: false
+  # Outrigger array configuration
+#  outriggers:
+#    array_id: "O"        # Leading letter for outrigger positions
+#    north_rows: 10       # Number of rows north of center (N001..N010)
+#    south_rows: 10       # Number of rows south of center (S001..S010)
+#    east_columns: 4      # Number of east columns (E01..E04)
+#    allow_expansion: false
 
 
 # Logging configuration

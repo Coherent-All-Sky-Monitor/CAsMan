@@ -362,22 +362,39 @@ def visualize_index():
 @visualize_bp.route("/grid")
 def antenna_grid():
     """Display antenna grid position visualization."""
-    from casman.antenna.grid import load_core_layout, format_grid_code
+    from casman.antenna.grid import load_core_layout, load_array_layout, format_grid_code, get_array_name_for_id
+    from casman.config import get_config
     from casman.database.antenna_positions import get_all_antenna_positions
     from casman.antenna.chain import get_snap_ports_for_antenna, format_snap_port
     from casman.antenna.kernel_index import grid_to_kernel_index
 
-    # Load grid configuration
-    array_id, north_rows, south_rows, east_columns, allow_expansion = load_core_layout()
+    # Get array selection from query parameter (default to core)
+    array_name = request.args.get("array", "core").strip().lower()
+    
+    # Load all available arrays
+    grid_config = get_config("grid", {})
+    available_arrays = {name: data for name, data in grid_config.items() 
+                       if isinstance(data, dict) and "array_id" in data}
+    
+    # Validate requested array, default to core if invalid
+    if array_name not in available_arrays:
+        array_name = "core"
+    
+    # Load selected array configuration
+    try:
+        array_id, north_rows, south_rows, east_columns, allow_expansion = load_array_layout(array_name)
+    except KeyError:
+        array_id, north_rows, south_rows, east_columns, allow_expansion = load_core_layout()
+        array_name = "core"
 
-    # Get all antenna positions
+    # Get all antenna positions for this array
     positions = get_all_antenna_positions(array_id=array_id)
 
-    # Build grid data structure (43 rows × 6 columns)
-    # Row order: N21, N20, ..., N01, C00, S01, ..., S20, S21
+    # Build grid data structure
+    # Row order: N{max}, N{max-1}, ..., N01, C000, S01, ..., S{max}
     grid_data = []
 
-    # North rows (reversed so N21 is at top)
+    # North rows (reversed so highest row is at top)
     for row_offset in range(north_rows, 0, -1):
         row = {"label": f"N{row_offset:03d}", "cells": []}
         for col in range(1, east_columns + 1):  # 1-based column indexing
@@ -484,6 +501,8 @@ def antenna_grid():
         template,
         grid_data=grid_data,
         array_id=array_id,
+        array_name=array_name,
+        available_arrays=available_arrays,
         north_rows=north_rows,
         south_rows=south_rows,
         east_columns=east_columns,
@@ -726,7 +745,7 @@ def load_grid_positions():
                 'error': error_msg
             }), 400
         
-        message = f"✓ Loaded: {result['loaded']} position(s), "
+        message = f"[OK] Loaded: {result['loaded']} position(s), "
         message += f"Skipped: {result['skipped']}"
         
         return jsonify({
@@ -750,7 +769,7 @@ def load_snap_boards():
         
         result = load_snap_boards_from_csv()
         
-        message = f"✓ Loaded: {result['loaded']} new board(s), "
+        message = f"[OK] Loaded: {result['loaded']} new board(s), "
         message += f"Updated: {result['updated']}, "
         message += f"Skipped: {result['skipped']}"
         
@@ -804,7 +823,7 @@ def sync_to_github():
         )
         
         if tag_name:
-            message = f"✓ Successfully created release: {tag_name}"
+            message = f"[OK] Successfully created release: {tag_name}"
             return jsonify({
                 'success': True,
                 'message': message,

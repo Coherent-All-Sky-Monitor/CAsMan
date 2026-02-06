@@ -28,11 +28,11 @@ make docs
 
 ## Important Notes
 
-⚠️ **Do not manually edit these files** - they will be overwritten when the generator runs.
+**WARNING: Do not manually edit these files** - they will be overwritten when the generator runs.
 
-📝 For manually maintained documentation, see the parent `docs/` directory.
+For manually maintained documentation, see the parent `docs/` directory.
 
-🔄 These files reflect the current state of the source code and may be updated frequently during development.
+These files reflect the current state of the source code and may be updated frequently during development.
 
 ## vs Manual Documentation
 

@@ -1284,7 +1284,7 @@ class TestCmdDatabaseLoadCoordinates:
         cursor.execute(
             """
             INSERT INTO antenna_positions (antenna_number, grid_code)
-            VALUES ('ANT00001', 'CN001E00')
+            VALUES ('ANT00001', 'CN001E01')
         """
         )
         conn.commit()
@@ -1293,7 +1293,7 @@ class TestCmdDatabaseLoadCoordinates:
         csv_path = tmp_path / "coords.csv"
         csv_path.write_text(
             "grid_code,latitude,longitude,height,coordinate_system,notes\n"
-            "CN001E00,37.87,122.25,10.5,WGS84,Test position\n"
+            "CN001E01,37.87,122.25,10.5,WGS84,Test position\n"
         )
 
         with patch(
@@ -1484,9 +1484,9 @@ class TestIntegrationDatabaseCommands:
         )
 
         test_positions = [
-            ("ANT00001", "CN001E00", "C", 1, 0),
-            ("ANT00002", "CN001E01", "C", 1, 1),
-            ("ANT00003", "CC000E00", "C", 0, 0),
+            ("ANT00001", "CN001E01", "C", 1, 1),
+            ("ANT00002", "CN001E02", "C", 1, 2),
+            ("ANT00003", "CC000E01", "C", 0, 1),
         ]
 
         for ant, grid, arr, row, col in test_positions:
@@ -1504,10 +1504,10 @@ class TestIntegrationDatabaseCommands:
 
         csv_path = tmp_path / "grid_positions.csv"
         csv_content = """grid_code,latitude,longitude,height,coordinate_system,notes
-CN001E00,37.871899,-122.258477,10.5,WGS84,North row 1 east 0
-CN001E01,37.871912,-122.258321,10.6,WGS84,North row 1 east 1
-CC000E00,37.871850,-122.258600,10.4,WGS84,Center row east 0
-"""
+    CN001E01,37.871899,-122.258477,10.5,WGS84,North row 1 east 1
+    CN001E02,37.871912,-122.258321,10.6,WGS84,North row 1 east 2
+    CC000E01,37.871850,-122.258600,10.4,WGS84,Center row east 1
+    """
         csv_path.write_text(csv_content)
 
         with patch(

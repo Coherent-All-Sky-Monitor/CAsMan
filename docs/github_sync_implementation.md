@@ -7,17 +7,20 @@ Implemented a complete GitHub Releases-based database synchronization system to 
 
 ## Architecture
 
-### Client Side (casman-antenna users)
+### Client Side (casman-antenna users - standalone install)
 1. **Auto-sync on import**: When `casman.antenna` is imported, databases are automatically downloaded from GitHub Releases
 2. **XDG standard location**: Databases stored in `~/.local/share/casman/databases/`
 3. **Graceful degradation**: Falls back to stale local copy if GitHub API fails
 4. **No authentication**: Public repo, no credentials needed for downloads
 
 ### Server Side (full CAsMan installation)
-1. **Web UI**: Admin panel with "Sync to GitHub" button
-2. **CLI commands**: `casman database push/pull/status`
-3. **Configurable auto-push**: After N scans (default: 30) or N hours (default: 1)
-4. **Requires GITHUB_TOKEN**: Personal access token with `repo` scope
+1. **Project directory downloads**: `casman database pull` downloads directly to `database/` folder
+2. **Automatic backups**: Creates timestamped `.bak` files before overwriting databases
+3. **Restore capability**: `casman database restore --latest` to restore from backups
+4. **Web UI**: Admin panel with "Sync to GitHub" button
+5. **CLI commands**: `casman database push/pull/status/restore`
+6. **Configurable auto-push**: After N scans (default: 30) or N hours (default: 1)
+7. **Requires GITHUB_TOKEN**: Personal access token with `repo` scope
 
 ## Files Created/Modified
 
@@ -124,11 +127,16 @@ casman database push
 # Push and cleanup old releases (keep 10 most recent)
 casman database push --cleanup 10
 
-# Download latest databases
+# Download latest databases (saves to project database/ directory with backups)
 casman database pull
 
 # Force re-download even if up-to-date
 casman database pull --force
+
+# Restore from latest timestamped backups
+casman database restore --latest              # Restore both databases
+casman database restore --latest --parts      # Restore only parts.db
+casman database restore --latest --assembled  # Restore only assembled_casm.db
 
 # Show sync status
 casman database status

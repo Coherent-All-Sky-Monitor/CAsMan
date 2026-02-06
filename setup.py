@@ -20,7 +20,7 @@ with open(os.path.join(here, "requirements.txt"), encoding="utf-8") as f:
 
 setup(
     name="casman",
-    version="0.2.0",
+    version="1.5.2",
     description="CASM Assembly Manager - \
         A collection of tools to manage and visualize CASM assembly",
     long_description=long_description,
@@ -39,20 +39,21 @@ setup(
     install_requires=requirements,
     extras_require={
         "dev": [
-            "pytest>=6.0",
-            "pytest-cov>=2.0",
-            "black>=21.0",
-            "flake8>=3.8",
-            "mypy>=0.812",
+            "pytest>=7.0",
+            "pytest-cov>=4.0",
+            "black>=23.0",
+            "pylint>=3.0",
+            "mypy>=1.0",
         ],
         "antenna": [
             # Minimal dependencies for antenna module only
-            # No Flask, Pillow, or heavy dependencies
+            "numpy>=1.20.0",
+            "matplotlib>=3.5.0",
         ],
     },
     entry_points={
         "console_scripts": [
-            "casman=casman.cli.main:main",
+            "casman=casman.cli:main",
         ],
     },
     python_requires=">=3.8",

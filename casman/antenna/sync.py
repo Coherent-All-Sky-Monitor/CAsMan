@@ -166,7 +166,7 @@ def force_sync() -> bool:
 
         sync_manager = get_github_sync_manager()
         if sync_manager is None:
-            print("✗ Could not initialize GitHub sync manager")
+            print("Could not initialize GitHub sync manager")
             return False
 
         print("Checking database status...")
@@ -178,7 +178,7 @@ def force_sync() -> bool:
         latest_release = sync_manager.get_latest_release()
         
         if latest_release is None:
-            print("✗ Could not fetch latest release from GitHub")
+            print("Could not fetch latest release from GitHub")
             if has_local_dbs:
                 print("  Using local databases")
                 return True
@@ -190,7 +190,7 @@ def force_sync() -> bool:
         
         # Check if local is up-to-date
         if has_local_dbs and sync_manager._is_local_up_to_date(latest_release):
-            print("✓ Local databases are already up-to-date")
+            print("Local databases are already up-to-date")
             print("  No download needed")
             return True
         
@@ -203,15 +203,15 @@ def force_sync() -> bool:
         success = sync_manager.download_databases(snapshot=latest_release)
         
         if success:
-            print(f"✓ Database sync completed: {latest_release.release_name}")
+            print(f\"Database sync completed: {latest_release.release_name}\")
         else:
-            print("✗ Failed to download databases")
+            print(\"Failed to download databases\")
             if has_local_dbs:
-                print("  Using existing local databases")
+                print(\"  Using existing local databases\")
                 return True
         
         return success
 
     except Exception as e:
-        print(f"✗ Failed to sync databases: {e}")
+        print(f\"Failed to sync databases: {e}\")
         return False

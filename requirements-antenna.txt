@@ -1,5 +1,10 @@
 # Minimal requirements for casman.antenna module only
 # No web framework, visualization, or CLI dependencies
 
-# Only PyYAML for config loading (grid.py uses get_config)
-PyYAML>=5.4
+# Core dependencies
+PyYAML>=5.4        # Config loading (grid.py uses get_config)
+numpy>=1.20.0      # Required for kernel_index.py arrays
+requests>=2.28.0   # Required for database sync from GitHub Releases
+
+# Optional dependencies (uncomment if needed)
+matplotlib>=3.5.0  # Only required for KernelIndexArray.plot_positions()

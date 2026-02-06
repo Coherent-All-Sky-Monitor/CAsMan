@@ -6,10 +6,8 @@ Complete guide to CAsMan's database system, including schema, backup/sync, and m
 
 1. [Overview](#overview)
 2. [Database Schema](#database-schema)
-3. [Backup & Synchronization](#backup--synchronization)
-4. [R2 Storage Class Maintenance](#r2-storage-class-maintenance)
-5. [R2 Quota Enforcement](#r2-quota-enforcement)
-6. [Implementation Details](#implementation-details)
+3. [Database Synchronization](#database-synchronization)
+4. [Implementation Details](#implementation-details)
 
 ---
 
@@ -18,9 +16,8 @@ Complete guide to CAsMan's database system, including schema, backup/sync, and m
 CAsMan uses **SQLite** databases to manage parts inventory, assembly tracking, and antenna positions. The system includes:
 
 - **Two main databases**: `parts.db` and `assembled_casm.db`
-- **Cloud backup system**: Cloudflare R2 or AWS S3
-- **Automatic backups**: Triggered on critical operations
-- **Multi-user sync**: Version-controlled cloud storage
+- **GitHub-based sync**: Download database releases from GitHub
+- **Multi-user access**: Centralized database distribution via GitHub Releases
 - **Offline-first**: Works without internet connection
 
 ### Database Files
@@ -163,11 +160,11 @@ Format: `{array_id}{direction}{row:03d}E{col:02d}`
 - **Array ID**: `C`, `N`, or `S`
 - **Direction**: `N` (north/positive) or `S` (south/negative)
 - **Row**: 3-digit row offset (e.g., `002` for row +2, `021` for row -21)
-- **Column**: 2-digit column index (e.g., `00` for first column)
+- **Column**: 2-digit column index (e.g., `01` for first column)
 
 Examples:
 - `CN002E03` - Core array, North row +2, East column 3
-- `CS021E00` - Core array, South row -21, East column 0
+- `CS021E01` - Core array, South row -21, East column 1
 - `CC000E01` - Core array, Center row 0, East column 1
 
 ##### Common Queries
@@ -340,12 +337,14 @@ SELECT * FROM chain;
 
 CSV file for managing geographic coordinates of antenna grid positions.
 
+Coordinates are stored in decimal degrees with up to 9 decimal places (WGS84). The generator in [scripts/generate_grid_coordinates.py](scripts/generate_grid_coordinates.py) writes [database/grid_positions.csv](database/grid_positions.csv) using fixed 9-decimal precision.
+
 #### Format
 
 ```csv
 grid_code,latitude,longitude,height,coordinate_system,notes
-CN021E00,37.871899,-122.258477,10.5,WGS84,Survey point 1
-CN021E01,37.871912,-122.258321,10.6,WGS84,Survey point 2
+CN021E01,37.871899000,-122.258477000,10.5,WGS84,Survey point 1
+CN021E02,37.871912000,-122.258321000,10.6,WGS84,Survey point 2
 ```
 
 #### Usage
@@ -429,356 +428,178 @@ SNAP board information is displayed in all three web visualizations:
 
 ---
 
-## Backup & Synchronization
+## Database Synchronization
 
-CAsMan provides a robust cloud-based database backup and synchronization system designed for zero data loss and multi-user collaboration.
+CAsMan provides database synchronization via **GitHub Releases**, enabling multi-user access to centralized database files without requiring cloud storage credentials.
 
 ### Features
 
-- **Automatic Backups**: Triggered on part generation and assembly operations
-- **Versioned Storage**: Keep multiple backup versions with timestamps
-- **Cloud Storage**: Cloudflare R2 (recommended) or AWS S3
-- **Zero Data Loss**: Critical operations automatically backed up
-- **Multi-User Safe**: Timestamp-based versioning prevents conflicts
-- **Offline-First**: Graceful degradation when offline
+- **Public Access**: Download database releases from GitHub without authentication
+- **Version Control**: Tagged releases with semantic versioning
+- **Multi-User Distribution**: Centralized database files accessible to all users
+- **Offline-First**: Works without internet connection, sync when available
+- **Simple Setup**: No cloud credentials required for client downloads
+
+### Storage Locations
+
+**Full CAsMan installation:**
+- Downloads to project `database/` directory
+- Automatic timestamped backups before overwriting
+- Example: `database/assembled_casm.db.20260126-221500.bak`
+
+**Standalone antenna module (pip install):**
+- Downloads to XDG standard location: `~/.local/share/casman/databases/`
+- Automatic backups on overwrite
 
 ### Quick Start
 
-#### 1. Install Dependencies
+#### 1. Download Latest Database
 
 ```bash
-pip install boto3
+# Download latest database from GitHub
+casman database pull
+
+# Force re-download even if up-to-date
+casman database pull --force
 ```
 
-#### 2. Create Cloudflare R2 Bucket
+This downloads the latest database release from GitHub to your project `database/` directory (full install) or `~/.local/share/casman/databases/` (standalone antenna module). Creates automatic timestamped backups before overwriting existing files.
 
-1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → **R2 Object Storage**
-2. Click **Create bucket** → Name it `casman-databases`
-3. Go to **Manage R2 API Tokens** → **Create API Token**
-4. Set permissions: **Object Read & Write** for `casman-databases`
-5. Save the credentials
-
-#### 3. Configure Credentials
-
-Add to your `~/.zshrc` or `~/.bashrc`:
+#### 2. Restore from Backups (if needed)
 
 ```bash
-# CAsMan R2 Backup
-export R2_ACCOUNT_ID="your-account-id-here"
-export R2_ACCESS_KEY_ID="your-access-key-here"
-export R2_SECRET_ACCESS_KEY="your-secret-key-here"
+# Restore both databases from latest backups
+casman database restore --latest
+
+# Restore only parts.db
+casman database restore --latest --parts
+
+# Restore only assembled_casm.db
+casman database restore --latest --assembled
 ```
 
-Reload your shell:
+Backups are created automatically during pulls with names like `assembled_casm.db.20260126-221500.bak`.
+
+#### 3. Check Sync Status
 
 ```bash
-source ~/.zshrc
+casman database status
 ```
+
+Shows:
+- Current GitHub Release version
+- Local database status and sizes
+- Download location
+- Last sync check time
 
 #### 4. Verify Setup
 
-```bash
-casman sync status
+The `AntennaArray` class can automatically sync on initialization:
+
+```python
+from casman.antenna import AntennaArray
+
+# Automatically downloads latest database if needed
+array = AntennaArray.from_database(
+    'database/parts.db',
+    sync_first=True  # Downloads from GitHub if not present locally
+)
 ```
 
-Should show:
+**You're all set!** The database will be synced from GitHub Releases when needed. Automatic backups are created during each sync to protect your local data.
 
-```
-Backend Status:
-  ✓ R2 backend initialized
-```
+### Multi-User Workflow
 
-#### 5. Create First Backup
+#### For Database Administrators (Upload Access)
 
-```bash
-casman sync backup
-```
-
-**You're all set!** Backups will now happen automatically. Use `casman sync status` to check your configuration.
-
-### Automatic Backups
-
-Backups are triggered automatically:
-
-1. **After Part Generation**: Every time you generate parts
+1. **Upload Updated Database**:
    ```bash
-   casman parts add ANTENNA 10 1  # → Auto backup
+   casman database push
+   ```
+   - Requires GitHub authentication token
+   - Creates new GitHub Release with database files
+   - Tags release with timestamp
+
+2. **Verify Upload**:
+   ```bash
+   casman database status
    ```
 
-2. **After Assembly Operations**: Every 10 operations OR every 24 hours (whichever comes first)
-   - Connect/disconnect parts
-   - Assign/remove antenna positions
-   - Scanning operations
+#### For Field Users (Download Access)
 
-**Configuration** (`config.yaml`):
+1. **Download Latest Database**:
+   ```bash
+   casman database pull
+   ```
+   - No authentication required
+   - Downloads from public GitHub Release
+
+2. **Use in Scripts**:
+   ```python
+   from casman.antenna import AntennaArray
+   
+   # Sync and load database
+   array = AntennaArray.from_database(
+       'database/parts.db',
+       sync_first=True
+   )
+   ```
+
+### CLI Commands Reference
+
+| Command | Description | Authentication Required |
+|---------|-------------|-------------------------|
+| `casman database pull` | Download latest database from GitHub | No |
+| `casman database push` | Upload database to GitHub Releases | Yes (GitHub token) |
+| `casman database status` | Show sync status and GitHub Release info | No |
+
+### Configuration
+
+In `config.yaml`:
 
 ```yaml
 database:
   sync:
     enabled: true
-    backend: r2
-    keep_versions: 10
-    backup_on_scan_count: 10    # Backup every 10 operations
-    backup_on_hours: 24.0        # OR after 24 hours since last backup
+    backend: github
+  github:
+    repo: "username/CAsMan"
+    token_env: "GITHUB_TOKEN"  # Environment variable for upload token
 ```
 
-### Multi-User Workflow
+### GitHub Authentication (Upload Only)
 
-1. **Person A** generates parts:
+For database administrators who need to upload:
+
+1. **Create GitHub Personal Access Token**:
+   - Go to GitHub Settings → Developer settings → Personal access tokens
+   - Generate new token with `repo` scope
+
+2. **Set Environment Variable**:
    ```bash
-   casman parts add ANTENNA 50 1
-   # → Automatic backup to R2
+   export GITHUB_TOKEN="your-github-token"
    ```
 
-2. **Person B** (at different site) syncs:
+3. **Upload Database**:
    ```bash
-   casman sync sync
-   # → Downloads latest parts
+   casman database push
    ```
 
-3. **Person B** performs assembly work:
-   ```bash
-   casman scan connection
-   # → Automatic backup after 10 operations
-   ```
-
-4. **Person A** syncs:
-   ```bash
-   casman sync sync
-   # → Gets latest assembly data
-   ```
-
-### Restore from Backup
-
-```bash
-# 1. List available backups
-casman sync list
-
-# 2. Restore specific backup
-casman sync restore backups/parts.db/20241208_143022_parts.db
-```
-
-**Safety Features:**
-- Creates a safety backup of current database before restoring
-- Validates database integrity after download
-- Atomic operation (no partial restores)
-
-### CLI Commands Reference
-
-| Command | Description | When to Use |
-|---------|-------------|-------------|
-| `casman sync backup` | Manual backup of all databases | Before risky operations |
-| `casman sync backup --parts` | Backup only parts.db | Selective backup |
-| `casman sync backup --assembled` | Backup only assembled_casm.db | Selective backup |
-| `casman sync list` | List all available backups | Before restoring |
-| `casman sync restore <key>` | Restore from specific backup | After data loss |
-| `casman sync sync` | Download latest from remote | Start of work session |
-| `casman sync sync --force` | Force download even if up-to-date | Troubleshooting |
-| `casman sync status` | Show configuration and quota | Regular monitoring |
-| `casman sync maintain` | Keep backups in Standard storage | Monthly (automated) |
-
-### Cost Estimation (Cloudflare R2)
-
-For 2 databases × 10 versions = 20 MB total:
-
-- **Storage**: ~$0.0003/month ($0.015/GB/month)
-- **Writes**: 100 backups/month = $0.00045
-- **Reads**: Unlimited FREE
-- **Egress**: Unlimited FREE
-
-**Total: ~$0.01/year** 🎉
+**Note**: Field users downloading databases do NOT need authentication.
 
 ---
 
-## R2 Storage Class Maintenance
+## Download Location
 
-### Why This Matters
+Downloaded databases are stored in:
+- **macOS/Linux**: `~/.local/share/casman/databases/`
+- **Windows**: `%LOCALAPPDATA%\casman\databases\`
 
-Cloudflare R2 may automatically move inactive backups to **Infrequent Access storage**, which is NOT free tier eligible:
-
-| Feature | Standard (Free Tier) | Infrequent Access (Paid) |
-|---------|---------------------|-------------------------|
-| Storage | 10 GB free | $0.01/GB/month |
-| Class A ops | 1M/month free | $9.00/million |
-| Class B ops | 10M/month free | $0.90/million |
-| Retrieval | FREE | $0.01/GB |
-| Minimum duration | None | 30 days |
-
-**Without maintenance**, you'll lose free tier benefits and incur unexpected costs.
-
-### How to Maintain Free Tier
-
-Run this command **at least once per month**:
-
-```bash
-casman sync maintain
-```
-
-This "touches" all backup objects to keep them active in Standard storage.
-
-**What it does:**
-- Lists all backups (1 Class A operation)
-- Performs HEAD request on each backup (1 Class B per file)
-- Updates "last accessed" timestamp
-- Cost: $0.00 (uses ~0.001% of free tier quota)
-
-### Automation
-
-#### Using Cron (Recommended)
-
-```bash
-# Edit crontab
-crontab -e
-
-# Add this line (weekly on Sunday at 2am)
-0 2 * * 0 /path/to/casman sync maintain >> /var/log/casman-maintain.log 2>&1
-```
-
-#### Using Systemd Timer
-
-Create `/etc/systemd/system/casman-maintain.service`:
-
-```ini
-[Unit]
-Description=CAsMan R2 Storage Maintenance
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=oneshot
-User=casman
-WorkingDirectory=/home/casman
-ExecStart=/usr/local/bin/casman sync maintain
-StandardOutput=append:/var/log/casman-maintain.log
-StandardError=append:/var/log/casman-maintain.log
-```
-
-Create `/etc/systemd/system/casman-maintain.timer`:
-
-```ini
-[Unit]
-Description=CAsMan R2 Storage Maintenance Timer
-Requires=casman-maintain.service
-
-[Timer]
-OnCalendar=weekly
-Persistent=true
-
-[Install]
-WantedBy=timers.target
-```
-
-Enable and start:
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable casman-maintain.timer
-sudo systemctl start casman-maintain.timer
-```
-
-### Frequency Recommendations
-
-- **Minimum (Required)**: Once per month
-- **Recommended**: Once per week
-- **Optimal**: Twice per week
-
----
-
-## R2 Quota Enforcement
-
-CAsMan enforces Cloudflare R2 free tier limits to ensure you **NEVER exceed** the free tier quotas.
-
-### Free Tier Limits & Operation Types
-
-| Resource | Limit | Monthly Reset | Operations |
-|----------|-------|---------------|------------|
-| **Storage** | 10 GB | No (cumulative) | N/A |
-| **Class A (Writes)** | 1,000,000 | Yes | Upload, List, Delete |
-| **Class B (Reads)** | 10,000,000 | Yes | Download, HEAD requests, Sync |
-
-### How Enforcement Works
-
-CAsMan uses two protection thresholds:
-
-- **80% (Warning)**: Logs warnings, operations continue, shows ⚠ in status
-- **95% (Blocking)**: Blocks operations, raises `QuotaExceededError`, shows ✗ in status
-
-This prevents accidental overages while giving you time to adjust backup frequency.
-
-### Check Quota Status
-
-```bash
-casman sync status
-```
-
-Output:
-
-```
-R2 Free Tier Quota Usage:
-  Storage:              ✓ 2.34 / 10 GB (23.4%)
-  Class A Ops (writes): ⚠ 850,000 / 1,000,000 (85.0%)
-  Class B Ops (reads):  ✓ 1,234,567 / 10,000,000 (12.3%)
-  Backups this month:   850
-  Restores this month:  12
-```
-
-### What Happens at 95% Threshold
-
-```bash
-$ casman sync backup parts.db
-Error: R2 quota limit reached: 95.3% of Class A operations used.
-Operation 'backup' blocked to prevent exceeding free tier limits.
-Storage: 3.45/10 GB, Class A: 953,000/1,000,000, Class B: 234,567/10,000,000
-```
-
-### Best Practices
-
-- **Monitor regularly**: `casman sync status`
-- **Reduce backup frequency** if hitting limits: Increase `backup_on_scan_count` to 20-50
-- **Reduce retention** if storage fills up: Decrease `keep_versions` to 5-7
-- **Run monthly maintenance**: `casman sync maintain` keeps backups in free tier
-
-### Expected Usage Patterns
-
-#### Small Shop (1-2 users)
-- **Storage**: ~500 MB (50 backups × 10 MB each)
-- **Class A ops**: ~1,500/month (50 backups + lists)
-- **Class B ops**: ~500/month (occasional restores)
-- **Result**: ✓ Well within limits
-
-#### Medium Shop (5-10 users)
-- **Storage**: ~2 GB (200 backups × 10 MB each)
-- **Class A ops**: ~6,000/month (200 backups + lists)
-- **Class B ops**: ~2,000/month (occasional restores/syncs)
-- **Result**: ✓ Comfortably within limits
-
-#### Large Shop (20+ users)
-- **Storage**: ~5 GB (500 backups × 10 MB each)
-- **Class A ops**: ~15,000/month (500 backups + lists)
-- **Class B ops**: ~5,000/month (frequent syncs)
-- **Result**: ✓ Still well below limits
-
-### Troubleshooting
-
-**Quota Exceeded Error**
-- Wait until next month for automatic reset
-- Check usage: `casman sync status`
-- Reduce backup frequency: Increase `backup_on_scan_count` in config
-- Delete old backups if storage is full
-
-**Storage Backend Not Available**
-- Install boto3: `pip install boto3`
-- Check credentials: `echo $R2_ACCOUNT_ID`
-- Verify status: `casman sync status`
-
-**Sync Failed**
-- Check internet connection
-- Verify R2 credentials haven't expired
-- Work offline, sync later
-
-**Quota Tracker Not Resetting**
-- Automatic reset on first operation of new month
-- Run any operation: `casman sync list`
+The `AntennaArray.from_database()` method with `sync_first=True` will:
+1. Check if database exists locally
+2. If not found, download from latest GitHub Release
+3. Extract to the appropriate local directory
+4. Load the database for use
 
 ---
 
@@ -786,95 +607,73 @@ Storage: 3.45/10 GB, Class A: 953,000/1,000,000, Class B: 234,567/10,000,000
 
 ### Core Components
 
-#### 1. Core Sync Module (`casman/database/sync.py`)
+#### 1. GitHub Sync Module (`casman/database/github_sync.py`)
 
-**DatabaseSyncManager**: Main class for backup/restore operations
-- Upload databases to R2/S3 with versioning
-- Download and restore from backups
-- List available backups with metadata
+**GitHubSyncManager**: Main class for database synchronization
+- Download databases from GitHub Releases to local cache
+- Upload databases to GitHub Releases (requires authentication)
+- List available releases with metadata
 - Checksum validation for integrity
-- Automatic cleanup of old versions
-- Storage class maintenance (HEAD requests to prevent Infrequent Access transition)
+- Public access downloads (no authentication required)
 
-**SyncConfig**: Configuration management
+**Configuration Management**:
 - Loads from config.yaml and environment variables
-- Supports R2 and S3 backends
-- Configurable backup triggers and retention
+- Supports GitHub Releases backend only
+- Configurable repository and authentication
 
-**ScanTracker**: Tracks operations
-- Records operation count since last backup
-- Triggers backups based on count or time
-- Persists state in `.scan_tracker.json`
+#### 2. Database Download Integration
 
-**QuotaTracker**: Enforces R2 free tier limits
-- Tracks storage, Class A, and Class B operations
-- Warning threshold at 80%, blocking at 95%
-- Automatic monthly reset for operation counters
-- Persists state in `.r2_quota_tracker.json`
+**AntennaArray** (`casman/antenna/array.py`):
+- `sync_first=True` parameter downloads database before loading
+- Uses GitHubSyncManager to fetch from GitHub Releases
+- Extracts to `~/.local/share/casman/databases/`
+- Falls back to local database if sync fails or offline
 
-#### 2. Automatic Backup Triggers
-
-**Parts Generation** (`casman/parts/generation.py`):
-- Backups created after every part generation batch
-- Zero data loss guarantee for new parts
-
-**Assembly Operations** (`casman/assembly/connections.py`, `casman/database/antenna_positions.py`):
-- Tracks every operation (connect, disconnect, assign, remove)
-- Triggers backup after N operations OR N hours
-- Configurable thresholds (default: 10 operations or 24 hours)
+**Auto-sync on Install** (`casman/__init__.py`):
+- Downloads database on first import if not present
+- Silent failure if offline (works without database)
 
 #### 3. CLI Commands
 
-Complete command-line interface via `casman/cli/sync_commands.py`:
-- `casman sync backup` - Manual backup
-- `casman sync restore <key>` - Restore from backup
-- `casman sync list` - List available backups
-- `casman sync sync` - Download latest versions
-- `casman sync status` - Show configuration and quota status
-- `casman sync maintain` - Keep backups in Standard storage class
+Complete command-line interface via `casman/cli/database_commands.py`:
+- `casman database pull` - Download latest database from GitHub
+- `casman database push` - Upload database to GitHub Releases (requires token)
+- `casman database status` - Show current sync status and GitHub Release info
 
-### Files Created/Modified
-
-**New Files:**
-- `casman/database/sync.py` - Core sync module (800+ lines)
-- `casman/cli/sync_commands.py` - CLI commands (500+ lines)
-- `database/.scan_tracker.json` - Operation tracking (auto-created)
-- `database/.r2_quota_tracker.json` - Quota tracking (auto-created)
+### Files Modified
 
 **Modified Files:**
-- `config.yaml` - Added sync configuration
-- `casman/database/__init__.py` - Export sync classes
+- `casman/database/github_sync.py` - GitHub sync implementation
+- `casman/database/__init__.py` - Export GitHubSyncManager
 - `casman/__init__.py` - Auto-sync on install
-- `casman/cli/main.py` - Register sync commands
-- `casman/parts/generation.py` - Auto backup trigger
-- `casman/assembly/connections.py` - Operation tracking + auto backup
-- `casman/database/antenna_positions.py` - Operation tracking + auto backup
-- `requirements.txt` - Added boto3
+- `casman/cli/main.py` - Register database commands
+- `casman/cli/database_commands.py` - CLI commands for sync
+- `casman/antenna/array.py` - Database sync on load
+- `config.yaml` - GitHub sync configuration
+- `requirements.txt` - Added requests for GitHub API
 
 ### System Architecture
 
-The backup system provides automatic synchronization between local databases and cloud storage:
+The sync system provides database distribution via GitHub Releases:
 
 ```
 ┌────────────────────────────────────┐
 │  Local Databases                   │
 │  - parts.db (~340 KB)              │
 │  - assembled_casm.db (~10 MB)      │
-│  - Operation tracking              │
-│  - Quota tracking                  │
+│  - Located in project database/    │
 └────────────────────────────────────┘
-         ↕ Automatic/Manual Sync
+         ↕ Upload (requires GitHub token)
 ┌────────────────────────────────────┐
-│  Cloudflare R2 (Free Tier)         │
-│  - 10 versions per database        │
-│  - Timestamp-based versioning      │
-│  - Quota enforcement (95% block)   │
-│  - Standard storage maintenance    │
+│  GitHub Releases                   │
+│  - Public download access          │
+│  - Versioned releases              │
+│  - Tag-based organization          │
 └────────────────────────────────────┘
-         ↕ Multi-user access
+         ↕ Download (public, no auth)
 ┌────────────────────────────────────┐
 │  Field Sites / Remote Users        │
-│  - Sync latest versions            │
+│  - ~/.local/share/casman/databases │
 │  - Offline-capable                 │
 └────────────────────────────────────┘
 ```
@@ -885,28 +684,28 @@ The backup system provides automatic synchronization between local databases and
 
 CAsMan's database system provides:
 
-✅ **Schema**: SQLite databases (parts.db, assembled_casm.db) with well-defined structure  
-✅ **Backup**: Automatic backups after part generation and every 10 operations  
-✅ **Sync**: Multi-user cloud storage with timestamp-based versioning  
-✅ **Cost**: ~$0.01/year using Cloudflare R2 free tier  
-✅ **Protection**: Quota enforcement (95% threshold) prevents overages  
-✅ **Maintenance**: Monthly `casman sync maintain` keeps backups free  
-✅ **Offline**: Fully functional without internet connection  
+- **Schema**: SQLite databases (parts.db, assembled_casm.db) with well-defined structure  
+- **Sync**: GitHub Releases-based distribution for multi-user access  
+- **Public Access**: Download databases without authentication  
+- **Versioned**: Tagged releases with semantic versioning  
+- **Offline**: Fully functional without internet connection  
+- **Simple**: No cloud credentials required for client downloads  
 
 ### Quick Actions
 
-**Setup** (5 minutes):
-1. `pip install boto3`
-2. Set R2 credentials in `~/.zshrc`
-3. `casman sync backup`
+**Setup** (1 minute):
+```bash
+casman database pull
+```
 
 **Daily Use**:
-- Work normally - backups happen automatically
-- `casman sync sync` before/after work sessions
-- `casman sync status` to monitor quota
+- Work normally with local databases
+- `casman database pull` to get latest version when needed
+- Databases auto-sync when using `AntennaArray.from_database(..., sync_first=True)`
 
-**Monthly Maintenance**:
+**For Database Administrators**:
 ```bash
-crontab -e
-# Add: 0 2 * * 0 /path/to/casman sync maintain
+# Upload updated database
+export GITHUB_TOKEN="your-token"
+casman database push
 ```

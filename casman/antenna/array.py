@@ -291,7 +291,7 @@ class AntennaArray:
     @classmethod
     def from_database(
         cls, db_path: str | Path, array_id: str = "C", db_dir: Optional[str] = None,
-        sync_first: bool = False, public_url: Optional[str] = None
+        sync_first: bool = False
     ) -> AntennaArray:
         """Load antenna array from CAsMan database.
 
@@ -304,11 +304,7 @@ class AntennaArray:
         db_dir : str, optional
             Database directory for assembly chain lookups (default: use parent of db_path)
         sync_first : bool, optional
-            If True, download database before loading (default: False)
-        public_url : str, optional
-            Public URL to download database from (no credentials needed).
-            Example: 'https://pub-xxxxx.r2.dev/latest_parts.db'
-            If provided with sync_first=True, downloads from this URL.
+            If True, download database from GitHub Releases before loading (default: False)
 
         Returns
         -------
@@ -327,14 +323,7 @@ class AntennaArray:
         >>> # Load from local database
         >>> array = AntennaArray.from_database('database/parts.db')
         >>> 
-        >>> # Download from public URL first (no credentials needed)
-        >>> array = AntennaArray.from_database(
-        ...     'database/parts.db',
-        ...     sync_first=True,
-        ...     public_url='https://pub-xxxxx.r2.dev/latest_parts.db'
-        ... )
-        >>> 
-        >>> # Sync from R2 with credentials (if configured)
+        >>> # Download from GitHub Releases first
         >>> array = AntennaArray.from_database('database/parts.db', sync_first=True)
         >>> 
         >>> # Load specific array
@@ -350,7 +339,7 @@ class AntennaArray:
                 sync_db_dir = db_dir
             
             db_name = db_path.name
-            result = sync_database(db_name, sync_db_dir, public_url)
+            result = sync_database(db_name, sync_db_dir)
             
             if result['success']:
                 print(result['message'])
@@ -606,13 +595,12 @@ class AntennaArray:
 
 def sync_database(
     db_name: str = "parts.db", 
-    db_dir: Optional[str] = None,
-    public_url: Optional[str] = None
+    db_dir: Optional[str] = None
 ) -> dict:
-    """Download/sync database from cloud storage.
+    """Download database from GitHub Releases.
     
-    Downloads the latest database from a public URL or R2 bucket.
-    Does NOT require credentials if using public URL.
+    Uses the same GitHub Releases sync as the antenna module.
+    Falls back to local copy if GitHub unavailable.
     
     Parameters
     ----------
@@ -620,11 +608,6 @@ def sync_database(
         Database filename to sync (default: 'parts.db')
     db_dir : str, optional
         Database directory (default: 'database/')
-    public_url : str, optional
-        Public URL to download database from. If not provided, attempts
-        to use URL from config.yaml (r2.public_urls). If still None,
-        falls back to R2 with credentials.
-        Example: 'https://pub-xxxxx.r2.dev/backups/parts.db/latest_parts.db'
         
     Returns
     -------
@@ -636,23 +619,15 @@ def sync_database(
         
     Examples
     --------
-    >>> # Auto-download from public URL in config (no credentials needed)
     >>> from casman.antenna import sync_database, AntennaArray
     >>> 
-    >>> result = sync_database('parts.db')  # Uses config.yaml public URL
+    >>> result = sync_database('parts.db')
     >>> if result['success']:
     ...     array = AntennaArray.from_database('database/parts.db')
-    >>> 
-    >>> # Override with specific URL
-    >>> result = sync_database(
-    ...     'parts.db',
-    ...     public_url='https://pub-xxxxx.r2.dev/latest_parts.db'
-    ... )
     >>> 
     >>> # Or use sync_first parameter in from_database
     >>> array = AntennaArray.from_database('database/parts.db', sync_first=True)
     """
-    import os
     from pathlib import Path
     
     if db_dir is None:
@@ -661,137 +636,101 @@ def sync_database(
     db_path = Path(db_dir) / db_name
     db_path.parent.mkdir(parents=True, exist_ok=True)
     
-    # If no public_url provided, try to get from config
-    if public_url is None:
-        try:
-            from casman.config import get_config
-            
-            # Map database names to config keys
-            db_key_map = {
-                'parts.db': 'parts_db',
-                'assembled_casm.db': 'assembled_db'
+    try:
+        from casman.database.github_sync import get_github_sync_manager
+        
+        sync_manager = get_github_sync_manager()
+        if sync_manager is None:
+            return {
+                'success': False,
+                'synced': False,
+                'message': 'GitHub sync not configured'
             }
+        
+        # Get latest release
+        latest_release = sync_manager.get_latest_release()
+        if latest_release is None:
+            # Check if we have local copy
+            from casman.antenna.sync import _check_local_databases
+            has_local = _check_local_databases(sync_manager.local_db_dir)
             
-            config_key = db_key_map.get(db_name)
-            if config_key:
-                # Try to get public URL from config using dot notation
-                public_url = get_config(f'r2.public_urls.{config_key}')
-                if public_url and not public_url.startswith('https://pub-xxxxx'):
-                    # Valid URL found in config (not placeholder)
-                    print(f"Using public URL from config for {db_name}")
-        except Exception:
-            pass  # Couldn't load config, continue to other methods
-    
-    # Method 1: Download from public URL (no credentials needed)
-    if public_url:
-        try:
-            import urllib.request
-            import shutil
-            from datetime import datetime
-            
-            # Check if local file exists and compare timestamps with remote
-            if db_path.exists():
-                local_mtime = db_path.stat().st_mtime
+            if has_local:
+                # Copy from XDG to requested location
+                xdg_db_path = sync_manager.local_db_dir / db_name
+                if xdg_db_path.exists() and xdg_db_path != db_path:
+                    import shutil
+                    shutil.copy2(str(xdg_db_path), str(db_path))
                 
-                # Try to get remote Last-Modified header to compare
-                try:
-                    request = urllib.request.Request(public_url, method='HEAD')
-                    with urllib.request.urlopen(request) as response:
-                        last_modified = response.headers.get('Last-Modified')
-                        if last_modified:
-                            from email.utils import parsedate_to_datetime
-                            remote_time = parsedate_to_datetime(last_modified).timestamp()
-                            
-                            if remote_time <= local_mtime:
-                                return {
-                                    'success': True,
-                                    'synced': False,
-                                    'message': f'✓ {db_name} already up to date (local is same or newer than remote)'
-                                }
-                except Exception:
-                    # Couldn't get remote time, proceed with download
-                    pass
+                return {
+                    'success': True,
+                    'synced': False,
+                    'message': f'No GitHub Releases found, using local copy of {db_name}'
+                }
             
-            print(f"Downloading {db_name} from {public_url}...")
+            return {
+                'success': False,
+                'synced': False,
+                'message': 'No GitHub Releases found and no local copy available'
+            }
+        
+        # Check if we have local copy in XDG directory
+        from casman.antenna.sync import _check_local_databases
+        has_local = _check_local_databases(sync_manager.local_db_dir)
+        
+        # Check if up-to-date
+        if has_local and sync_manager._is_local_up_to_date(latest_release):
+            # Copy from XDG to requested location
+            xdg_db_path = sync_manager.local_db_dir / db_name
+            if xdg_db_path.exists() and xdg_db_path != db_path:
+                import shutil
+                shutil.copy2(str(xdg_db_path), str(db_path))
             
-            # Download to temporary file
-            temp_path = db_path.with_suffix('.tmp')
-            
-            with urllib.request.urlopen(public_url) as response:
-                with open(temp_path, 'wb') as f:
-                    shutil.copyfileobj(response, f)
-            
-            # Move to final location
-            shutil.move(str(temp_path), str(db_path))
+            return {
+                'success': True,
+                'synced': False,
+                'message': f'{db_name} already up to date'
+            }
+        
+        # Download from GitHub
+        success = sync_manager.download_databases(snapshot=latest_release)
+        
+        if success:
+            # Copy from XDG to requested location
+            xdg_db_path = sync_manager.local_db_dir / db_name
+            if xdg_db_path.exists() and xdg_db_path != db_path:
+                import shutil
+                shutil.copy2(str(xdg_db_path), str(db_path))
             
             return {
                 'success': True,
                 'synced': True,
-                'message': f'✓ Downloaded {db_name} from public URL'
+                'message': f'Downloaded {db_name} from GitHub Releases'
             }
+        
+        # If download failed but we have local copy
+        if has_local:
+            xdg_db_path = sync_manager.local_db_dir / db_name
+            if xdg_db_path.exists() and xdg_db_path != db_path:
+                import shutil
+                shutil.copy2(str(xdg_db_path), str(db_path))
             
-        except Exception as e:
-            if db_path.exists():
-                return {
-                    'success': True,
-                    'synced': False,
-                    'message': f'Download failed ({e}), using existing local database'
-                }
             return {
-                'success': False,
+                'success': True,
                 'synced': False,
-                'message': f'Download failed: {e}'
-            }
-    
-    # Method 2: Use R2 with credentials (requires config)
-    try:
-        from casman.database.sync import DatabaseSyncManager
-        
-        sync_manager = DatabaseSyncManager(db_dir=db_dir)
-        
-        if not sync_manager.config.enabled:
-            return {
-                'success': False,
-                'synced': False,
-                'message': (
-                    'R2 sync not configured and no public_url provided. '
-                    'Either:\n'
-                    '  1. Use public_url parameter for credential-free download\n'
-                    '  2. Configure R2 credentials (see docs/database_backup_quickstart.md)'
-                )
+                'message': f'GitHub download failed, using local copy of {db_name}'
             }
         
-        result = sync_manager.sync_from_remote(db_name)
-        
-        if result.get('synced'):
-            msg = f"✓ Synced {db_name} from R2 (downloaded latest version)"
-        elif result.get('up_to_date'):
-            msg = f"✓ {db_name} already up to date (no download needed)"
-        else:
-            msg = f"Database sync completed: {result}"
-            
-        return {
-            'success': True,
-            'synced': result.get('synced', False),
-            'message': msg
-        }
-        
-    except ImportError:
         return {
             'success': False,
             'synced': False,
-            'message': (
-                'R2 sync requires additional dependencies and no public_url provided.\n'
-                'Either:\n'
-                '  1. Use public_url parameter for simple download\n'
-                '  2. Install sync dependencies: pip install boto3 pyyaml'
-            )
+            'message': 'GitHub download failed and no local copy available'
         }
+        
     except Exception as e:
         return {
             'success': False,
             'synced': False,
-            'message': f"Sync failed: {e}"
+            'message': f'Sync failed: {e}'
         }
 
 

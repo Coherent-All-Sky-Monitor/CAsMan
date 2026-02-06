@@ -31,7 +31,7 @@ Antenna grid position utilities.
 This module defines parsing, formatting, and validation helpers for antenna
 position codes of the form:
 
-    [A-Z][N/C/S][000-999]E[00-99]
+    [A-Z][N/C/S][000-999]E[01-99]
 
 Examples
 --------
@@ -217,7 +217,7 @@ True if sync successful or databases are up-to-date, False otherwise
 This module defines parsing, formatting, and validation helpers for antenna
 position codes of the form:
 
-    [A-Z][N/C/S][000-999]E[00-99]
+    [A-Z][N/C/S][000-999]E[01-99]
 
 Examples
 --------

@@ -69,10 +69,10 @@ Example output:
 Loading grid coordinates from CSV...
 ==================================================
 
-✓ Updated: 3 position(s)
+Updated: 3 position(s)
   Skipped: 0 position(s)
 
-✓ Coordinate data loaded successfully
+Coordinate data loaded successfully
 ```
 
 ### 3. Verify Coordinates
@@ -104,13 +104,13 @@ sqlite3 database/parts.db "SELECT antenna_number, grid_code, latitude, longitude
 1. Assign an antenna to a position (if not already assigned):
    ```bash
    # Via scanner web interface at http://localhost:5001/scanner
-   # Scan antenna ANT00001 and assign to CN021E00
+   # Scan antenna ANT00001 and assign to CN021E01
    ```
 
 2. Add coordinates to CSV:
    ```csv
    grid_code,latitude,longitude,height,coordinate_system,notes
-   CN021E00,37.871899,-122.258477,10.5,WGS84,North row 21 east 0
+   CN021E01,37.871899,-122.258477,10.5,WGS84,North row 21 east 1
    ```
 
 3. Load coordinates:
@@ -120,7 +120,7 @@ sqlite3 database/parts.db "SELECT antenna_number, grid_code, latitude, longitude
 
 4. Verify:
    ```bash
-   sqlite3 database/parts.db "SELECT * FROM antenna_positions WHERE grid_code='CN021E00';"
+   sqlite3 database/parts.db "SELECT * FROM antenna_positions WHERE grid_code='CN021E01';"
    ```
 
 ## Coordinate Systems

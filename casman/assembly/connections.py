@@ -115,42 +115,7 @@ def record_assembly_connection(
                 connected_to,
             )
             
-            # Track scan for backup triggering
-            try:
-                from casman.database.sync import ScanTracker, DatabaseSyncManager, SyncConfig
-                
-                tracker = ScanTracker(db_dir)
-                tracker.record_scan()
-                
-                # Check if backup should be triggered
-                sync_config = SyncConfig.from_config()
-                if sync_config.enabled and tracker.should_backup(sync_config):
-                    logger.info("Triggering database backup after scans...")
-                    sync_manager = DatabaseSyncManager(sync_config)
-                    
-                    # Backup both databases
-                    sync_manager.backup_database(
-                        db_path,
-                        "assembled_casm.db",
-                        operation=f"Scan-triggered backup ({tracker.data['scans_since_backup']} scans)",
-                        quiet=False
-                    )
-                    
-                    # Also backup parts.db
-                    parts_db_path = get_database_path("parts.db", db_dir)
-                    sync_manager.backup_database(
-                        parts_db_path,
-                        "parts.db",
-                        operation=f"Scan-triggered backup ({tracker.data['scans_since_backup']} scans)",
-                        quiet=False
-                    )
-                    
-                    tracker.reset_after_backup()
-                    
-            except Exception as e:
-                logger.warning(f"Scan tracking/backup failed (connection still recorded): {e}")
-            
-            return True
+        return True
 
     except sqlite3.Error as e:
         logger.error("Database error recording assembly %s: %s", part_number, e)

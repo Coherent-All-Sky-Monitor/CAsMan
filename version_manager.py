@@ -25,6 +25,11 @@ class VersionManager:
                 "pattern": r'version = "([^"]+)"',
                 "replacement": 'version = "{version}"',
             },
+            "setup.py": {
+                "path": project_root / "setup.py",
+                "pattern": r'version="([^"]+)"',
+                "replacement": 'version="{version}"',
+            },
             "casman/__init__.py": {
                 "path": project_root / "casman" / "__init__.py",
                 "pattern": r'__version__ = "([^"]+)"',
@@ -96,7 +101,7 @@ class VersionManager:
         replacement = file_info["replacement"]  # type: ignore
 
         if not file_path.exists():  # type: ignore
-            print(f"⚠️  Warning: {file_path} not found, skipping")
+            print(f"[WARNING]  Warning: {file_path} not found, skipping")
             return False
 
         try:
@@ -104,7 +109,7 @@ class VersionManager:
 
             # Check if pattern matches
             if not re.search(pattern, content):  # type: ignore
-                print(f"⚠️  Warning: Version pattern not found in {file_path}")
+                print(f"[WARNING]  Warning: Version pattern not found in {file_path}")
                 return False
 
             # Update version
@@ -112,11 +117,11 @@ class VersionManager:
 
             # Write back
             file_path.write_text(new_content, encoding="utf-8")  # type: ignore
-            print(f"✅ Updated {file_key}")
+            print(f"[OK] Updated {file_key}")
             return True
 
         except (OSError, IOError, UnicodeDecodeError) as e:
-            print(f"❌ Error updating {file_path}: {e}")
+            print(f"[ERROR] Error updating {file_path}: {e}")
             return False
 
     def update_all_versions(self, new_version: str) -> List[Path]:
@@ -139,7 +144,7 @@ class VersionManager:
             pattern = file_info["pattern"]  # type: ignore
 
             if not file_path.exists():  # type: ignore
-                print(f"❌ {file_key}: File not found")
+                print(f"[ERROR] {file_key}: File not found")
                 continue
 
             try:
@@ -149,13 +154,13 @@ class VersionManager:
                     # Check if there's a capture group (version number)
                     if match.groups():
                         version = match.group(1)
-                        print(f"✅ {file_key}: {version}")
+                        print(f"[OK] {file_key}: {version}")
                     else:
-                        print(f"✅ {file_key}: Uses dynamic version import")
+                        print(f"[OK] {file_key}: Uses dynamic version import")
                 else:
-                    print(f"⚠️  {file_key}: Version pattern not found")
+                    print(f"[WARNING]  {file_key}: Version pattern not found")
             except (OSError, IOError, UnicodeDecodeError) as e:
-                print(f"❌ {file_key}: Error reading file - {e}")
+                print(f"[ERROR] {file_key}: Error reading file - {e}")
 
     def create_git_tag(self, version: str, message: Optional[str] = None) -> bool:
         """Create a git tag for the version."""
@@ -172,7 +177,7 @@ class VersionManager:
             )
 
             if result.stdout.strip():
-                print(f"⚠️  Tag {tag_name} already exists")
+                print(f"[WARNING]  Tag {tag_name} already exists")
                 return False
 
             # Create tag
@@ -185,14 +190,14 @@ class VersionManager:
             result = subprocess.run(cmd, cwd=self.project_root, check=False)
 
             if result.returncode == 0:
-                print(f"✅ Created git tag: {tag_name}")
+                print(f"[OK] Created git tag: {tag_name}")
                 return True
             else:
-                print("❌ Failed to create git tag")
+                print("[ERROR] Failed to create git tag")
                 return False
 
         except (OSError, subprocess.SubprocessError) as e:
-            print(f"❌ Error creating git tag: {e}")
+            print(f"[ERROR] Error creating git tag: {e}")
             return False
 
     def commit_version_changes(
@@ -200,7 +205,7 @@ class VersionManager:
     ) -> bool:
         """Commit version changes to git."""
         if not updated_files:
-            print("⚠️  No files to commit")
+            print("[WARNING]  No files to commit")
             return False
 
         try:
@@ -219,22 +224,22 @@ class VersionManager:
             )
 
             if result.returncode == 0:
-                print(f"✅ Committed version changes: {commit_message}")
+                print(f"[OK] Committed version changes: {commit_message}")
                 return True
             else:
-                print("❌ Failed to commit changes")
+                print("[ERROR] Failed to commit changes")
                 return False
 
         except (OSError, subprocess.SubprocessError) as e:
-            print(f"❌ Error committing changes: {e}")
+            print(f"[ERROR] Error committing changes: {e}")
             return False
 
 
 def get_change_type_interactive() -> str:
     """Get change type from user interactively."""
-    print("\n🔄 What type of change are you making?")
+    print("\n[SYNC] What type of change are you making?")
     print()
-    print("1. 🚀 Major (breaking changes, new major features)")
+    print("1. [MAJOR] Major (breaking changes, new major features)")
     print("   Example: 1.2.3 → 2.0.0")
     print()
     print("2. ✨ Minor (new features, backward compatible)")
@@ -254,7 +259,7 @@ def get_change_type_interactive() -> str:
         elif choice == "3":
             return "patch"
         else:
-            print("❌ Invalid choice. Please enter 1, 2, or 3.")
+            print("[ERROR] Invalid choice. Please enter 1, 2, or 3.")
 
 
 def main():
@@ -308,7 +313,7 @@ Examples:
     project_root = Path(__file__).parent
     if not (project_root / "pyproject.toml").exists():
         print(
-            "❌ Error: pyproject.toml not found. Make sure you're running this from the project root."
+            "[ERROR] Error: pyproject.toml not found. Make sure you're running this from the project root."
         )
         sys.exit(1)
 
@@ -321,7 +326,7 @@ Examples:
 
     # If no action specified, run interactive mode
     if not args.increment and not args.set:
-        print("🎯 CAsMan Version Manager")
+        print("[TARGET] CAsMan Version Manager")
         print("=" * 40)
 
         vm.show_current_versions()
@@ -330,11 +335,11 @@ Examples:
         current_version = vm.get_current_version()
         new_version = vm.increment_version(current_version, change_type)
 
-        print(f"\n📈 Version change: {current_version} → {new_version}")
+        print(f"\n[VERSION] Version change: {current_version} → {new_version}")
 
         confirm = input("\nProceed with this version update? (y/N): ").strip().lower()
         if confirm != "y":
-            print("❌ Version update cancelled")
+            print("[ERROR] Version update cancelled")
             sys.exit(0)
 
         # Ask about git operations
@@ -355,7 +360,7 @@ Examples:
             new_version = vm.increment_version(current_version, args.increment)
         elif args.set:
             if not vm.validate_version(args.set):
-                print(f"❌ Invalid version format: {args.set}")
+                print(f"[ERROR] Invalid version format: {args.set}")
                 sys.exit(1)
             new_version = args.set
 
@@ -364,31 +369,31 @@ Examples:
         tag = args.tag
         tag_message = args.tag_message
 
-        print(f"📈 Version change: {current_version} → {new_version}")
+        print(f"[VERSION] Version change: {current_version} → {new_version}")
 
     # Update versions
-    print(f"\n🔄 Updating version to {new_version}...")
+    print(f"\n[SYNC] Updating version to {new_version}...")
     updated_files = vm.update_all_versions(new_version)
 
     if not updated_files:
-        print("❌ No files were updated")
+        print("[ERROR] No files were updated")
         sys.exit(1)
 
-    print(f"\n✅ Successfully updated {len(updated_files)} files")
+    print(f"\n[OK] Successfully updated {len(updated_files)} files")
 
     # Git operations
     if commit:
-        print("\n📝 Committing changes...")
+        print("\n[COMMIT] Committing changes...")
         vm.commit_version_changes(new_version, updated_files, commit_message)
 
     if tag:
-        print("\n🏷️  Creating git tag...")
+        print("\n[TAG]  Creating git tag...")
         vm.create_git_tag(new_version, tag_message)
 
-    print(f"\n🎉 Version update complete: {new_version}")
+    print(f"\n[SUCCESS] Version update complete: {new_version}")
 
     if commit or tag:
-        print("\n💡 Next steps:")
+        print("\n[INFO] Next steps:")
         if commit:
             print("   git push origin <branch>  # Push commits")
         if tag:

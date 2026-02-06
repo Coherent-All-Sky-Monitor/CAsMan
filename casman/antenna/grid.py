@@ -3,7 +3,7 @@
 This module defines parsing, formatting, and validation helpers for antenna
 position codes of the form:
 
-    [A-Z][N/C/S][000-999]E[00-99]
+    [A-Z][N/C/S][000-999]E[01-99]
 
 Examples
 --------
@@ -70,7 +70,7 @@ from typing import Optional, Tuple
 
 from casman.config import get_config
 
-GRID_CODE_PATTERN = re.compile(r"^[A-Z][NCS][0-9]{3}E[0-9]{2}$")
+GRID_CODE_PATTERN = re.compile(r"^[A-Z][NCS][0-9]{3}E(0[1-9]|[1-9][0-9])$")
 
 
 @dataclass(frozen=True)
