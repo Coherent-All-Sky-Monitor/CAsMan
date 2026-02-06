@@ -6,9 +6,6 @@ Complete guide to CAsMan's database system, including schema, backup/sync, and m
 
 1. [Overview](#overview)
 2. [Database Schema](#database-schema)
-3. [Database Synchronization](#database-synchronization)
-4. [Implementation Details](#implementation-details)
-
 ---
 
 ## Overview
@@ -428,30 +425,8 @@ SNAP board information is displayed in all three web visualizations:
 
 ---
 
-## Database Synchronization
 
-CAsMan provides database synchronization via **GitHub Releases**, enabling multi-user access to centralized database files without requiring cloud storage credentials.
 
-### Features
-
-- **Public Access**: Download database releases from GitHub without authentication
-- **Version Control**: Tagged releases with semantic versioning
-- **Multi-User Distribution**: Centralized database files accessible to all users
-- **Offline-First**: Works without internet connection, sync when available
-- **Simple Setup**: No cloud credentials required for client downloads
-
-### Storage Locations
-
-**Full CAsMan installation:**
-- Downloads to project `database/` directory
-- Automatic timestamped backups before overwriting
-- Example: `database/assembled_casm.db.20260126-221500.bak`
-
-**Standalone antenna module (pip install):**
-- Downloads to XDG standard location: `~/.local/share/casman/databases/`
-- Automatic backups on overwrite
-
-### Quick Start
 
 #### 1. Download Latest Database
 
@@ -478,7 +453,6 @@ casman database restore --latest --parts
 casman database restore --latest --assembled
 ```
 
-Backups are created automatically during pulls with names like `assembled_casm.db.20260126-221500.bak`.
 
 #### 3. Check Sync Status
 
@@ -506,44 +480,7 @@ array = AntennaArray.from_database(
 )
 ```
 
-**You're all set!** The database will be synced from GitHub Releases when needed. Automatic backups are created during each sync to protect your local data.
 
-### Multi-User Workflow
-
-#### For Database Administrators (Upload Access)
-
-1. **Upload Updated Database**:
-   ```bash
-   casman database push
-   ```
-   - Requires GitHub authentication token
-   - Creates new GitHub Release with database files
-   - Tags release with timestamp
-
-2. **Verify Upload**:
-   ```bash
-   casman database status
-   ```
-
-#### For Field Users (Download Access)
-
-1. **Download Latest Database**:
-   ```bash
-   casman database pull
-   ```
-   - No authentication required
-   - Downloads from public GitHub Release
-
-2. **Use in Scripts**:
-   ```python
-   from casman.antenna import AntennaArray
-   
-   # Sync and load database
-   array = AntennaArray.from_database(
-       'database/parts.db',
-       sync_first=True
-   )
-   ```
 
 ### CLI Commands Reference
 
@@ -552,20 +489,6 @@ array = AntennaArray.from_database(
 | `casman database pull` | Download latest database from GitHub | No |
 | `casman database push` | Upload database to GitHub Releases | Yes (GitHub token) |
 | `casman database status` | Show sync status and GitHub Release info | No |
-
-### Configuration
-
-In `config.yaml`:
-
-```yaml
-database:
-  sync:
-    enabled: true
-    backend: github
-  github:
-    repo: "username/CAsMan"
-    token_env: "GITHUB_TOKEN"  # Environment variable for upload token
-```
 
 ### GitHub Authentication (Upload Only)
 
@@ -585,8 +508,6 @@ For database administrators who need to upload:
    casman database push
    ```
 
-**Note**: Field users downloading databases do NOT need authentication.
-
 ---
 
 ## Download Location
@@ -602,55 +523,6 @@ The `AntennaArray.from_database()` method with `sync_first=True` will:
 4. Load the database for use
 
 ---
-
-## Implementation Details
-
-### Core Components
-
-#### 1. GitHub Sync Module (`casman/database/github_sync.py`)
-
-**GitHubSyncManager**: Main class for database synchronization
-- Download databases from GitHub Releases to local cache
-- Upload databases to GitHub Releases (requires authentication)
-- List available releases with metadata
-- Checksum validation for integrity
-- Public access downloads (no authentication required)
-
-**Configuration Management**:
-- Loads from config.yaml and environment variables
-- Supports GitHub Releases backend only
-- Configurable repository and authentication
-
-#### 2. Database Download Integration
-
-**AntennaArray** (`casman/antenna/array.py`):
-- `sync_first=True` parameter downloads database before loading
-- Uses GitHubSyncManager to fetch from GitHub Releases
-- Extracts to `~/.local/share/casman/databases/`
-- Falls back to local database if sync fails or offline
-
-**Auto-sync on Install** (`casman/__init__.py`):
-- Downloads database on first import if not present
-- Silent failure if offline (works without database)
-
-#### 3. CLI Commands
-
-Complete command-line interface via `casman/cli/database_commands.py`:
-- `casman database pull` - Download latest database from GitHub
-- `casman database push` - Upload database to GitHub Releases (requires token)
-- `casman database status` - Show current sync status and GitHub Release info
-
-### Files Modified
-
-**Modified Files:**
-- `casman/database/github_sync.py` - GitHub sync implementation
-- `casman/database/__init__.py` - Export GitHubSyncManager
-- `casman/__init__.py` - Auto-sync on install
-- `casman/cli/main.py` - Register database commands
-- `casman/cli/database_commands.py` - CLI commands for sync
-- `casman/antenna/array.py` - Database sync on load
-- `config.yaml` - GitHub sync configuration
-- `requirements.txt` - Added requests for GitHub API
 
 ### System Architecture
 
@@ -681,15 +553,6 @@ The sync system provides database distribution via GitHub Releases:
 ---
 
 ## Summary
-
-CAsMan's database system provides:
-
-- **Schema**: SQLite databases (parts.db, assembled_casm.db) with well-defined structure  
-- **Sync**: GitHub Releases-based distribution for multi-user access  
-- **Public Access**: Download databases without authentication  
-- **Versioned**: Tagged releases with semantic versioning  
-- **Offline**: Fully functional without internet connection  
-- **Simple**: No cloud credentials required for client downloads  
 
 ### Quick Actions
 
