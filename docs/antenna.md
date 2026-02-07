@@ -28,7 +28,7 @@ The `casman.antenna` module provides lightweight antenna array management with m
 **One-line install from GitHub:**
 
 ```bash
-pip install "git+https://github.com/Coherent-All-Sky-Monitor/CAsMan.git#egg=casman[antenna]"
+pip install "git+https://github.com/Coherent-All-Sky-Monitor/CAsMan.git[antenna]"
 ```
 
 **From local clone:**
@@ -690,7 +690,7 @@ grid:
 
 **Installation:**
 ```bash
-pip install "git+https://github.com/Coherent-All-Sky-Monitor/CAsMan.git#egg=casman[antenna]"
+pip install "git+https://github.com/Coherent-All-Sky-Monitor/CAsMan.git[antenna]"
 ```
 
 **Download and load:**

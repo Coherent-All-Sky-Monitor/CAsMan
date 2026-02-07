@@ -45,7 +45,7 @@ graph TD
 
 **Minimal install (Antenna module only):**
 ```bash
-pip install "git+https://github.com/Coherent-All-Sky-Monitor/CAsMan.git#egg=casman[antenna]"
+pip install "git+https://github.com/Coherent-All-Sky-Monitor/CAsMan.git[antenna]"
 ```
 - For data analysis, baseline calculations, etc. 
   
