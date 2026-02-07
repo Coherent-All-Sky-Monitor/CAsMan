@@ -1260,7 +1260,7 @@ class TestCmdDatabaseLoadCoordinates:
             cmd_database()
         assert exc_info.value.code == 0
         captured = capsys.readouterr()
-        assert "Load geographic coordinates" in captured.out
+        assert "Load coordinates from CSV" in captured.out
         assert "--csv" in captured.out
 
     def test_load_coordinates_success(self, tmp_path, capsys):
@@ -1308,7 +1308,7 @@ class TestCmdDatabaseLoadCoordinates:
             cmd_database_load_coordinates(parser, [f"--csv={csv_path}"])
 
         captured = capsys.readouterr()
-        assert "Updated: 1 position" in captured.out
+        assert "Loaded:  1 position(s)" in captured.out
         assert "Coordinate data loaded successfully" in captured.out
 
     def test_load_coordinates_file_not_found(self, capsys):
@@ -1361,8 +1361,8 @@ class TestCmdDatabaseLoadCoordinates:
             cmd_database_load_coordinates(parser, [f"--csv={csv_path}"])
 
         captured = capsys.readouterr()
-        assert "Updated: 0 position" in captured.out
-        assert "No positions were updated" in captured.out
+        assert "Loaded:  1 position(s)" in captured.out
+        # When grid code doesn't exist in antenna_positions table, it's still loaded into grid_positions
 
 
 class TestCmdDatabaseClear:
@@ -1483,6 +1483,20 @@ class TestIntegrationDatabaseCommands:
         """
         )
 
+        # Also create grid_positions table
+        cursor.execute(
+            """
+            CREATE TABLE grid_positions (
+                grid_code TEXT PRIMARY KEY,
+                latitude REAL,
+                longitude REAL,
+                height REAL,
+                coordinate_system TEXT,
+                notes TEXT
+            )
+        """
+        )
+
         test_positions = [
             ("ANT00001", "CN001E01", "C", 1, 1),
             ("ANT00002", "CN001E02", "C", 1, 2),
@@ -1522,13 +1536,14 @@ class TestIntegrationDatabaseCommands:
             cmd_database_load_coordinates(parser, [f"--csv={csv_path}"])
 
         captured = capsys.readouterr()
-        assert "Updated: 3 position(s)" in captured.out
-        assert "Skipped: 0 position(s)" in captured.out
+        assert "Loaded:  3 position(s)" in captured.out
+        assert "Skipped: 1 position(s)" in captured.out
 
         conn = sqlite3.connect(str(db_path))
         cursor = conn.cursor()
+        # Check grid_positions table, not antenna_positions
         cursor.execute(
-            "SELECT COUNT(*) FROM antenna_positions WHERE latitude IS NOT NULL"
+            "SELECT COUNT(*) FROM grid_positions WHERE latitude IS NOT NULL"
         )
         count = cursor.fetchone()[0]
         assert count == 3
