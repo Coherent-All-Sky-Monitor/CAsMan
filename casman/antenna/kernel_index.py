@@ -47,6 +47,12 @@ class KernelIndexArray:
         2D array of SNAP board configuration dicts, shape (n_rows, n_cols).
         Each dict contains: ip_address, mac_address, serial_number, feng_id, 
         packet_index, adc_input. None for unassigned positions.
+    packet_indices : np.ndarray
+        2D array of packet indices, shape (n_rows, n_cols).
+        -1 indicates no packet index (unassigned or unmapped positions).
+    full_signal_chains : np.ndarray
+        2D boolean array indicating positions with complete signal chains.
+        True if antenna has full chain to SNAP, False otherwise.
     coordinates : np.ndarray
         3D array of coordinates, shape (n_rows, n_cols, 3).
         Each position contains [latitude, longitude, height] in decimal degrees and meters.
@@ -62,6 +68,8 @@ class KernelIndexArray:
         antenna_numbers: np.ndarray,
         snap_ports: np.ndarray,
         snap_board_info: Optional[np.ndarray] = None,
+        packet_indices: Optional[np.ndarray] = None,
+        full_signal_chains: Optional[np.ndarray] = None,
         coordinates: Optional[np.ndarray] = None,
     ):
         """Initialize kernel index array container.
@@ -78,6 +86,10 @@ class KernelIndexArray:
             2D array of SNAP port tuples
         snap_board_info : np.ndarray, optional
             2D array of SNAP board configuration dicts
+        packet_indices : np.ndarray, optional
+            2D array of packet indices
+        full_signal_chains : np.ndarray, optional
+            2D boolean array indicating complete signal chains
         coordinates : np.ndarray, optional
             3D array of shape (n_rows, n_cols, 3) containing [lat, lon, height]
         """
@@ -86,6 +98,8 @@ class KernelIndexArray:
         self.antenna_numbers = antenna_numbers
         self.snap_ports = snap_ports
         self.snap_board_info = snap_board_info
+        self.packet_indices = packet_indices
+        self.full_signal_chains = full_signal_chains
         self.coordinates = coordinates
         self.shape = kernel_indices.shape
     
@@ -259,6 +273,7 @@ class KernelIndexArray:
         eastings = []
         northings = []
         grid_codes = []
+        has_full_chain = []  # Track which positions have full signal chains
         
         for row in range(n_rows):
             for col in range(n_cols):
@@ -273,12 +288,27 @@ class KernelIndexArray:
                         eastings.append(easting)
                         northings.append(northing)
                         grid_codes.append(grid_code)
+                        # Check if this position has a full signal chain
+                        has_full_chain.append(self.full_signal_chains[row, col] if self.full_signal_chains is not None else False)
         
         # Create figure
         fig, ax = plt.subplots(figsize=(10, 10))
         
-        # Plot all points with square markers
-        ax.scatter(eastings, northings, c='blue', s=20, alpha=0.6, zorder=2, marker='s')
+        # Separate points by chain status for color coding
+        if has_full_chain:
+            full_chain_east = [eastings[i] for i in range(len(eastings)) if has_full_chain[i]]
+            full_chain_north = [northings[i] for i in range(len(northings)) if has_full_chain[i]]
+            no_chain_east = [eastings[i] for i in range(len(eastings)) if not has_full_chain[i]]
+            no_chain_north = [northings[i] for i in range(len(northings)) if not has_full_chain[i]]
+            
+            # Plot antennas with full signal chains in green
+            ax.scatter(full_chain_east, full_chain_north, c='green', s=15, alpha=0.8, zorder=3, marker='s', label='Full Signal Chain')
+            # Plot antennas without full chains in red
+            ax.scatter(no_chain_east, no_chain_north, c='red', s=15, alpha=0.5, zorder=2, marker='s', label='Incomplete Chain')
+            ax.legend(loc='upper right', fontsize=10)
+        else:
+            # Fallback if full_signal_chains is not available
+            ax.scatter(eastings, northings, c='blue', s=15, alpha=0.6, zorder=2, marker='s')
         
         # Parse grid codes to find specific points for labeling
         label_points = {}
@@ -309,15 +339,15 @@ class KernelIndexArray:
                            textcoords='offset points', ha='right', va='center',
                            fontsize=10, fontweight='bold', color='darkred')
         
-        # Label columns on top (at N21)
-        for col in range(1, n_cols + 1):
+        # Label select columns on top to avoid overlap (E01, E03, E05)
+        for col in [1, 3, 5]:
             col_label = f"E{col:02d}"
             key = ('N021', col_label)
             if key in label_points:
                 east, north = label_points[key]
-                ax.annotate(col_label, xy=(east, north), xytext=(0, 10),
+                ax.annotate(col_label, xy=(east, north), xytext=(0, 15),
                            textcoords='offset points', ha='center', va='bottom',
-                           fontsize=10, fontweight='bold', color='darkblue')
+                           fontsize=8, fontweight='bold', color='darkblue', rotation=0)
         
         # Annotate CC000E01 with geographic coordinates
         key = ('C000', 'E01')
@@ -570,6 +600,8 @@ def get_array_index_map(
     antenna_numbers = np.full((n_rows, n_cols), "", dtype=object)
     snap_ports = np.full((n_rows, n_cols), None, dtype=object)
     snap_board_info = np.full((n_rows, n_cols), None, dtype=object)
+    packet_indices = np.full((n_rows, n_cols), -1, dtype=np.int16)
+    full_signal_chains = np.zeros((n_rows, n_cols), dtype=bool)
     coordinates = np.zeros((n_rows, n_cols, 3), dtype=np.float64)
     
     # Populate grid codes and kernel indices
@@ -674,6 +706,12 @@ def get_array_index_map(
                                 'packet_index': board_info.get('packet_index', -1),
                                 'adc_input': p1['port'],
                             }
+                            # Extract packet index
+                            packet_idx = board_info.get('packet_index', -1)
+                            if packet_idx >= 0:
+                                packet_indices[row, col] = packet_idx
+                                # Check for full signal chain (has antenna and connected to SNAP)
+                                full_signal_chains[row, col] = True
                 except Exception:
                     # SNAP ports not available for this antenna
                     pass
@@ -687,6 +725,8 @@ def get_array_index_map(
         antenna_numbers=antenna_numbers,
         snap_ports=snap_ports,
         snap_board_info=snap_board_info,
+        packet_indices=packet_indices,
+        full_signal_chains=full_signal_chains,
         coordinates=coordinates,
     )
 

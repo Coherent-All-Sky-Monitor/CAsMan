@@ -874,6 +874,12 @@ snap_board_info : np.ndarray
     2D array of SNAP board configuration dicts, shape (n_rows, n_cols).
     Each dict contains: ip_address, mac_address, serial_number, feng_id, 
     packet_index, adc_input. None for unassigned positions.
+packet_indices : np.ndarray
+    2D array of packet indices, shape (n_rows, n_cols).
+    -1 indicates no packet index (unassigned or unmapped positions).
+full_signal_chains : np.ndarray
+    2D boolean array indicating positions with complete signal chains.
+    True if antenna has full chain to SNAP, False otherwise.
 coordinates : np.ndarray
     3D array of coordinates, shape (n_rows, n_cols, 3).
     Each position contains [latitude, longitude, height] in decimal degrees and meters.
@@ -885,7 +891,7 @@ shape : tuple
 
 ##### __init__
 
-**Signature:** `__init__(kernel_indices: np.ndarray, grid_codes: np.ndarray, antenna_numbers: np.ndarray, snap_ports: np.ndarray, snap_board_info: Optional[np.ndarray], coordinates: Optional[np.ndarray])`
+**Signature:** `__init__(kernel_indices: np.ndarray, grid_codes: np.ndarray, antenna_numbers: np.ndarray, snap_ports: np.ndarray, snap_board_info: Optional[np.ndarray], packet_indices: Optional[np.ndarray], full_signal_chains: Optional[np.ndarray], coordinates: Optional[np.ndarray])`
 
 Initialize kernel index array container.
 
@@ -901,6 +907,10 @@ snap_ports : np.ndarray
 2D array of SNAP port tuples
 snap_board_info : np.ndarray, optional
 2D array of SNAP board configuration dicts
+packet_indices : np.ndarray, optional
+2D array of packet indices
+full_signal_chains : np.ndarray, optional
+2D boolean array indicating complete signal chains
 coordinates : np.ndarray, optional
 3D array of shape (n_rows, n_cols, 3) containing [lat, lon, height]
 
