@@ -11,6 +11,10 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+# Cache sync results to avoid repeated attempts in same session
+_sync_attempted = False
+_sync_failed = False
+
 
 def sync_databases(quiet: bool = True) -> bool:
     """
@@ -18,6 +22,9 @@ def sync_databases(quiet: bool = True) -> bool:
 
     This function is called automatically when the antenna module is imported.
     It downloads the latest databases if they're not already up-to-date.
+    
+    On first failure (e.g., rate limit), subsequent calls will skip sync and use
+    local databases to avoid repeated error messages.
 
     Args:
         quiet: If True, suppress informational logging (keeps errors/warnings)
@@ -25,6 +32,18 @@ def sync_databases(quiet: bool = True) -> bool:
     Returns:
         True if sync successful or local databases are up-to-date, False otherwise
     """
+    global _sync_attempted, _sync_failed
+    
+    # If sync already failed once, don't retry - just use local databases
+    if _sync_failed:
+        return True  # Continue with local databases
+    
+    # If sync was already attempted, don't retry
+    if _sync_attempted:
+        return True
+    
+    _sync_attempted = True
+    
     try:
         # Import here to avoid circular dependencies
         from casman.database.github_sync import get_github_sync_manager
@@ -64,7 +83,9 @@ def sync_databases(quiet: bool = True) -> bool:
                 latest_release = sync_manager.get_latest_release()
 
                 if latest_release is None:
-                    # No releases found or GitHub API failed
+                    # No releases found or GitHub API failed (rate limit, etc.)
+                    # Mark as failed so we don't retry
+                    _sync_failed = True
                     # Use stale local copy (graceful degradation)
                     logger.debug("Using local databases (GitHub API unavailable)")
                     return True
@@ -94,6 +115,7 @@ def sync_databases(quiet: bool = True) -> bool:
                 logger.setLevel(original_level)
 
     except Exception as e:
+        _sync_failed = True
         logger.error(f"Unexpected error during database sync: {e}")
         # Try to continue with local databases if they exist
         try:
@@ -203,15 +225,15 @@ def force_sync() -> bool:
         success = sync_manager.download_databases(snapshot=latest_release)
         
         if success:
-            print(f\"Database sync completed: {latest_release.release_name}\")
+            print(f"Database sync completed: {latest_release.release_name}")
         else:
-            print(\"Failed to download databases\")
+            print("Failed to download databases")
             if has_local_dbs:
-                print(\"  Using existing local databases\")
+                print("  Using existing local databases")
                 return True
         
         return success
 
     except Exception as e:
-        print(f\"Failed to sync databases: {e}\")
+        print(f"Failed to sync databases: {e}")
         return False

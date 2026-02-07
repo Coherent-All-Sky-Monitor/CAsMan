@@ -739,7 +739,7 @@ Supports both local project databases and synced XDG user databases.
 
 **Signature:** `get_database_path(db_name: str, db_dir: Optional[str]) -> str`
 
-Get the full path to a database file. Path resolution order: 1. Explicit db_dir parameter (for tests/custom setups) 2. Environment variables (CASMAN_PARTS_DB, CASMAN_ASSEMBLED_DB) 3. config.yaml settings (CASMAN_PARTS_DB, CASMAN_ASSEMBLED_DB) 4. XDG user data directory (~/.local/share/casman/databases/) 5. Project root database directory (development) 6. Fallback to cwd/database
+Get the full path to a database file. Path resolution order: 1. Explicit db_dir parameter (for tests/custom setups) 2. Environment variables (CASMAN_PARTS_DB, CASMAN_ASSEMBLED_DB) 3. config.yaml settings (CASMAN_PARTS_DB, CASMAN_ASSEMBLED_DB) 4. XDG user data directory (~/.local/share/casman/databases/) - preferred for casman.antenna 5. Project root database directory (only for full CAsMan project with setup.py)
 
 **Parameters:**
 

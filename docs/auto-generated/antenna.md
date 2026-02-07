@@ -14,7 +14,15 @@ grid coordinates to correlator kernel indices.
 
 ### sync
 
-Error analyzing module: unexpected character after line continuation character (<unknown>, line 206)
+Lightweight database synchronization for casman-antenna package.
+
+This module provides auto-sync functionality for antenna-only users
+who install casman-antenna via pip. It automatically downloads the latest
+databases from GitHub Releases on import.
+
+**Functions:**
+- `sync_databases()` - Synchronize databases from GitHub Releases
+- `force_sync()` - Force download of databases from GitHub Releases
 
 ### grid
 
@@ -171,6 +179,38 @@ Example
 **Classes:**
 - `AntennaPosition` - Complete antenna position information including coordinates and SNAP mapping
 - `AntennaArray` - Collection of antenna positions with baseline computation capabilities
+
+## Sync Module Details
+
+This module provides auto-sync functionality for antenna-only users
+who install casman-antenna via pip. It automatically downloads the latest
+databases from GitHub Releases on import.
+
+## Functions
+
+### sync_databases
+
+**Signature:** `sync_databases(quiet: bool) -> bool`
+
+Synchronize databases from GitHub Releases. This function is called automatically when the antenna module is imported. It downloads the latest databases if they're not already up-to-date. On first failure (e.g., rate limit), subsequent calls will skip sync and use local databases to avoid repeated error messages.
+
+**Returns:**
+
+True if sync successful or local databases are up-to-date, False otherwise
+
+---
+
+### force_sync
+
+**Signature:** `force_sync() -> bool`
+
+Force download of databases from GitHub Releases. This function checks if the local database is current, displays status information, and only downloads if an update is available.
+
+**Returns:**
+
+True if sync successful or databases are up-to-date, False otherwise
+
+---
 
 ## Grid Module Details
 

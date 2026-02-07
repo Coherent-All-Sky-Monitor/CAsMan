@@ -4,10 +4,13 @@ This module provides functions to traverse connection chains from antennas
 through the assembly to determine SNAP port assignments for both polarizations.
 """
 
+import logging
 import sqlite3
 from typing import List, Optional
 
 from casman.database.connection import get_database_path
+
+logger = logging.getLogger(__name__)
 
 
 def get_snap_port_for_chain(
@@ -43,6 +46,11 @@ def get_snap_port_for_chain(
     >>> get_snap_port_for_chain('ANT00001P1')
     {'snap_part': 'SNAP1A05', 'chassis': 1, 'slot': 'A', 'port': 5, 'chain': [...]}
     """
+    # Sync databases on first call (includes logging via sync_databases)
+    from casman.antenna.sync import sync_databases
+    
+    sync_databases(quiet=True)
+    
     if db_dir is not None:
         import os
 
@@ -161,6 +169,12 @@ def get_snap_ports_for_antenna(
     >>> ports['p2']
     None  # P2 chain not assembled yet
     """
+    # Sync databases on first call
+    from casman.antenna.sync import sync_databases
+    from casman.database.github_sync import get_github_sync_manager
+    
+    sync_databases(quiet=True)
+    
     from casman.database.antenna_positions import strip_polarization
     from casman.database.snap_boards import get_snap_board_info
 

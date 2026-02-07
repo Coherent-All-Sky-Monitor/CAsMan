@@ -11,6 +11,7 @@ For the core array with 43 rows (N021 to S021) and 6 columns (E01-E06):
 """
 
 from typing import Optional, Tuple
+import logging
 import numpy as np
 
 try:
@@ -21,6 +22,8 @@ except ImportError:
 
 from casman.config import get_config
 from casman.antenna.grid import parse_grid_code, format_grid_code
+
+logger = logging.getLogger(__name__)
 
 
 class KernelIndexArray:
@@ -306,8 +309,8 @@ class KernelIndexArray:
                            textcoords='offset points', ha='right', va='center',
                            fontsize=10, fontweight='bold', color='darkred')
         
-        # Label only E01 and E06 columns on top (at N21)
-        for col in [1, 6]:
+        # Label columns on top (at N21)
+        for col in range(1, n_cols + 1):
             col_label = f"E{col:02d}"
             key = ('N021', col_label)
             if key in label_points:
@@ -540,6 +543,11 @@ def get_array_index_map(
     >>> info['snap_board_info']['packet_index']
     5
     """
+    # Sync databases on first call (includes logging via sync_databases)
+    from casman.antenna.sync import sync_databases
+    
+    sync_databases(quiet=True)
+    
     # Check if kernel index is enabled for this array (default: True for core)
     default_enabled = array_name == "core"  # Core array enabled by default
     enabled = get_config(f"grid.{array_name}.kernel_index.enabled", default_enabled)

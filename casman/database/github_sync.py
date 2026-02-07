@@ -156,7 +156,7 @@ class GitHubSyncManager:
         try:
             # Get all releases sorted by date
             url = f"{self.api_base}/releases"
-            response = requests.get(url, headers=self._get_headers(), timeout=10)
+            response = requests.get(url, headers=self._get_headers(include_auth=True), timeout=10)
             response.raise_for_status()
 
             releases = response.json()
@@ -209,9 +209,40 @@ class GitHubSyncManager:
 
             return None
 
+        except requests.HTTPError as e:
+            # Check for rate limit error
+            if "403" in str(e) and "rate limit" in str(e).lower():
+                local_dbs = self._get_local_db_info()
+                logger.warning(
+                    f"GitHub API rate limit exceeded. Using local database: {local_dbs}"
+                )
+                logger.warning(
+                    "To increase rate limit, set GITHUB_TOKEN environment variable "
+                    "(5000 requests/hour vs 60 requests/hour)"
+                )
+            else:
+                logger.error(f"Failed to fetch releases from GitHub: {e}")
+            return None
         except requests.RequestException as e:
             logger.error(f"Failed to fetch releases from GitHub: {e}")
             return None
+
+    def _get_local_db_info(self) -> str:
+        """Get information about locally available databases."""
+        local_dbs = []
+        parts_db = self.local_db_dir / "parts.db"
+        assembled_db = self.local_db_dir / "assembled_casm.db"
+        
+        if parts_db.exists():
+            size_mb = parts_db.stat().st_size / (1024 * 1024)
+            local_dbs.append(f"{parts_db} ({size_mb:.1f} MB)")
+        if assembled_db.exists():
+            size_mb = assembled_db.stat().st_size / (1024 * 1024)
+            local_dbs.append(f"{assembled_db} ({size_mb:.1f} MB)")
+        
+        if not local_dbs:
+            return "No local databases found"
+        return ", ".join(local_dbs)
 
     def download_databases(
         self, snapshot: Optional[DatabaseSnapshot] = None, force: bool = False

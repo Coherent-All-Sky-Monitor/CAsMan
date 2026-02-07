@@ -1,29 +1,35 @@
 #!/usr/bin/env python3
 """
-Plot CASM grid positions from grid_positions.csv.
+Plot CASM grid positions from parts.db database.
 
 Shows a scatter plot of all grid positions with labeled axes.
 Only labels major rows (S21, C00, N21) and columns (E1-E6).
 """
 
-import csv
+import sqlite3
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
-def plot_grid_positions(csv_file='database/grid_positions.csv'):
-    """Plot grid positions from CSV file."""
-    # Read data
+def plot_grid_positions(db_path='database/parts.db'):
+    """Plot grid positions from parts.db database."""
+    # Read data from database
     grid_codes = []
     latitudes = []
     longitudes = []
     
-    with open(csv_file, 'r') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            if row['latitude'] and row['longitude']:
-                grid_codes.append(row['grid_code'])
-                latitudes.append(float(row['latitude']))
-                longitudes.append(float(row['longitude']))
+    with sqlite3.connect(db_path) as conn:
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT grid_code, latitude, longitude
+            FROM grid_positions
+            WHERE latitude IS NOT NULL AND longitude IS NOT NULL
+        """)
+        
+        for row in cursor.fetchall():
+            grid_codes.append(row['grid_code'])
+            latitudes.append(float(row['latitude']))
+            longitudes.append(float(row['longitude']))
     
     # Create figure
     fig, ax = plt.subplots(figsize=(12, 14))
@@ -91,5 +97,5 @@ def plot_grid_positions(csv_file='database/grid_positions.csv'):
 
 if __name__ == '__main__':
     import sys
-    csv_file = sys.argv[1] if len(sys.argv) > 1 else 'database/grid_positions.csv'
-    plot_grid_positions(csv_file)
+    db_path = sys.argv[1] if len(sys.argv) > 1 else 'database/parts.db'
+    plot_grid_positions(db_path)
