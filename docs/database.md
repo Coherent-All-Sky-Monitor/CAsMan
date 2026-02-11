@@ -26,10 +26,12 @@ CAsMan uses **SQLite** databases to manage parts inventory, assembly tracking, a
 
 ### Database Location
 
-Default location: `database/` in project root
+Default location:
+- XDG data directory (`~/.local/share/casman/databases/`) if present
+- Otherwise the project `database/` directory
 
 Can be customized via:
-- Environment variable: `CASMAN_DATABASE_DIR`
+- Environment variables: `CASMAN_PARTS_DB`, `CASMAN_ASSEMBLED_DB`
 - Configuration file: `config.yaml`
 - Command-line parameter in functions
 
@@ -64,8 +66,8 @@ CREATE TABLE parts (
 |--------|------|-------------|-------------|
 | `id` | INTEGER | PRIMARY KEY | Auto-incrementing unique identifier |
 | `part_number` | TEXT | UNIQUE | Unique part identifier (e.g., `ANT00001P1`, `LNA00042P2`) |
-| `part_type` | TEXT | - | Type of part: `ANTENNA`, `LNA`, `COAXSHORT`, `COAXLONG`, `BACBOARD`, `SNAP` |
-| `polarization` | TEXT | - | Polarization: `P1` or `P2` for dual-pol parts, `NULL` for single parts |
+| `part_type` | TEXT | - | Type of part: `ANTENNA`, `LNA`, `COAXSHORT`, `COAXLONG`, `BACBOARD` (SNAP is validated by format and typically not stored in parts.db) |
+| `polarization` | TEXT | - | Polarization value provided at creation (typically `1` or `2`); part number itself encodes `P1`/`P2` |
 | `date_created` | TEXT | - | ISO 8601 timestamp when part was first added |
 | `date_modified` | TEXT | - | ISO 8601 timestamp of last modification |
 
@@ -76,16 +78,16 @@ CREATE TABLE parts (
 - **COAXSHORT**: `CXS{5-digit}P{1|2}` (e.g., `CXS00123P1`)
 - **COAXLONG**: `CXL{5-digit}P{1|2}` (e.g., `CXL00456P2`)
 - **BACBOARD**: `BAC{5-digit}P{1|2}` (e.g., `BAC00789P1`)
-- **SNAP**: `SNAP{chassis:02d}{slot:02d}{port:02d}` (e.g., `SNAP010203`)
+- **SNAP**: `SNAP{chassis}{slot}{port:02d}` (e.g., `SNAP1A05`)
 
 ##### Example Data
 
 ```sql
 INSERT INTO parts VALUES 
-    (1, 'ANT00001P1', 'ANTENNA', 'P1', '2025-01-15T10:30:00Z', '2025-01-15T10:30:00Z'),
-    (2, 'ANT00001P2', 'ANTENNA', 'P2', '2025-01-15T10:30:00Z', '2025-01-15T10:30:00Z'),
-    (3, 'LNA00042P1', 'LNA', 'P1', '2025-01-16T14:20:00Z', '2025-01-16T14:20:00Z'),
-    (4, 'SNAP010203', 'SNAP', NULL, '2025-01-17T09:15:00Z', '2025-01-17T09:15:00Z');
+    (1, 'ANT00001P1', 'ANTENNA', '1', '2025-01-15T10:30:00Z', '2025-01-15T10:30:00Z'),
+    (2, 'ANT00001P2', 'ANTENNA', '2', '2025-01-15T10:30:00Z', '2025-01-15T10:30:00Z'),
+    (3, 'LNA00042P1', 'LNA', '1', '2025-01-16T14:20:00Z', '2025-01-16T14:20:00Z'),
+    (4, 'SNAP1A05', 'SNAP', NULL, '2025-01-17T09:15:00Z', '2025-01-17T09:15:00Z');
 ```
 
 ##### Common Queries
@@ -95,7 +97,7 @@ INSERT INTO parts VALUES
 SELECT * FROM parts WHERE part_type = 'ANTENNA';
 
 -- Get parts by polarization
-SELECT * FROM parts WHERE polarization = 'P1';
+SELECT * FROM parts WHERE polarization = '1';
 
 -- Find a specific part
 SELECT * FROM parts WHERE part_number = 'ANT00001P1';

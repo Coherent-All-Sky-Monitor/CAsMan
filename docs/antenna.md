@@ -148,7 +148,7 @@ If you don't have a local database yet, download it automatically:
 ```python
 from casman.antenna import AntennaArray
 
-# Download and load in one line (uses public URL from config.yaml)
+# Download and load in one line (uses GitHub Releases sync configuration)
 array = AntennaArray.from_database('database/parts.db', sync_first=True)
 print(f"Downloaded and loaded {len(array)} antennas")
 ```
@@ -158,7 +158,7 @@ print(f"Downloaded and loaded {len(array)} antennas")
 ```python
 from casman.antenna import sync_database
 
-# Option 1: Auto-download using pre-configured public URL (no credentials!)
+# Option 1: Auto-download using GitHub Releases (no credentials for public repos)
 result = sync_database('parts.db')
 print(result['message'])
 
@@ -185,13 +185,13 @@ The sync system intelligently handles updates:
 ```yaml
 database:
   sync:
-    enabled: true
-    backend: github
     github_owner: Coherent-All-Sky-Monitor
     github_repo: CAsMan
 ```
 
 **Note:** GitHub Releases provide public download access with no credentials required.
+
+Auto-sync on import is best-effort and controlled by `database.sync.auto_sync_on_import`.
 
 ---
 

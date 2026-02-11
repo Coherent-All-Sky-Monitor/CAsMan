@@ -67,14 +67,14 @@ def record_assembly_connection(
     Examples
     --------
     >>> success = record_assembly_connection(
-    ...     "ANTP1-00001", "ANTENNA", "X", "2024-01-01 10:00:00",
-    ...     "LNA-P1-00001", "LNA", "X", "2024-01-01 10:05:00"
+    ...     "ANT00001P1", "ANTENNA", "P1", "2024-01-01 10:00:00",
+    ...     "LNA00001P1", "LNA", "P1", "2024-01-01 10:05:00"
     ... )
     >>> print(success)
     True
     >>> success = record_assembly_connection(
-    ...     "ANTP1-00001", "ANTENNA", "X", "2024-01-01 10:00:00",
-    ...     "LNA-P1-00001", "LNA", "X", "2024-01-01 10:10:00",
+    ...     "ANT00001P1", "ANTENNA", "P1", "2024-01-01 10:00:00",
+    ...     "LNA00001P1", "LNA", "P1", "2024-01-01 10:10:00",
     ...     connection_status="disconnected"
     ... )
     """
@@ -171,8 +171,8 @@ def record_assembly_disconnection(
     Examples
     --------
     >>> success = record_assembly_disconnection(
-    ...     "ANTP1-00001", "ANTENNA", "X", "2024-01-01 10:00:00",
-    ...     "LNA-P1-00001", "LNA", "X", "2024-01-01 10:10:00"
+    ...     "ANT00001P1", "ANTENNA", "P1", "2024-01-01 10:00:00",
+    ...     "LNA00001P1", "LNA", "P1", "2024-01-01 10:10:00"
     ... )
     >>> print(success)
     True

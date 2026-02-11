@@ -99,8 +99,8 @@ of connected part numbers.
 
 ```python
 >>> chains = build_connection_chains()
->>> print(chains.get('ANTP1-00001', []))
-['LNA-P1-00001']
+>>> print(chains.get('ANT00001P1', []))
+['LNA00001P1']
 ```
 
 ---
@@ -124,8 +124,8 @@ structure showing how parts are connected to each other.
 >>> print_assembly_chains()
 Assembly Chains:
 ================
-ANTP1-00001 ---> LNA-P1-00001 ---> CX1-P1-00001
-ANTP1-00002 ---> LNA-P1-00002
+ANT00001P1 ---> LNA00001P1 ---> CXS00001P1
+ANT00002P1 ---> LNA00002P1
 ```
 
 ---
@@ -175,14 +175,14 @@ True if the connection was recorded successfully, False otherwise.
 
 ```python
 >>> success = record_assembly_connection(
-...     "ANTP1-00001", "ANTENNA", "X", "2024-01-01 10:00:00",
-...     "LNA-P1-00001", "LNA", "X", "2024-01-01 10:05:00"
+...     "ANT00001P1", "ANTENNA", "P1", "2024-01-01 10:00:00",
+...     "LNA00001P1", "LNA", "P1", "2024-01-01 10:05:00"
 ... )
 >>> print(success)
 True
 >>> success = record_assembly_connection(
-...     "ANTP1-00001", "ANTENNA", "X", "2024-01-01 10:00:00",
-...     "LNA-P1-00001", "LNA", "X", "2024-01-01 10:10:00",
+...     "ANT00001P1", "ANTENNA", "P1", "2024-01-01 10:00:00",
+...     "LNA00001P1", "LNA", "P1", "2024-01-01 10:10:00",
 ...     connection_status="disconnected"
 ... )
 ```
@@ -225,8 +225,8 @@ True if the disconnection was recorded successfully, False otherwise.
 
 ```python
 >>> success = record_assembly_disconnection(
-...     "ANTP1-00001", "ANTENNA", "X", "2024-01-01 10:00:00",
-...     "LNA-P1-00001", "LNA", "X", "2024-01-01 10:10:00"
+...     "ANT00001P1", "ANTENNA", "P1", "2024-01-01 10:00:00",
+...     "LNA00001P1", "LNA", "P1", "2024-01-01 10:10:00"
 ... )
 >>> print(success)
 True

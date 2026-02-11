@@ -1,9 +1,9 @@
 # GitHub Releases Database Sync - Implementation Summary
 
 ## Overview
-Implemented a complete GitHub Releases-based database synchronization system to replace the existing Cloudflare R2 backend. The system enables:
+Implemented a GitHub Releases-based database synchronization system. The system enables:
 - **Client-side**: Automatic database downloads for pip-installed `casman-antenna` users
-- **Server-side**: Manual/automatic database uploads to GitHub Releases via web UI or CLI
+- **Server-side**: Manual database uploads to GitHub Releases via web UI or CLI
 
 ## Architecture
 
@@ -19,8 +19,7 @@ Implemented a complete GitHub Releases-based database synchronization system to 
 3. **Restore capability**: `casman database restore --latest` to restore from backups
 4. **Web UI**: Admin panel with "Sync to GitHub" button
 5. **CLI commands**: `casman database push/pull/status/restore`
-6. **Configurable auto-push**: After N scans (default: 30) or N hours (default: 1)
-7. **Requires GITHUB_TOKEN**: Personal access token with `repo` scope
+6. **Requires GITHUB_TOKEN**: Personal access token with `repo` scope
 
 ## Files Created/Modified
 
@@ -40,9 +39,7 @@ Implemented a complete GitHub Releases-based database synchronization system to 
 ### Modified Files
 1. **config.yaml**
    - Added `database.sync.github_owner`, `github_repo`, `github_token`
-   - Added `database.sync.client.*` settings
-   - Added `database.sync.server.*` settings (auto-push configuration)
-   - Changed default backend from `r2` to `github`
+   - Added `database.sync.auto_sync_on_import`
 
 2. **casman/antenna/__init__.py**
    - Added auto-sync call on module import
@@ -75,24 +72,11 @@ Implemented a complete GitHub Releases-based database synchronization system to 
 ```yaml
 database:
   sync:
-    enabled: true
-    backend: github  # Changed from 'r2' to 'github'
-    
     github_owner: Coherent-All-Sky-Monitor
     github_repo: CAsMan
     # github_token: ghp_xxxxx  # Set via GITHUB_TOKEN env var
     
-    auto_sync_on_import: true
-    
-    client:
-      check_on_import: true
-      use_stale_on_failure: true
-    
-    server:
-      auto_push_enabled: true
-      push_after_scans: 30
-      push_after_hours: 1.0
-      keep_releases: 10
+      auto_sync_on_import: true
 ```
 
 ### Environment Variables
@@ -147,13 +131,6 @@ casman database status
 2. Click "Sync to GitHub" button
 3. Status shows latest release info
 
-## Auto-Push Trigger Logic
-The server can automatically push databases to GitHub after changes:
-- **Trigger**: After N scans OR N hours (whichever comes first)
-- **Scans**: Connect/disconnect parts, assign/remove antenna positions
-- **Configuration**: `push_after_scans` (default: 30), `push_after_hours` (default: 1.0)
-- **Implementation**: Through web application (no cron jobs required)
-
 ## Database Files
 - `parts.db`: Part inventory database (~324 KB)
 - `assembled_casm.db`: Assembly chain database (~16 KB)
@@ -183,13 +160,6 @@ The server can automatically push databases to GitHub after changes:
 - [ ] XDG path resolution
 - [ ] Database validation (SQLite integrity check)
 
-## Migration from Cloudflare R2
-The new GitHub sync system coexists with the old R2 system:
-- Old code: `casman/database/sync.py` (780 lines, R2-based)
-- New code: `casman/database/github_sync.py` (510 lines, GitHub-based)
-- Config: `backend: github` (was `backend: r2`)
-- To migrate: Change backend setting and set GITHUB_TOKEN
-
 ## Advantages Over Cloudflare R2
 1. **Free for public repos**: No storage costs
 2. **No authentication for downloads**: Public releases, no credentials needed
@@ -199,8 +169,6 @@ The new GitHub sync system coexists with the old R2 system:
 6. **Smaller attack surface**: No S3-compatible API keys to manage
 
 ## Future Enhancements
-- [ ] Add auto-push trigger logic to web application
 - [ ] Add database diff/changelog in release descriptions
 - [ ] Add download progress indicators for large databases
 - [ ] Add signature verification for database integrity
-- [ ] Add multiple backend support (GitHub + R2 fallback)

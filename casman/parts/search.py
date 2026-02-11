@@ -31,7 +31,8 @@ def search_parts(
     part_type : Optional[str]
         Filter by part type (e.g., "ANTENNA")
     polarization : Optional[str]
-        Filter by polarization (e.g., "P1")
+        Filter by polarization using a part-number LIKE pattern of
+        "%-{polarization}-%" (current implementation).
     part_number_pattern : Optional[str]
         Filter by part number pattern (supports SQL LIKE syntax)
     created_after : Optional[str]
@@ -125,7 +126,8 @@ def search_by_prefix(prefix: str, db_dir: Optional[str] = None) -> List[Part]:
     Parameters
     ----------
     prefix : str
-        The part prefix to search for
+        The part prefix to search for. Uses SQL LIKE pattern
+        "{prefix}-%" (current implementation).
     db_dir : Optional[str]
         Custom database directory
 

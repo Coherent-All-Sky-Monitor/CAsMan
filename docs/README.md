@@ -123,12 +123,15 @@ casman scan connect                  # Full interactive scanning and assembly wo
 casman scan connection               # Basic connection scanning
 casman scan disconnect               # Full interactive disconnection workflow
 casman scan disconnection            # Basic disconnection scanning
+casman scan remove                   # Disconnect all active connections for a part
 
 # Database management
 casman database clear                # Clear database contents with safety confirmations
 casman database clear --parts        # Clear only parts database
 casman database clear --assembled    # Clear only assembly database
 casman database print               # Display formatted database contents
+casman database load-coordinates     # Load grid coordinates from CSV
+casman database load-snap-boards     # Load SNAP board configurations from CSV
 
 # Visualization with duplicate detection
 casman visualize chains              # ASCII chain visualization
@@ -136,8 +139,10 @@ casman visualize chains              # ASCII chain visualization
 # Web interfaces
 casman web                           # Launch unified web app (scanner + visualization)
 casman web --mode prod               # Launch production server with Gunicorn
-casman web --scanner-only            # Launch scanner interface only (port 5000)
-casman web --visualize-only          # Launch visualization interface only (port 5000)
+casman web --scanner-only            # Launch scanner interface only (port from config.yaml)
+casman web --visualize-only          # Launch visualization interface only (port from config.yaml)
+
+# Defaults come from config.yaml (web_app.dev.port / web_app.production.port)
 
 # Barcode generation
 casman barcode printpages --part-type ANTENNA --start-number 1 --end-number 50
@@ -193,7 +198,7 @@ The `casman scan connect` command provides an interactive scanning experience:
 
 - **Real-time part validation** against parts database
 
-- **SNAP part validation** using format checks (SNAP<chassis><slot><port>)  
+- **SNAP part validation** using format checks (e.g., SNAP1A05)
 
 - **Connection sequence validation** (enforces ANT→LNA→COAXSHORT→COAXLONG→BACBOARD→SNAP)
 
@@ -538,8 +543,8 @@ casman visualize chains
 ```sh
 
 # Unified web application
-casman web                           # Both scanner and visualization (dev mode, port 5000)
-casman web --mode prod               # Production mode with Gunicorn (port 8000)
+casman web                           # Both scanner and visualization (dev mode, port from config.yaml)
+casman web --mode prod               # Production mode with Gunicorn (port from config.yaml)
 casman web --scanner-only            # Scanner interface only
 casman web --visualize-only          # Visualization interface only
 casman web --port 8080               # Custom port

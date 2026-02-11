@@ -4,7 +4,12 @@ This document describes how to manage geographic coordinates (latitude, longitud
 
 ## Overview
 
-The `antenna_positions` table in `parts.db` includes optional coordinate columns:
+The `parts.db` database includes coordinate data in two places:
+
+- `grid_positions` for all grid locations (independent of antenna assignments)
+- `antenna_positions` for assigned antennas (optional coordinates)
+
+The `antenna_positions` table includes optional coordinate columns:
 - `latitude` (REAL): Latitude in decimal degrees
 - `longitude` (REAL): Longitude in decimal degrees  
 - `height` (REAL): Height in meters above reference
@@ -60,8 +65,8 @@ casman database load-coordinates --csv my_survey.csv
 ```
 
 The command will report:
-- Number of positions updated
-- Number of positions skipped (no data or not in database)
+- Number of positions loaded/updated
+- Number of positions skipped
 - Any errors encountered
 
 Example output:
@@ -80,7 +85,7 @@ Coordinate data loaded successfully
 Query the database to verify coordinates were loaded:
 
 ```bash
-sqlite3 database/parts.db "SELECT antenna_number, grid_code, latitude, longitude, height FROM antenna_positions WHERE latitude IS NOT NULL;"
+sqlite3 database/parts.db "SELECT grid_code, latitude, longitude, height FROM grid_positions WHERE latitude IS NOT NULL;"
 ```
 
 ## Workflow
@@ -88,13 +93,13 @@ sqlite3 database/parts.db "SELECT antenna_number, grid_code, latitude, longitude
 1. **Field Survey**: Measure coordinates with GPS equipment or total station
 2. **Data Entry**: Enter coordinates into `database/grid_positions.csv`
 3. **Version Control**: Commit CSV changes with `git commit`
-4. **Load**: Run `casman database load-coordinates` to update database
+4. **Load**: Run `casman database load-coordinates` to update `grid_positions`
 5. **Deploy**: Updated coordinates are now available in the application
 
 ## Important Notes
 
-- **Updates Only**: The loader only updates existing antenna position records. It does not create new antenna assignments.
-- **Grid Position Must Exist**: An antenna must be assigned to a grid position before coordinates can be loaded for that position.
+- **Updates/Inserts**: The loader updates existing grid positions and inserts new ones into `grid_positions`.
+- **Independent of Assignments**: Loading coordinates does not require antennas to be assigned.
 - **Overwrites Data**: Loading coordinates will overwrite existing coordinate values for that grid position.
 - **CSV-Based**: No web UI for coordinate entry - all changes happen via CSV file editing.
 - **Version Controlled**: CSV file should be committed to git for change tracking.
@@ -103,7 +108,7 @@ sqlite3 database/parts.db "SELECT antenna_number, grid_code, latitude, longitude
 
 1. Assign an antenna to a position (if not already assigned):
    ```bash
-   # Via scanner web interface at http://localhost:5001/scanner
+   # Via scanner web interface at http://localhost:<dev-port>/scanner
    # Scan antenna ANT00001 and assign to CN021E01
    ```
 
@@ -120,7 +125,7 @@ sqlite3 database/parts.db "SELECT antenna_number, grid_code, latitude, longitude
 
 4. Verify:
    ```bash
-   sqlite3 database/parts.db "SELECT * FROM antenna_positions WHERE grid_code='CN021E01';"
+   sqlite3 database/parts.db "SELECT * FROM grid_positions WHERE grid_code='CN021E01';"
    ```
 
 ## Coordinate Systems
@@ -148,10 +153,8 @@ if pos:
     print(f"System: {pos.get('coordinate_system')}")
 ```
 
-All position retrieval functions return coordinate data when available:
-- `get_antenna_position(antenna_number)` - Returns dict with coordinates
-- `get_antenna_at_position(grid_code)` - Returns dict with coordinates  
-- `get_all_antenna_positions(array_id='C')` - Returns list of dicts with coordinates
+If you need to update coordinates on antenna assignments directly, use
+`load_grid_coordinates_from_csv()` from the antenna_positions module.
 
 ## Troubleshooting
 
