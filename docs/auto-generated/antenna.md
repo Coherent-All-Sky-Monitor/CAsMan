@@ -90,6 +90,7 @@ Functions provided:
 All functions raise ``ValueError`` on invalid inputs.
 
 **Functions:**
+- `get_all_arrays()` - Get all array configurations, flattening outriggers list if needed
 - `load_core_layout()` - Load core array layout limits from configuration
 - `load_array_layout()` - Load array layout limits from configuration for any grid
 - `get_array_name_for_id()` - Look up the array name (config key) for a given array ID letter
@@ -277,6 +278,31 @@ All functions raise ``ValueError`` on invalid inputs.
 
 ## Functions
 
+### get_all_arrays
+
+**Signature:** `get_all_arrays() -> dict`
+
+Get all array configurations, flattening outriggers list if needed.
+
+**Returns:**
+
+dict
+Dictionary mapping array_name -> array_config.
+Core array uses name "core".
+Outriggers use names like "outrigger_A", "outrigger_O" based on array_id.
+
+**Examples:**
+
+```python
+>>> arrays = get_all_arrays()
+>>> "core" in arrays
+True
+>>> "outrigger_A" in arrays  # If configured
+True
+```
+
+---
+
 ### load_core_layout
 
 **Signature:** `load_core_layout() -> Tuple[str, int, int, int, bool]`
@@ -304,7 +330,8 @@ Load array layout limits from configuration for any grid.
 **Parameters:**
 
 array_name : str
-Name of the array section in config (e.g., 'core', 'outriggers').
+Name of the array (e.g., 'core', 'outriggers', 'outrigger_A', 'outrigger_O').
+For multi-outrigger configs, use 'outrigger_X' where X is the array_id.
 
 **Returns:**
 
@@ -314,14 +341,16 @@ Tuple containing bounds for validation.
 **Raises:**
 
 KeyError
-If required configuration keys are missing.
+If required configuration keys are missing or array not found.
 
 **Examples:**
 
 ```python
 >>> load_array_layout('core')
 ('C', 21, 21, 6, True)
->>> load_array_layout('outriggers')
+>>> load_array_layout('outrigger_A')  # New multi-outrigger format
+('A', 21, 21, 6, True)
+>>> load_array_layout('outriggers')  # Old single-outrigger format
 ('O', 10, 10, 4, False)
 ```
 
@@ -336,20 +365,22 @@ Look up the array name (config key) for a given array ID letter.
 **Parameters:**
 
 array_id : str
-Single letter array identifier (e.g., 'C', 'O').
+Single letter array identifier (e.g., 'C', 'O', 'A').
 
 **Returns:**
 
 str or None
-Array name (e.g., 'core', 'outriggers') or None if not found.
+Array name (e.g., 'core', 'outrigger_A', 'outriggers') or None if not found.
 
 **Examples:**
 
 ```python
 >>> get_array_name_for_id('C')
 'core'
->>> get_array_name_for_id('O')
-'outriggers'
+>>> get_array_name_for_id('A')  # New multi-outrigger format
+'outrigger_A'
+>>> get_array_name_for_id('O')  # Could be 'outriggers' or 'outrigger_O'
+'outrigger_O'
 >>> get_array_name_for_id('Z')
 None
 ```

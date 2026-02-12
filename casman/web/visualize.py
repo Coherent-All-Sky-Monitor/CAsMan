@@ -366,23 +366,40 @@ def visualize_index():
 @visualize_bp.route("/grid")
 def antenna_grid():
     """Display antenna grid position visualization."""
-    from casman.antenna.grid import load_core_layout, load_array_layout, format_grid_code, get_array_name_for_id
+    from casman.antenna.grid import load_core_layout, load_array_layout, format_grid_code, get_array_name_for_id, get_all_arrays
     from casman.config import get_config
-    from casman.database.antenna_positions import get_all_antenna_positions
+    from casman.database.antenna_positions import get_all_antenna_positions, get_antenna_position
     from casman.antenna.chain import get_snap_ports_for_antenna, format_snap_port
     from casman.antenna.kernel_index import grid_to_kernel_index
 
     # Get array selection from query parameter (default to core)
-    array_name = request.args.get("array", "core").strip().lower()
+    array_name = request.args.get("array", "core").strip()
     
-    # Load all available arrays
-    grid_config = get_config("grid", {})
-    available_arrays = {name: data for name, data in grid_config.items() 
-                       if isinstance(data, dict) and "array_id" in data}
+    # Check if searching by antenna - if so, auto-detect the array
+    search_antenna = request.args.get("antenna", "").strip()
+    if search_antenna and not request.args.get("array"):
+        # Look up antenna position to determine which array it's in
+        antenna_pos = get_antenna_position(search_antenna)
+        if antenna_pos and antenna_pos.get("array_id"):
+            detected_array = get_array_name_for_id(antenna_pos["array_id"])
+            if detected_array:
+                array_name = detected_array
     
-    # Validate requested array, default to core if invalid
+    # Load all available arrays (flattened structure handles old dict and new list formats)
+    available_arrays = get_all_arrays()
+    
+    # Validate requested array, default to core if invalid (case-insensitive check)
     if array_name not in available_arrays:
-        array_name = "core"
+        # Try case-insensitive match
+        array_name_lower = array_name.lower()
+        matched = False
+        for arr_name in available_arrays.keys():
+            if arr_name.lower() == array_name_lower:
+                array_name = arr_name  # Use the correct case from config
+                matched = True
+                break
+        if not matched:
+            array_name = "core"
     
     # Load selected array configuration
     try:

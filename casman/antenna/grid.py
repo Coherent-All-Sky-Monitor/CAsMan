@@ -125,6 +125,53 @@ class AntennaGridPosition:
             raise ValueError("grid_code mismatch with normalized components")
 
 
+def get_all_arrays() -> dict:
+    """Get all array configurations, flattening outriggers list if needed.
+
+    Returns
+    -------
+    dict
+        Dictionary mapping array_name -> array_config.
+        Core array uses name "core".
+        Outriggers use names like "outrigger_A", "outrigger_O" based on array_id.
+
+    Examples
+    --------
+    >>> arrays = get_all_arrays()
+    >>> "core" in arrays
+    True
+    >>> "outrigger_A" in arrays  # If configured
+    True
+
+    Notes
+    -----
+    Supports both old dict-based and new list-based outrigger configurations:
+    - Old: grid.outriggers: {array_id: "O", ...}  -> "outriggers"
+    - New: grid.outriggers: [{array_id: "A", ...}, ...] -> "outrigger_A", "outrigger_O"
+    """
+    grid_config = get_config("grid", {})
+    arrays = {}
+
+    # Add core array if it exists
+    if "core" in grid_config and isinstance(grid_config["core"], dict):
+        arrays["core"] = grid_config["core"]
+
+    # Add outriggers (supports both dict and list formats)
+    if "outriggers" in grid_config:
+        outriggers = grid_config["outriggers"]
+        if isinstance(outriggers, dict):
+            # Old format: single outrigger dict
+            arrays["outriggers"] = outriggers
+        elif isinstance(outriggers, list):
+            # New format: list of outrigger dicts
+            for outrigger in outriggers:
+                if isinstance(outrigger, dict) and "array_id" in outrigger:
+                    array_id = outrigger["array_id"]
+                    arrays[f"outrigger_{array_id}"] = outrigger
+
+    return arrays
+
+
 def load_core_layout() -> Tuple[str, int, int, int, bool]:
     """Load core array layout limits from configuration.
 
@@ -158,7 +205,8 @@ def load_array_layout(array_name: str) -> Tuple[str, int, int, int, bool]:
     Parameters
     ----------
     array_name : str
-        Name of the array section in config (e.g., 'core', 'outriggers').
+        Name of the array (e.g., 'core', 'outriggers', 'outrigger_A', 'outrigger_O').
+        For multi-outrigger configs, use 'outrigger_X' where X is the array_id.
 
     Returns
     -------
@@ -168,22 +216,33 @@ def load_array_layout(array_name: str) -> Tuple[str, int, int, int, bool]:
     Raises
     ------
     KeyError
-        If required configuration keys are missing.
+        If required configuration keys are missing or array not found.
 
     Examples
     --------
     >>> load_array_layout('core')
     ('C', 21, 21, 6, True)
-    >>> load_array_layout('outriggers')
+    >>> load_array_layout('outrigger_A')  # New multi-outrigger format
+    ('A', 21, 21, 6, True)
+    >>> load_array_layout('outriggers')  # Old single-outrigger format
     ('O', 10, 10, 4, False)
     """
-    array_id = get_config(f"grid.{array_name}.array_id")
-    if array_id is None:
+    # Use the flattened array structure
+    all_arrays = get_all_arrays()
+    
+    if array_name not in all_arrays:
         raise KeyError(f"Array '{array_name}' not found in configuration")
-    north_rows = get_config(f"grid.{array_name}.north_rows")
-    south_rows = get_config(f"grid.{array_name}.south_rows")
-    east_columns = get_config(f"grid.{array_name}.east_columns")
-    allow_expansion = bool(get_config(f"grid.{array_name}.allow_expansion", False))
+    
+    array_config = all_arrays[array_name]
+    array_id = array_config.get("array_id")
+    if array_id is None:
+        raise KeyError(f"Array '{array_name}' missing array_id")
+    
+    north_rows = array_config.get("north_rows")
+    south_rows = array_config.get("south_rows")
+    east_columns = array_config.get("east_columns")
+    allow_expansion = bool(array_config.get("allow_expansion", False))
+    
     return (
         str(array_id),
         int(north_rows),
@@ -199,26 +258,28 @@ def get_array_name_for_id(array_id: str) -> Optional[str]:
     Parameters
     ----------
     array_id : str
-        Single letter array identifier (e.g., 'C', 'O').
+        Single letter array identifier (e.g., 'C', 'O', 'A').
 
     Returns
     -------
     str or None
-        Array name (e.g., 'core', 'outriggers') or None if not found.
+        Array name (e.g., 'core', 'outrigger_A', 'outriggers') or None if not found.
 
     Examples
     --------
     >>> get_array_name_for_id('C')
     'core'
-    >>> get_array_name_for_id('O')
-    'outriggers'
+    >>> get_array_name_for_id('A')  # New multi-outrigger format
+    'outrigger_A'
+    >>> get_array_name_for_id('O')  # Could be 'outriggers' or 'outrigger_O'
+    'outrigger_O'
     >>> get_array_name_for_id('Z')
     None
     """
     try:
-        # Get all grid configurations
-        grid_config = get_config("grid", {})
-        for array_name, array_data in grid_config.items():
+        # Use flattened array structure
+        all_arrays = get_all_arrays()
+        for array_name, array_data in all_arrays.items():
             if isinstance(array_data, dict) and array_data.get("array_id") == array_id:
                 return array_name
     except Exception:
@@ -455,4 +516,5 @@ __all__ = [
     "load_core_layout",
     "load_array_layout",
     "get_array_name_for_id",
+    "get_all_arrays",
 ]

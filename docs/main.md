@@ -388,7 +388,7 @@ CAsMan provides a complete system for assigning antennas to physical grid positi
 
 **Grid Format:** `[A-Z][N/C/S][000-999]E[01-99]`
 
-- **Array ID** (A-Z): Single letter identifying the array (C = core, O = outriggers)
+- **Array ID** (A-Z): Single letter identifying the array (C = core, A/O/etc = outriggers)
 - **Direction** (N/C/S): North, Center, or South of array center
 - **Offset** (000-999): Row offset (C must use 000, N/S must use 001-999)
 - **East Column** (01-99): 1-based east column index
@@ -397,11 +397,17 @@ CAsMan provides a complete system for assigning antennas to physical grid positi
 - `CN002E03` - Core array, North row 2, East column 3
 - `CC000E01` - Core array, Center row, East column 1  
 - `CS021E04` - Core array, South row 21, East column 4
+- `AN015E02` - Outrigger array A, North row 15, East column 2
+- `OS008E06` - Outrigger array O, South row 8, East column 6
 
 **Multi-Array Support:**
 CAsMan supports multiple independent antenna arrays configured in `config.yaml`:
 - **Core Array**: Primary 43×6 grid (21 north + center + 21 south rows, 6 columns)
-- **Outrigger Arrays**: Optional secondary arrays with independent dimensions
+- **Outrigger Arrays**: Multiple optional secondary arrays with independent dimensions
+  - Configured as a list in `config.yaml` under `grid.outriggers`
+  - Each outrigger has its own array_id (e.g., A, O, B, D)
+  - Independent grid dimensions and expansion settings
+  - Accessed as "outrigger_A", "outrigger_O" etc. in web interface
 - Array-specific validation and visualization
 - Dynamic web interface adapts to configured arrays
 
@@ -415,7 +421,7 @@ The core array includes kernel index mapping for correlator processing:
 
 **Scanner Workflow:**
 1. Select "Assign Antenna Position" action
-2. Choose array (core, outriggers, etc.) from dropdown
+2. Choose array from dropdown (core, outrigger_A, outrigger_O, etc.)
 3. Choose input method (barcode scan or manual entry)
 4. Enter antenna number (with or without P1/P2 suffix)
 5. Select grid position using direction, offset, and column dropdowns
@@ -434,7 +440,7 @@ The core array includes kernel index mapping for correlator processing:
 ```sql
 CREATE TABLE antenna_positions (
     antenna_number TEXT UNIQUE NOT NULL,  -- Base antenna (no P1/P2)
-    array_id TEXT NOT NULL,                -- 'C' for core, 'O' for outriggers
+    array_id TEXT NOT NULL,                -- 'C' for core, 'A'/'O'/etc for outriggers
     row_offset INTEGER NOT NULL,           -- -999 to +999 (signed)
     east_col INTEGER NOT NULL,             -- 1-99 (1-based)
     grid_code TEXT UNIQUE NOT NULL,        -- Canonical format

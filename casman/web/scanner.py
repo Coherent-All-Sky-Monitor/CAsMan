@@ -745,10 +745,13 @@ def get_notes():
 def get_grid_config():
     """Get grid configuration for UI - returns all available arrays."""
     try:
-        grid_config = get_config("grid", {})
+        from casman.antenna.grid import get_all_arrays
+        
+        # Get flattened array structure (handles both old dict and new list formats)
+        all_arrays = get_all_arrays()
         arrays = {}
         
-        for array_name, array_data in grid_config.items():
+        for array_name, array_data in all_arrays.items():
             if isinstance(array_data, dict) and "array_id" in array_data:
                 arrays[array_name] = {
                     "array_id": array_data.get("array_id"),

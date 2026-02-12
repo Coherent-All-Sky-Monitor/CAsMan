@@ -115,13 +115,24 @@ grid:
       # CS021E01 -> 252, CS021E02 -> 253, ..., CS021E06 -> 257 (but max is 255)
       # So CS021E05 and CS021E06 are NOT mapped (exceed max_index)
   
-  # Outrigger array configuration
-#  outriggers:
-#    array_id: "O"        # Leading letter for outrigger positions
-#    north_rows: 10       # Number of rows north of center (N001..N010)
-#    south_rows: 10       # Number of rows south of center (S001..S010)
-#    east_columns: 4      # Number of east columns (E01..E04)
-#    allow_expansion: false
+  # Outrigger array configuration (supports multiple outrigger arrays)
+  # Each outrigger is a separate array with its own array_id
+  # Uncomment and configure as needed:
+  #outriggers:
+  #  - array_id: "A"              # Array A - first outrigger
+  #    north_rows: 21             # Number of rows north of center (N001..N021)
+  #    south_rows: 21             # Number of rows south of center (S001..S021)
+  #    east_columns: 6            # Number of east columns (E01..E06)
+  #    allow_expansion: true      # Allow positions outside defined grid
+  #    
+  #  - array_id: "O"              # Array O - second outrigger
+  #    north_rows: 21             # Number of rows north of center (N001..N021)
+  #    south_rows: 21             # Number of rows south of center (S001..S021)
+  #    east_columns: 6            # Number of east columns (E01..E06)
+  #    allow_expansion: true      # Allow positions outside defined grid
+  #
+  # Note: To add more outriggers, add additional entries to the list with unique array_ids
+  # Example: B, D, E, F, etc. (any single uppercase letter except C which is reserved for core)
 
 
 # Logging configuration

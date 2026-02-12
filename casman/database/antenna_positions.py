@@ -297,10 +297,21 @@ def get_antenna_position(
         cursor = conn.cursor()
         cursor.execute(
             """
-            SELECT antenna_number, grid_code, array_id, row_offset, east_col, assigned_at, notes,
-                   latitude, longitude, height, coordinate_system
-            FROM antenna_positions
-            WHERE antenna_number = ?
+            SELECT 
+                ap.antenna_number, 
+                ap.grid_code, 
+                ap.array_id, 
+                ap.row_offset, 
+                ap.east_col, 
+                ap.assigned_at, 
+                ap.notes,
+                COALESCE(gp.latitude, ap.latitude) as latitude,
+                COALESCE(gp.longitude, ap.longitude) as longitude,
+                COALESCE(gp.height, ap.height) as height,
+                COALESCE(gp.coordinate_system, ap.coordinate_system) as coordinate_system
+            FROM antenna_positions ap
+            LEFT JOIN grid_positions gp ON ap.grid_code = gp.grid_code
+            WHERE ap.antenna_number = ?
         """,
             (antenna_base,),
         )
@@ -359,9 +370,21 @@ def get_antenna_at_position(
         cursor = conn.cursor()
         cursor.execute(
             """
-            SELECT antenna_number, grid_code, array_id, row_offset, east_col, assigned_at, notes
-            FROM antenna_positions
-            WHERE grid_code = ?
+            SELECT 
+                ap.antenna_number, 
+                ap.grid_code, 
+                ap.array_id, 
+                ap.row_offset, 
+                ap.east_col, 
+                ap.assigned_at, 
+                ap.notes,
+                COALESCE(gp.latitude, ap.latitude) as latitude,
+                COALESCE(gp.longitude, ap.longitude) as longitude,
+                COALESCE(gp.height, ap.height) as height,
+                COALESCE(gp.coordinate_system, ap.coordinate_system) as coordinate_system
+            FROM antenna_positions ap
+            LEFT JOIN grid_positions gp ON ap.grid_code = gp.grid_code
+            WHERE ap.grid_code = ?
         """,
             (grid_code.upper(),),
         )
@@ -413,21 +436,43 @@ def get_all_antenna_positions(
         if array_id is not None:
             cursor.execute(
                 """
-                SELECT antenna_number, grid_code, array_id, row_offset, east_col, assigned_at, notes,
-                       latitude, longitude, height, coordinate_system
-                FROM antenna_positions
-                WHERE array_id = ?
-                ORDER BY row_offset DESC, east_col ASC
+                SELECT 
+                    ap.antenna_number, 
+                    ap.grid_code, 
+                    ap.array_id, 
+                    ap.row_offset, 
+                    ap.east_col, 
+                    ap.assigned_at, 
+                    ap.notes,
+                    COALESCE(gp.latitude, ap.latitude) as latitude,
+                    COALESCE(gp.longitude, ap.longitude) as longitude,
+                    COALESCE(gp.height, ap.height) as height,
+                    COALESCE(gp.coordinate_system, ap.coordinate_system) as coordinate_system
+                FROM antenna_positions ap
+                LEFT JOIN grid_positions gp ON ap.grid_code = gp.grid_code
+                WHERE ap.array_id = ?
+                ORDER BY ap.row_offset DESC, ap.east_col ASC
             """,
                 (array_id,),
             )
         else:
             cursor.execute(
                 """
-                SELECT antenna_number, grid_code, array_id, row_offset, east_col, assigned_at, notes,
-                       latitude, longitude, height, coordinate_system
-                FROM antenna_positions
-                ORDER BY array_id ASC, row_offset DESC, east_col ASC
+                SELECT 
+                    ap.antenna_number, 
+                    ap.grid_code, 
+                    ap.array_id, 
+                    ap.row_offset, 
+                    ap.east_col, 
+                    ap.assigned_at, 
+                    ap.notes,
+                    COALESCE(gp.latitude, ap.latitude) as latitude,
+                    COALESCE(gp.longitude, ap.longitude) as longitude,
+                    COALESCE(gp.height, ap.height) as height,
+                    COALESCE(gp.coordinate_system, ap.coordinate_system) as coordinate_system
+                FROM antenna_positions ap
+                LEFT JOIN grid_positions gp ON ap.grid_code = gp.grid_code
+                ORDER BY ap.row_offset DESC, ap.east_col ASC
             """
             )
 
