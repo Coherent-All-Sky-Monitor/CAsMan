@@ -108,6 +108,17 @@ def init_parts_db(db_dir: Optional[str] = None) -> None:
             "UPDATE parts SET date_created = created_at, date_modified = modified_at"
         )
 
+    # Create part_notes table
+    c.execute(
+        """CREATE TABLE IF NOT EXISTS part_notes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        part_number TEXT NOT NULL,
+        note TEXT NOT NULL,
+        timestamp TEXT NOT NULL,
+        FOREIGN KEY (part_number) REFERENCES parts(part_number)
+    )"""
+    )
+
     conn.commit()
     conn.close()
 
@@ -200,3 +211,60 @@ def init_all_databases(db_dir: Optional[str] = None) -> None:
     init_antenna_positions_table(db_dir)
     init_snap_boards_table(db_dir)
     init_grid_positions_table(db_dir)
+
+def ensure_schema_migrations(db_dir: Optional[str] = None) -> None:
+    """
+    Ensure all required schema updates and migrations are applied.
+    
+    This function should be called on application startup to handle any schema
+    migrations needed for new features. It ensures backward compatibility by
+    adding missing tables/columns to existing databases without data loss.
+    
+    Migrations applied:
+    - Adds part_notes table if it doesn't exist (for notes feature)
+    
+    Parameters
+    ----------
+    db_dir : str, optional
+        Custom database directory. If not provided, uses the project root's database directory.
+    
+    Returns
+    -------
+    None
+    """
+    # Get paths for both databases
+    if db_dir is not None:
+        parts_db_path = os.path.join(db_dir, "parts.db")
+    else:
+        parts_db_path = get_database_path("parts.db", None)
+    
+    # Ensure parts.db has part_notes table
+    if os.path.exists(parts_db_path):
+        try:
+            conn = sqlite3.connect(parts_db_path)
+            c = conn.cursor()
+            
+            # Check if part_notes table exists
+            c.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='part_notes'"
+            )
+            table_exists = c.fetchone() is not None
+            
+            if not table_exists:
+                # Create part_notes table if it doesn't exist
+                c.execute(
+                    """CREATE TABLE IF NOT EXISTS part_notes (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    part_number TEXT NOT NULL,
+                    note TEXT NOT NULL,
+                    timestamp TEXT NOT NULL,
+                    FOREIGN KEY (part_number) REFERENCES parts(part_number)
+                )"""
+                )
+                conn.commit()
+            
+            conn.close()
+        except sqlite3.Error as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error during schema migration: {e}")

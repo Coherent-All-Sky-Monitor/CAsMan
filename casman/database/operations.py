@@ -6,6 +6,7 @@ from the CAsMan databases.
 """
 
 import sqlite3
+from datetime import datetime
 from typing import List, Optional, Tuple
 
 from .connection import get_database_path
@@ -95,3 +96,78 @@ def get_parts_by_criteria(
     conn.close()
 
     return parts
+
+
+def add_part_note(
+    part_number: str, note: str, db_dir: Optional[str] = None
+) -> bool:
+    """
+    Add a note to a part in the parts database.
+
+    Parameters
+    ----------
+    part_number : str
+        The part number to add a note to.
+    note : str
+        The note text to add.
+    db_dir : str, optional
+        Custom database directory. If not provided, uses the project root's database directory.
+
+    Returns
+    -------
+    bool
+        True if note was added successfully, False otherwise.
+    """
+    try:
+        conn = sqlite3.connect(get_database_path("parts.db", db_dir))
+        c = conn.cursor()
+        
+        # Verify part exists
+        c.execute("SELECT part_number FROM parts WHERE part_number = ?", (part_number,))
+        if not c.fetchone():
+            conn.close()
+            return False
+        
+        # Add note with timestamp
+        timestamp = datetime.now().isoformat()
+        c.execute(
+            "INSERT INTO part_notes (part_number, note, timestamp) VALUES (?, ?, ?)",
+            (part_number, note, timestamp),
+        )
+        
+        conn.commit()
+        conn.close()
+        return True
+    except sqlite3.Error:
+        return False
+
+
+def get_part_notes(
+    part_number: str, db_dir: Optional[str] = None
+) -> List[Tuple[str, str]]:
+    """
+    Get all notes for a part from the parts database.
+
+    Parameters
+    ----------
+    part_number : str
+        The part number to get notes for.
+    db_dir : str, optional
+        Custom database directory. If not provided, uses the project root's database directory.
+
+    Returns
+    -------
+    List[Tuple[str, str]]
+        List of (note, timestamp) tuples, ordered by timestamp (newest first).
+    """
+    conn = sqlite3.connect(get_database_path("parts.db", db_dir))
+    c = conn.cursor()
+    
+    c.execute(
+        "SELECT note, timestamp FROM part_notes WHERE part_number = ? ORDER BY timestamp DESC",
+        (part_number,),
+    )
+    notes = c.fetchall()
+    conn.close()
+    
+    return notes

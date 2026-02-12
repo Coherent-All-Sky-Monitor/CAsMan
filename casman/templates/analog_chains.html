@@ -98,6 +98,7 @@
       min-height: 65px;
       font-size: 0.98em;
       z-index: 2;
+      cursor: pointer;
     }
     body.dark-mode .box { background-color: #222; }
     .box.selected { color: #FF4500; border-color: #FF4500; }
@@ -342,6 +343,14 @@
     body.dark-mode .duplicates-section {
       background-color: rgba(231, 76, 60, 0.2);
     }
+    
+    .version-footer {
+      text-align: center;
+      margin-top: 60px;
+      padding: 20px;
+      font-size: 12px;
+      opacity: 0.5;
+    }
   </style>
 </head>
 <body>
@@ -436,7 +445,10 @@
             <svg class="connection-svg"></svg>
             <div class="chain-container">
               {% for part in chain %}
-                <div class="box {% if part == selected_part %}selected{% endif %}" data-part-index="{{ loop.index0 }}" {% if part in duplicates %}style="color: red; border-color: red;"{% endif %}>
+                <div class="box {% if part == selected_part %}selected{% endif %}" 
+                     data-part-index="{{ loop.index0 }}" 
+                     {% if part in duplicates %}style="color: red; border-color: red;"{% endif %}
+                     title="Click to view history for {{ part }}">
                   {{ format_display_data(part, connections, duplicates, snap_board_info) | safe }}
                 </div>
               {% endfor %}
@@ -654,5 +666,9 @@
       });
     });
   </script>
+  
+  <div class="version-footer">
+    CAsMan v{{ version }}
+  </div>
 </body>
 </html>

@@ -97,6 +97,14 @@
             text-decoration: none;
         }
         
+        .version-footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 20px;
+            font-size: 12px;
+            opacity: 0.5;
+        }
+        
         .back-link:hover {
             text-decoration: underline;
         }
@@ -350,5 +358,9 @@
         // Load sync status on page load
         loadSyncStatus();
     </script>
+    
+    <div class="version-footer">
+        CAsMan v{{ version }}
+    </div>
 </body>
 </html>

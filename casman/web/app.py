@@ -7,6 +7,8 @@ import os
 
 from flask import Flask, redirect, render_template
 
+from casman import __version__
+from casman.database.initialization import ensure_schema_migrations
 from .scanner import scanner_bp
 from .visualize import format_display_data, visualize_bp
 
@@ -51,6 +53,11 @@ def create_app(enable_scanner: bool = True, enable_visualization: bool = True) -
         static_folder=os.path.join(os.path.dirname(__file__), "..", "static"),
     )
 
+    # Ensure all database schema migrations are applied
+    # This handles seamless updates when deploying new features
+    ensure_schema_migrations()
+    logger.info("Database schemas migrated successfully")
+
     # Enable CORS for mobile browser access
     if HAS_CORS:
         CORS(app)
@@ -66,6 +73,11 @@ def create_app(enable_scanner: bool = True, enable_visualization: bool = True) -
     if APP_CONFIG["enable_visualization"]:
         app.register_blueprint(visualize_bp)
         app.jinja_env.globals.update(format_display_data=format_display_data)
+
+    # Make version available to all templates
+    @app.context_processor
+    def inject_version():
+        return {"version": __version__}
 
     @app.route("/")
     def home():

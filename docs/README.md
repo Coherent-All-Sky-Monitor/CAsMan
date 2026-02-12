@@ -245,12 +245,44 @@ record_assembly_disconnection(
 )
 ```
 
+### Part Notes
+
+Add timestamped notes to any part for documentation, maintenance tracking, or issue reporting.
+
+**Usage:**
+```bash
+# View part history including notes via web interface
+casman web
+# Navigate to Part History and enter part number
+```
+
+**Features:**
+- Add notes to any part via web interface
+- View all notes with timestamps in Part History view
+- Auto-generated notes during Replace Part workflow
+- Notes stored in `part_notes` table with automatic schema migration
+
+**API:**
+```python
+from casman.database.operations import add_part_note, get_part_notes
+
+# Add a note to a part
+add_part_note("ANT00001P1", "Replaced due to signal degradation")
+
+# Get all notes for a part (returns list of (note, timestamp) tuples)
+notes = get_part_notes("ANT00001P1")
+for note, timestamp in notes:
+    print(f"{timestamp}: {note}")
+```
+
 ### Web Application
 
 A web server serving both scanner and visualization interfaces with flexible configuration.
 
 - Scanner interface for connecting/disconnecting parts
 - Visualization interface for viewing assembled chains
+- Interactive part history access via clickable part numbers
+- Version number displayed on all pages
   
 **Configuration (`config.yaml`):**
 ```yaml
@@ -280,9 +312,26 @@ casman web --scanner-only
 casman web --visualize-only
 ```
 
+**Web Interface Features:**
+
+1. **Clickable Part History**: Click any part number in the visualization pages to view its complete connection history and notes
+   - Analog Chains view: Click any part box to see its history
+   - Core Grid view: Click part names in the P1/P2 chain displays
+   - Direct URL access: `/scanner?part=<part_number>&action=history`
+
+2. **Version Display**: Current CAsMan version displayed at the bottom of all web pages
+
+3. **Interactive Navigation**: Seamless cross-page navigation between visualizations and scanner interface
+
 ### Version Management
 
 Automated version number management across all project files with git integration.
+
+**Version Locations:**
+- `pyproject.toml` - Package metadata
+- `setup.py` - Installation configuration
+- `casman/__init__.py` - Python module version
+- Web interface footer - Displayed on all web pages
 
 **Usage:**
 ```bash
@@ -462,10 +511,7 @@ CAsMan includes automated tools for maintaining code quality:
 # Quick coverage check with threshold validation
 ./coverage_check.sh
 
-# Update README with latest coverage statistics
-python3 update_coverage.py
-
-# Git pre-commit hook (optional) - validates coverage before commits
+# Git pre-commit hook (optional) - updates docs before commits
 bash .git/hooks/pre-commit
 
 ```
@@ -553,52 +599,7 @@ casman web --port 8080               # Custom port
 
 ---
 
-## Testing & Coverage
-
-![Tests](https://img.shields.io/badge/tests-432%20passed-brightgreen) ![Coverage](https://img.shields.io/badge/coverage-85.0%25-green)
-
-
-| Module | Coverage | Lines Covered |
-|--------|----------|---------------|
-| **__Init__** | 100.0% | 2/2 |
-| **Assembly __Init__** | 100.0% | 40/40 |
-| **Assembly Connections** | 100.0% | 24/24 |
-| **Assembly Data** | 100.0% | 15/15 |
-| **Barcode __Init__** | 100.0% | 3/3 |
-| **Cli __Init__** | 100.0% | 11/11 |
-| **Database __Init__** | 100.0% | 4/4 |
-| **Database Operations** | 100.0% | 31/31 |
-| **Parts __Init__** | 100.0% | 10/10 |
-| **Parts Db** | 100.0% | 4/4 |
-| **Parts Search** | 100.0% | 65/65 |
-| **Parts Types** | 100.0% | 11/11 |
-| **Web __Init__** | 100.0% | 5/5 |
-| **Assembly Chains** | 98.0% | 43/44 |
-| **Parts Part** | 98.0% | 60/61 |
-| **Visualization Core** | 97.0% | 106/109 |
-| **Parts Validation** | 96.0% | 51/53 |
-| **Visualization __Init__** | 95.0% | 18/19 |
-| **Web App** | 95.0% | 37/39 |
-| **Web Visualize** | 94.0% | 117/124 |
-| **Parts Interactive** | 92.0% | 111/121 |
-| **Parts Generation** | 91.0% | 59/65 |
-| **Barcode Generation** | 90.0% | 84/93 |
-| **Cli Utils** | 88.0% | 28/32 |
-| **Database Initialization** | 88.0% | 38/43 |
-| **Barcode Printing** | 86.0% | 90/105 |
-| **Web Scanner** | 86.0% | 199/232 |
-| **Assembly Interactive** | 85.0% | 279/330 |
-| **Config __Init__** | 85.0% | 22/26 |
-| **Cli Web_Commands** | 80.0% | 44/55 |
-| **Web Server** | 76.0% | 41/54 |
-| **Cli Barcode_Commands** | 73.0% | 22/30 |
-| **Cli Main** | 73.0% | 57/78 |
-| **Cli Visualization_Commands** | 68.0% | 23/34 |
-| **Cli Database_Commands** | 66.0% | 101/153 |
-| **Cli Parts_Commands** | 66.0% | 51/77 |
-| **Database Connection** | 64.0% | 14/22 |
-| **Cli Assembly_Commands** | 61.0% | 99/163 |
-| **Overall** | **85.0%** | **2019/2387** |
+## Testing
 
 ### Running Tests
 

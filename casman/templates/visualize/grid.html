@@ -384,6 +384,24 @@
             border-bottom: 1px solid #eee;
         }
         
+        .chain-list li a {
+            color: inherit;
+            text-decoration: none;
+            display: block;
+            padding: 5px;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+        
+        .chain-list li a:hover {
+            background: #f0f0f0;
+            transform: translateX(5px);
+        }
+        
+        body.dark-mode .chain-list li a:hover {
+            background: #2a2a2a;
+        }
+        
         body.dark-mode .chain-list li {
             border-bottom-color: #333;
         }
@@ -403,6 +421,14 @@
         
         body.dark-mode .no-selection {
             color: #aaa;
+        }
+        
+        .version-footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 20px;
+            font-size: 12px;
+            opacity: 0.5;
         }
     </style>
 </head>
@@ -560,7 +586,7 @@
             <div class="chain-arrow">↓</div>
             <ul class="chain-list">
                 {% for part in snap_info.p1.chain %}
-                <li>{{ part }}</li>
+                <li><a href="/scanner?part={{ part }}&action=history" title="View history for {{ part }}">{{ part }}</a></li>
                 {% endfor %}
             </ul>
             {% endif %}
@@ -585,7 +611,7 @@
             <div class="chain-arrow">↓</div>
             <ul class="chain-list">
                 {% for part in snap_info.p2.chain %}
-                <li>{{ part }}</li>
+                <li><a href="/scanner?part={{ part }}&action=history" title="View history for {{ part }}">{{ part }}</a></li>
                 {% endfor %}
             </ul>
             {% endif %}
@@ -639,5 +665,9 @@
             window.location.href = `/visualize/grid?antenna=${encodeURIComponent(antenna)}`;
         }
     </script>
+    
+    <div class="version-footer">
+        CAsMan v{{ version }}
+    </div>
 </body>
 </html>

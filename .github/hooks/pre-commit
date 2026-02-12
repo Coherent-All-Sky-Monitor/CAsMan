@@ -17,10 +17,6 @@ if git diff --cached --name-only | grep -E "(casman/.*\.py|docs/generate_docs\.p
     # Generate new documentation
     cd docs && python generate_docs.py && cd ..
     
-    # Update coverage info
-    echo "📊 Updating coverage statistics..."
-    python .github/scripts/update_coverage.py
-    
     # Stage any updated documentation files
     git add docs/
     git add README.md

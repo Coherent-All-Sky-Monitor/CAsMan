@@ -78,8 +78,7 @@ docs:
 	cd docs && python3 generate_docs.py
 
 update-docs: docs
-	python3 .github/scripts/update_coverage.py
-	@echo "✅ Auto-generated documentation and coverage info updated"
+	@echo "✅ Auto-generated documentation updated"
 
 # Development workflow
 check: test coverage
@@ -161,7 +160,7 @@ help:
 	@echo "  test-verbose   - Run tests with verbose output"
 	@echo "  coverage       - Run tests with coverage report"
 	@echo "  docs           - Generate documentation"
-	@echo "  update-docs    - Update docs and coverage info"
+	@echo "  update-docs    - Update auto-generated docs"
 	@echo "  format         - Format code with black and isort"
 	@echo "  clean          - Remove build artifacts"
 	@echo "  setup-hooks    - Install pre-commit hooks"

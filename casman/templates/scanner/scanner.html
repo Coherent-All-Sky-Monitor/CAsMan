@@ -85,6 +85,210 @@
             color: #0ff;
         }
         
+        /* History Table Styles */
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        
+        .history-table thead tr {
+            background-color: #f0f0f0;
+            border-bottom: 2px solid #333;
+        }
+        
+        body.dark-mode .history-table thead tr {
+            background-color: #222;
+            border-bottom: 2px solid #fff;
+        }
+        
+        .history-table th,
+        .history-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        
+        body.dark-mode .history-table th,
+        body.dark-mode .history-table td {
+            border: 1px solid #555;
+        }
+        
+        .history-table tbody tr {
+            transition: background-color 0.2s;
+        }
+        
+        .history-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        body.dark-mode .history-table tbody tr:hover {
+            background-color: #333;
+        }
+        
+        .history-row-connected {
+            background-color: #e8f5e9;
+        }
+        
+        body.dark-mode .history-row-connected {
+            background-color: #1b5e20;
+        }
+        
+        .history-row-disconnected {
+            background-color: #ffebee;
+        }
+        
+        body.dark-mode .history-row-disconnected {
+            background-color: #5e1920;
+        }
+        
+        /* History Notes Styles */
+        .history-notes-container {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 20px;
+        }
+        
+        body.dark-mode .history-notes-container {
+            background-color: #1a1a1a;
+            border: 1px solid #555;
+        }
+        
+        .history-note-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: white;
+            border-left: 4px solid #2196F3;
+            border-radius: 3px;
+        }
+        
+        body.dark-mode .history-note-item {
+            background-color: #222;
+            border-left: 4px solid #64B5F6;
+        }
+        
+        .history-note-timestamp {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        body.dark-mode .history-note-timestamp {
+            color: #aaa;
+        }
+        
+        .history-note-text {
+            font-size: 14px;
+            color: #333;
+            word-wrap: break-word;
+        }
+        
+        body.dark-mode .history-note-text {
+            color: #ddd;
+        }
+        
+        .history-section-title {
+            color: #333;
+            margin: 15px 0 10px 0;
+        }
+        
+        body.dark-mode .history-section-title {
+            color: #ddd;
+        }
+        
+        .history-no-data {
+            color: #666;
+        }
+        
+        body.dark-mode .history-no-data {
+            color: #aaa;
+        }
+        
+        /* Preview/Display Boxes */
+        .preview-box {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        body.dark-mode .preview-box {
+            background-color: #222;
+            border: 1px solid #555;
+            color: #ddd;
+        }
+        
+        /* Standard Button Styles */
+        .btn {
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-family: 'National Park', sans-serif;
+        }
+        
+        .btn-primary {
+            border-color: #0066cc;
+            background: #0066cc;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0052a3;
+            border-color: #0052a3;
+        }
+        
+        .btn-secondary {
+            border-color: #666;
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+            border-color: #333;
+        }
+        
+        body.dark-mode .btn-secondary {
+            border-color: #aaa;
+            background: #333;
+            color: #ddd;
+        }
+        
+        body.dark-mode .btn-secondary:hover {
+            background: #444;
+            border-color: #ddd;
+        }
+        
+        .btn-secondary.btn-lg {
+            margin-top: 10px;
+        }
+        
+        /* Standalone secondary buttons in input sections */
+        .input-section .btn-secondary {
+            width: 100%;
+            margin-top: 10px;
+            box-sizing: border-box;
+        }
+        
+        .btn-lg {
+            padding: 15px 25px;
+            font-size: 16px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin-top: 10px;
+            box-sizing: border-box;
+        }
+        
+        
         body.dark-mode .part-display {
             border-color: #fff;
             background-color: #111;
@@ -208,7 +412,10 @@
         #chassis-buttons button,
         #slot-buttons button,
         #slot-selection > div > div button,
-        #port-buttons button {
+        #port-buttons button,
+        #replace-chassis-buttons button,
+        #replace-slot-buttons button,
+        #replace-port-buttons button {
             min-height: 60px;
             padding: 15px 20px;
             font-size: 20px;
@@ -222,7 +429,10 @@
         #chassis-buttons button:hover,
         #slot-buttons button:hover,
         #slot-selection > div > div button:hover,
-        #port-buttons button:hover {
+        #port-buttons button:hover,
+        #replace-chassis-buttons button:hover,
+        #replace-slot-buttons button:hover,
+        #replace-port-buttons button:hover {
             transform: scale(1.05);
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
@@ -230,7 +440,10 @@
         #chassis-buttons button:active,
         #slot-buttons button:active,
         #slot-selection > div > div button:active,
-        #port-buttons button:active {
+        #port-buttons button:active,
+        #replace-chassis-buttons button:active,
+        #replace-slot-buttons button:active,
+        #replace-port-buttons button:active {
             transform: scale(0.98);
         }
         
@@ -363,6 +576,42 @@
             border-color: #218838;
             transform: scale(1.02);
         }
+        
+        /* Guide Section Styles */
+        .guide-section {
+            margin: 20px 0;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        body.dark-mode .guide-section {
+            background-color: #1a1a1a;
+        }
+        
+        body.dark-mode .guide-section h2 {
+            color: #64B5F6;
+        }
+        
+        body.dark-mode .guide-section h3 {
+            color: #64B5F6;
+        }
+        
+        body.dark-mode .guide-section p {
+            color: #ddd;
+        }
+        
+        body.dark-mode .guide-section li {
+            color: #ddd;
+        }
+        
+        .version-footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 20px;
+            font-size: 12px;
+            opacity: 0.5;
+        }
     </style>
 </head>
 <body>
@@ -398,11 +647,23 @@
     <!-- Step 1: Choose Action -->
     <div id="step-action" class="section">
         <h2>Step 1: Choose Action</h2>
-        <div class="button-grid">
+        
+        <!-- Row 1: Connection Management -->
+        <div class="button-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 10px;">
             <button onclick="selectAction('connect')">Connect Parts</button>
-            <button onclick="selectAction('disconnect')">Disconnect Parts</button>
             <button onclick="selectAction('remove')">Remove Part</button>
+            <button onclick="selectAction('replace')">Replace Part</button>
+            <button onclick="selectAction('disconnect')">Disconnect Parts</button>
+        </div>
+        
+        <!-- Row 2: Information & Notes -->
+        <div class="button-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 10px;">
+            <button onclick="selectAction('add-note')">Insert Part Notes</button>
             <button onclick="selectAction('history')">Part History</button>
+        </div>
+        
+        <!-- Row 3: Position Assignment -->
+        <div class="button-grid" style="grid-template-columns: 1fr;">
             <button onclick="selectAction('assign-position')">Assign Antenna Position</button>
         </div>
     </div>
@@ -645,6 +906,242 @@
         </div>
     </div>
 
+    <!-- ============================================================ -->
+    <!-- REPLACE PART WORKFLOW -->
+    <!-- ============================================================ -->
+    
+    <!-- Step 2rep: Replace - Choose Input Method -->
+    <div id="step-replace-method" class="section hidden">
+        <h2>Step 2: Choose Input Method</h2>
+        <p class="status-info status-message">Select how you want to enter the part numbers</p>
+        <div class="button-grid">
+            <button onclick="selectReplaceInputMethod('barcode')">Barcode Reader</button>
+            <button onclick="selectReplaceInputMethod('manual')">⌨️ Manual Entry</button>
+        </div>
+        <div class="nav-buttons">
+            <button onclick="goToStep('action')">← Back</button>
+        </div>
+    </div>
+    
+    <!-- Step 3rep: Replace - Barcode Input -->
+    <div id="step-replace-barcode" class="section hidden">
+        <h2>Replace Part - Barcode Input</h2>
+        
+        <!-- OLD PART SECTION -->
+        <div id="replace-barcode-old-section">
+            <div id="replace-barcode-status" class="status-info status-message">Scan the PART TO BE REPLACED</div>
+            <div class="input-group">
+                <label for="replace-old-barcode-input">Scan or Type Old Part Number:</label>
+                <input type="text" id="replace-old-barcode-input" placeholder="Scan barcode..." autofocus>
+            </div>
+            <div id="replace-barcode-status-msg"></div>
+        </div>
+        
+        <!-- NEW PART SECTION (shown after old part validated) -->
+        <div id="replace-barcode-new-section" style="background-color: #d4edda; padding: 15px; border-radius: 5px; margin-top: 20px; display: none;">
+            <h4 style="margin-top: 0; color: #155724;">Step 2: Scan NEW Part (replacement)</h4>
+            
+            <p class="status-info" style="margin-bottom: 10px;">Old part to replace: <strong id="replace-barcode-old-part-display"></strong></p>
+            
+            <div class="input-group">
+                <label for="replace-new-barcode-input">Scan or Type New Part Number:</label>
+                <input type="text" id="replace-new-barcode-input" placeholder="Scan barcode...">
+            </div>
+            <div id="replace-barcode-new-status"></div>
+        </div>
+        
+        <div class="nav-buttons">
+            <button onclick="goToStep('replace-method')">← Back</button>
+            <button onclick="switchToReplaceManual()">⌨️ Manual Entry</button>
+            <button onclick="resetReplaceBarcode()">Reset</button>
+        </div>
+    </div>
+    
+    <!-- Step 3rep: Replace - Manual Entry -->
+    <div id="step-replace-manual" class="section hidden">
+        <h2>Replace Part - Manual Entry</h2>
+        <p class="status-info status-message" style="margin-bottom: 15px;">Enter the part to be replaced and its replacement</p>
+        
+        <!-- OLD PART SECTION -->
+        <div style="background-color: #fff3cd; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+            <h4 style="margin-top: 0; color: #856404;">Step 1: Old Part (to be replaced)</h4>
+            
+            <div class="input-group">
+                <label>Select Old Part Type:</label>
+                <div id="replace-old-part-type-buttons" class="button-grid"></div>
+            </div>
+            
+            <div id="replace-old-polarization" class="input-group hidden">
+                <label>Select Polarization:</label>
+                <div id="replace-old-polarization-buttons" class="button-grid">
+                    <button onclick="selectReplaceOldPolarization('1')">Polarization 1</button>
+                    <button onclick="selectReplaceOldPolarization('2')">Polarization 2</button>
+                </div>
+            </div>
+            
+            <div id="replace-old-number" class="input-group hidden">
+                <label for="replace-old-part-number-input">Enter Old Part Number:</label>
+                <input type="number" id="replace-old-part-number-input" placeholder="Enter number..." min="1" inputmode="numeric" pattern="[0-9]*">
+                <button id="submit-replace-old-btn" onclick="submitReplaceOldPart()" class="submit-button" style="margin-top: 10px; width: 100%;">Validate Old Part</button>
+            </div>
+            
+            <div id="replace-old-status"></div>
+        </div>
+        
+        <!-- NEW PART SECTION -->
+        <div id="replace-new-part-section" style="background-color: #d4edda; padding: 15px; border-radius: 5px; display: none;">
+            <h4 style="margin-top: 0; color: #155724;">Step 2: New Part (replacement)</h4>
+            
+            <p class="status-info" style="margin-bottom: 10px;">Selected old part: <strong id="replace-old-part-display"></strong></p>
+            
+            <div class="input-group">
+                <label for="replace-new-part-number-input">Enter New Part Number:</label>
+                <input type="number" id="replace-new-part-number-input" placeholder="Enter number..." min="1" inputmode="numeric" pattern="[0-9]*">
+                <button id="submit-replace-new-btn" onclick="submitReplaceNewPart()" class="submit-button" style="margin-top: 10px; width: 100%;">Validate New Part</button>
+            </div>
+            
+            <div id="replace-new-status"></div>
+        </div>
+        
+        <div class="nav-buttons">
+            <button onclick="goToStep('replace-method')">← Back</button>
+            <button onclick="switchToReplaceBarcode()">Scan Barcode</button>
+            <button onclick="resetScanner()">Reset</button>
+        </div>
+    </div>
+    
+    <!-- Step 3.5rep: Replace - SNAP Port Choice (for BACKBOARD only) -->
+    <div id="step-replace-snap-choice" class="section hidden">
+        <h2>SNAP Port Selection</h2>
+        <div id="replace-snap-current-info" style="background-color: #fff3cd; padding: 15px; border-radius: 5px; margin-bottom: 15px;"></div>
+        <div style="margin: 20px 0;">
+            <p style="font-size: 16px; margin-bottom: 15px;">Do you want to connect the new BACKBOARD to the same SNAP port or choose a different one?</p>
+            <div class="button-grid" style="grid-template-columns: repeat(2, 1fr); max-width: 600px; margin: 0 auto;">
+                <button onclick="chooseReplaceSnapOption('same')" style="background-color: #28a745; color: white; font-weight: bold;">✓ Same SNAP Port</button>
+                <button onclick="chooseReplaceSnapOption('new')" style="background-color: #007bff; color: white; font-weight: bold;">→ Choose New SNAP Port</button>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button onclick="cancelReplacement()">← Cancel</button>
+        </div>
+    </div>
+    
+    <!-- Step 3.6rep: Replace - New SNAP Selection -->
+    <div id="step-replace-new-snap" class="section hidden">
+        <h2>Select New SNAP Port</h2>
+        <div id="replace-new-bacboard-display" class="part-display"></div>
+        
+        <div style="margin: 20px 0;">
+            <h3>Select Chassis Number (1-4)</h3>
+            <div id="replace-chassis-buttons" class="button-grid" style="grid-template-columns: repeat(2, 1fr); max-width: 300px; margin: 10px auto;">
+                <button onclick="selectReplaceChassis(1)">1</button>
+                <button onclick="selectReplaceChassis(2)">2</button>
+                <button onclick="selectReplaceChassis(3)">3</button>
+                <button onclick="selectReplaceChassis(4)">4</button>
+            </div>
+        </div>
+        
+        <div id="replace-slot-selection" class="hidden" style="margin: 20px 0;">
+            <h3>Select SNAP Slot (A-K)</h3>
+            <div id="replace-slot-buttons-container" style="max-width: 450px; margin: 10px auto;">
+                <div id="replace-slot-buttons" class="button-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 10px;">
+                    <button onclick="selectReplaceSlot('A')">A</button>
+                    <button onclick="selectReplaceSlot('B')">B</button>
+                    <button onclick="selectReplaceSlot('C')">C</button>
+                    <button onclick="selectReplaceSlot('D')">D</button>
+                    <button onclick="selectReplaceSlot('E')">E</button>
+                    <button onclick="selectReplaceSlot('F')">F</button>
+                    <button onclick="selectReplaceSlot('G')">G</button>
+                    <button onclick="selectReplaceSlot('H')">H</button>
+                    <button onclick="selectReplaceSlot('I')">I</button>
+                    <button onclick="selectReplaceSlot('J')">J</button>
+                    <button onclick="selectReplaceSlot('K')">K</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="replace-port-selection" class="hidden" style="margin: 20px 0;">
+            <h3>Select SNAP Port (0-11)</h3>
+            <div id="replace-port-buttons" class="button-grid" style="grid-template-columns: repeat(4, 1fr); max-width: 500px; margin: 10px auto;">
+                <button onclick="selectReplacePort(0)">0</button>
+                <button onclick="selectReplacePort(1)">1</button>
+                <button onclick="selectReplacePort(2)">2</button>
+                <button onclick="selectReplacePort(3)">3</button>
+                <button onclick="selectReplacePort(4)">4</button>
+                <button onclick="selectReplacePort(5)">5</button>
+                <button onclick="selectReplacePort(6)">6</button>
+                <button onclick="selectReplacePort(7)">7</button>
+                <button onclick="selectReplacePort(8)">8</button>
+                <button onclick="selectReplacePort(9)">9</button>
+                <button onclick="selectReplacePort(10)">10</button>
+                <button onclick="selectReplacePort(11)">11</button>
+            </div>
+        </div>
+        
+        <div id="replace-snap-status" class="status-message" style="margin: 20px 0;"></div>
+        <div class="nav-buttons">
+            <button onclick="goToStep('replace-snap-choice')">← Back</button>
+        </div>
+    </div>
+    
+    <!-- Step 4rep: Replace - Confirm -->
+    <div id="step-replace-confirm" class="section hidden">
+        <h2>Confirm Part Replacement</h2>
+        <div style="display: grid; grid-template-columns: 1fr 50px 1fr; gap: 10px; align-items: center; margin-bottom: 20px;">
+            <!-- Old Part -->
+            <div style="background-color: #ffebee; padding: 20px; border-radius: 8px; border: 2px solid #ef5350;">
+                <h4 style="margin-top: 0; color: #c62828; font-size: 16px;">❌ Old Part (to be removed)</h4>
+                <div id="replace-old-part-confirm" class="part-display"></div>
+                <div id="replace-old-connections-info" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ef9a9a;"></div>
+            </div>
+            
+            <!-- Arrow -->
+            <div style="text-align: center; font-size: 36px; color: #1976d2;">
+                →
+            </div>
+            
+            <!-- New Part -->
+            <div style="background-color: #e8f5e9; padding: 20px; border-radius: 8px; border: 2px solid #66bb6a;">
+                <h4 style="margin-top: 0; color: #2e7d32; font-size: 16px;">✓ New Part (replacement)</h4>
+                <div id="replace-new-part-confirm" class="part-display"></div>
+            </div>
+        </div>
+        
+        <div style="background-color: #e3f2fd; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #1976d2;">
+            <strong style="color: #1565c0;">📋 Summary:</strong>
+            <p style="margin: 10px 0 0 0; color: #424242;">
+                The <strong style="color: #d32f2f;">old part</strong> will be disconnected from all components, and the <strong style="color: #2e7d32;">new part</strong> will be connected to the same components with identical connections.
+            </p>
+        </div>
+        
+        <div style="background-color: #fff3cd; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #f57c00;">
+            <strong style="color: #e65100;">📝 Add Note (Optional):</strong>
+            <p style="margin: 8px 0; color: #666; font-size: 14px;">Add a note explaining why this part was replaced (e.g., "damaged connector", "failed testing", etc.)</p>
+            <textarea id="replace-note-input" placeholder="Optional note about this replacement..." 
+                      style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; font-size: 14px; resize: vertical; min-height: 60px; box-sizing: border-box;"></textarea>
+            <p style="margin: 8px 0 0 0; color: #666; font-size: 12px; font-style: italic;">
+                If provided, notes will be automatically added to both parts:<br>
+                • Old part: "Replaced by <span id="note-new-part-preview"></span>: [your note]"<br>
+                • New part: "Replacing <span id="note-old-part-preview"></span>: [your note]"
+            </p>
+        </div>
+        
+        <div class="nav-buttons">
+            <button onclick="cancelReplacement()">← Cancel</button>
+            <button onclick="confirmReplacement()" style="background-color: #1976d2; color: white; font-weight: bold; padding: 12px 30px; font-size: 16px;">✓ Confirm Replacement</button>
+        </div>
+    </div>
+    
+    <!-- Step 5rep: Replace - Result -->
+    <div id="step-replace-result" class="section hidden">
+        <h2>Replacement Result</h2>
+        <div id="replace-results" class="status-message"></div>
+        <div class="nav-buttons">
+            <button onclick="resetScanner()">← Back to Menu</button>
+            <button onclick="selectAction('replace')">Replace Another Part</button>
+        </div>
+    </div>
+
     <!-- Part History View -->
     <div id="step-history" class="section hidden">
         <h2>Part History</h2>
@@ -661,9 +1158,9 @@
         <!-- Text Input Method -->
         <div id="history-text-input" class="input-section hidden">
             <label for="history-part-input">Enter Part Number:</label>
-            <input type="text" id="history-part-input" placeholder="e.g., BAC00001P1, SNAP1A00" style="font-size: 18px; padding: 10px; width: 100%; margin: 10px 0;">
-            <button onclick="fetchPartHistory()" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 10px;">View History</button>
-            <button onclick="selectHistoryMethod('choose')" class="btn btn-secondary" style="width: 100%; margin-top: 10px;">← Change Method</button>
+            <input type="text" id="history-part-input" placeholder="e.g., BAC00001P1, SNAP1A00" style="font-size: 18px; padding: 10px; width: 100%; box-sizing: border-box; margin: 10px 0;">
+            <button onclick="fetchPartHistory()" class="btn btn-primary btn-lg">View History</button>
+            <button onclick="selectHistoryMethod('choose')" class="btn btn-secondary">← Change Method</button>
         </div>
         
         <!-- Interactive Build Method -->
@@ -683,16 +1180,16 @@
                 </div>
                 
                 <label for="history-number">Part Number (e.g., 00001):</label>
-                <input type="text" id="history-number" placeholder="00001" style="font-size: 18px; padding: 10px; width: 100%; margin: 10px 0;">
+                <input type="text" id="history-number" placeholder="00001" style="font-size: 18px; padding: 10px; width: 100%; box-sizing: border-box; margin: 10px 0;">
                 
-                <div style="margin: 15px 0; padding: 10px; background-color: #f0f0f0; border-radius: 5px;">
+                <div class="preview-box">
                     <strong>Preview:</strong> <span id="history-part-preview">-</span>
                 </div>
                 
-                <button onclick="fetchPartHistoryFromBuilder()" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 10px;">View History</button>
+                <button onclick="fetchPartHistoryFromBuilder()" class="btn btn-primary btn-lg">View History</button>
             </div>
             
-            <button onclick="selectHistoryMethod('choose')" class="btn btn-secondary" style="width: 100%; margin-top: 10px;">← Change Method</button>
+            <button onclick="selectHistoryMethod('choose')" class="btn btn-secondary">← Change Method</button>
         </div>
         
         <div id="history-results" class="status-message" style="margin-top: 20px;"></div>
@@ -806,6 +1303,214 @@
         </div>
     </div>
 
+    <!-- ============================================================ -->
+    <!-- INSERT PART NOTES WORKFLOW -->
+    <!-- ============================================================ -->
+    
+    <!-- Step 2n: Add Note - Choose Input Method -->
+    <div id="step-add-note-method" class="section hidden">
+        <h2>Step 2: Choose Input Method</h2>
+        <p class="status-info status-message">Select how you want to enter the part number to add a note</p>
+        <div class="button-grid">
+            <button onclick="selectNoteMethod('barcode')">Barcode Reader</button>
+            <button onclick="selectNoteMethod('manual')">⌨️ Manual Entry</button>
+        </div>
+        <div class="nav-buttons">
+            <button onclick="goToStep('action')">← Back</button>
+        </div>
+    </div>
+    
+    <!-- Step 3n: Add Note - Barcode Input -->
+    <div id="step-add-note-barcode" class="section hidden">
+        <h2>Scan Part Barcode</h2>
+        <p class="status-info status-message">Scan the barcode of the part you want to add a note to</p>
+        <div class="input-group">
+            <label for="note-barcode-input">Scan or Type Part Number:</label>
+            <input type="text" id="note-barcode-input" placeholder="Scan barcode..." autofocus>
+        </div>
+        <div id="note-barcode-status"></div>
+        <div class="nav-buttons">
+            <button onclick="goToStep('add-note-method')">← Back</button>
+            <button onclick="switchNoteToManual()">⌨️ Manual Entry</button>
+            <button onclick="resetScanner()">Reset</button>
+        </div>
+    </div>
+    
+    <!-- Step 3n: Add Note - Manual Entry -->
+    <div id="step-add-note-manual" class="section hidden">
+        <h2>Enter Part Number</h2>
+        <p class="status-info status-message">Build the part number manually</p>
+        
+        <div class="input-group">
+            <label>Select Part Type:</label>
+            <div id="note-part-type-buttons" class="button-grid"></div>
+        </div>
+        
+        <div id="note-polarization" class="input-group hidden">
+            <label>Select Polarization:</label>
+            <div id="note-polarization-buttons" class="button-grid">
+                <button onclick="selectNotePolarization('1')">Polarization 1</button>
+                <button onclick="selectNotePolarization('2')">Polarization 2</button>
+            </div>
+        </div>
+        
+        <div id="note-number" class="input-group hidden">
+            <label for="note-part-number-input">Enter Part Number:</label>
+            <input type="number" id="note-part-number-input" placeholder="Enter number..." min="1" inputmode="numeric" pattern="[0-9]*">
+            <button id="submit-note-part-btn" onclick="submitNotePart()" class="submit-button" style="margin-top: 10px; width: 100%;">Continue</button>
+        </div>
+        
+        <div id="note-manual-status"></div>
+        <div class="nav-buttons">
+            <button onclick="goToStep('add-note-method')">← Back</button>
+            <button onclick="switchNoteToBarcode()">Scan Barcode</button>
+            <button onclick="resetScanner()">Reset</button>
+        </div>
+    </div>
+    
+    <!-- Step 4n: Add Note - Enter Note Text -->
+    <div id="step-add-note-text" class="section hidden">
+        <h2>Add Note</h2>
+        <div id="note-part-display" class="part-display"></div>
+        
+        <div class="input-group">
+            <label for="note-text-input">Enter Note:</label>
+            <textarea id="note-text-input" placeholder="Enter your note here..." rows="6" style="width: 100%; padding: 10px; font-size: 16px; font-family: 'National Park', sans-serif; border: 2px solid; border-radius: 8px;"></textarea>
+        </div>
+        
+        <button id="submit-note-btn" onclick="submitNote()" class="submit-button" style="margin-top: 20px; width: 100%;">Add Note</button>
+        
+        <div class="nav-buttons">
+            <button onclick="cancelAddNote()">← Cancel</button>
+        </div>
+    </div>
+    
+    <!-- Step 5n: Add Note - Result -->
+    <div id="step-add-note-result" class="section hidden">
+        <h2>Note Added</h2>
+        <div id="note-result-message" class="status-message"></div>
+        <div class="nav-buttons">
+            <button onclick="resetScanner()">← Back to Menu</button>
+            <button onclick="selectAction('add-note')">Add Another Note</button>
+        </div>
+    </div>
+
+    <!-- Scanner Guide (Bottom of Page) -->
+    <div id="scanner-guide" class="guide-section">
+        <h2 style="font-weight: bold; font-size: 18px; margin-bottom: 15px; color: #0066cc;">Scanner Guide</h2>
+        <div style="padding: 15px; background-color: rgba(0, 102, 204, 0.05); border-left: 4px solid #0066cc; border-radius: 4px;">
+            <h3 style="margin-top: 0; color: #0066cc;">Main Action Buttons & Workflows</h3>
+            
+            <div class="guide-row-header" data-row="row1" style="margin: 20px 0;">
+                <p><strong style="font-size: 15px; color: #0066cc;">Row 1 - Connection Management</strong></p>
+            </div>
+                
+                <div data-workflow="connect" style="margin: 15px 0; padding-left: 15px;">
+                    <p><strong>Connect Parts</strong> - Create a new connection between two parts sequentially</p>
+                    <ol style="margin: 5px 0; padding-left: 30px; font-size: 14px; line-height: 1.6;">
+                        <li>Select Action → Choose Connect Parts</li>
+                        <li>Choose Input Method → Barcode Reader or Manual Entry</li>
+                        <li>Enter First Part → Scan or build part number</li>
+                        <li>Enter Second Part → Scan or build part number</li>
+                        <li>Review Connection → Verify parts and connection order</li>
+                        <li>Confirm → Execute connection</li>
+                        <li>View Result → Success message with option to connect more parts</li>
+                    </ol>
+                </div>
+                
+                <div data-workflow="remove" style="margin: 15px 0; padding-left: 15px;">
+                    <p><strong>Remove Part</strong> - Disconnect ALL connections to/from a part (destructive operation)</p>
+                    <ol style="margin: 5px 0; padding-left: 30px; font-size: 14px; line-height: 1.6;">
+                        <li>Select Action → Choose Remove Part</li>
+                        <li>Choose Input Method → Barcode Reader or Manual Entry</li>
+                        <li>Enter Part to Remove → Scan or build part number</li>
+                        <li>Review All Connections → See list of all connections that will be deleted</li>
+                        <li>Confirm Removal → Execute removal of ALL connections</li>
+                        <li>View Result → Success message with option to remove another part</li>
+                    </ol>
+                </div>
+                
+                <div data-workflow="replace" style="margin: 15px 0; padding-left: 15px;">
+                    <p><strong>Replace Part</strong> - Swap one part for another while maintaining ALL its connections</p>
+                    <ol style="margin: 5px 0; padding-left: 30px; font-size: 14px; line-height: 1.6;">
+                        <li>Select Action → Choose Replace Part</li>
+                        <li>Choose Input Method → Barcode Reader or Manual Entry</li>
+                        <li>Enter Old Part → Scan or build part number of part to be replaced</li>
+                        <li>View Connections → System displays ALL incoming and outgoing connections</li>
+                        <li>Enter New Part → Scan or build part number of replacement (must be same type/polarization)</li>
+                        <li><em>If replacing BACKBOARD:</em> Choose to keep same SNAP port OR select new SNAP port (chassis/slot/port)</li>
+                        <li>Review Replacement → See old part, new part, ALL connections to transfer, and SNAP choice (if applicable)</li>
+                        <li>Confirm Replacement → Execute: disconnect old part from ALL connections, connect new part to ALL connections (with new SNAP if selected)</li>
+                        <li>View Result → Success/failure summary for each connection transferred</li>
+                    </ol>
+                </div>
+                
+                <div data-workflow="disconnect" style="margin: 15px 0; padding-left: 15px;">
+                    <p><strong>Disconnect Parts</strong> - Remove a single connection between two specific parts</p>
+                    <ol style="margin: 5px 0; padding-left: 30px; font-size: 14px; line-height: 1.6;">
+                        <li>Select Action → Choose Disconnect Parts</li>
+                        <li>Choose Input Method → Barcode Reader or Manual Entry</li>
+                        <li>Enter First Part → Scan or build part number</li>
+                        <li>Enter Second Part → Scan or build part number</li>
+                        <li>Review Connection → Verify the specific connection to remove</li>
+                        <li>Confirm Disconnection → Execute disconnection</li>
+                        <li>View Result → Success message</li>
+                    </ol>
+                </div>
+            
+            <div class="guide-row-header" data-row="row2" style="margin: 20px 0;">
+                <p><strong style="font-size: 15px; color: #0066cc;">Row 2 - Information & Notes</strong></p>
+            </div>
+                
+                <div data-workflow="add-note" style="margin: 15px 0; padding-left: 15px;">
+                    <p><strong>Insert Part Notes</strong> - Add append-only notes to a part with timestamp</p>
+                    <ol style="margin: 5px 0; padding-left: 30px; font-size: 14px; line-height: 1.6;">
+                        <li>Select Action → Choose Insert Part Notes</li>
+                        <li>Choose Input Method → Barcode Reader or Manual Entry</li>
+                        <li>Enter Part Number → Scan or build part number</li>
+                        <li>Enter Note Text → Type your note in the text area</li>
+                        <li>Submit Note → Save note with automatic timestamp</li>
+                        <li>View Result → Success message with option to add more notes</li>
+                    </ol>
+                </div>
+                
+                <div data-workflow="history" style="margin: 15px 0; padding-left: 15px;">
+                    <p><strong>Part History</strong> - View complete connection history and all notes for a part</p>
+                    <ol style="margin: 5px 0; padding-left: 30px; font-size: 14px; line-height: 1.6;">
+                        <li>Select Action → Choose Part History</li>
+                        <li>Choose Input Method → Type Part Number or Build Part Number</li>
+                        <li>Enter Part Number → Type complete number OR select type/properties</li>
+                        <li>View History → See chronological table of connections/disconnections and all notes</li>
+                        <li>Return to Menu → Back to main menu</li>
+                    </ol>
+                </div>
+            
+            <div class="guide-row-header" data-row="row3" style="margin: 20px 0;">
+                <p><strong style="font-size: 15px; color: #0066cc;">Row 3 - Position Assignment</strong></p>
+            </div>
+                
+                <div data-workflow="assign-position" style="margin: 15px 0; padding-left: 15px;">
+                    <p><strong>Assign Antenna Position</strong> - Assign grid position (chassis/slot/port/direction) to antenna</p>
+                    <ol style="margin: 5px 0; padding-left: 30px; font-size: 14px; line-height: 1.6;">
+                        <li>Select Action → Choose Assign Antenna Position</li>
+                        <li>Choose Input Method → Barcode Reader or Manual Entry</li>
+                        <li>Enter Antenna Part → Scan or build antenna part number</li>
+                        <li>Select Chassis → Choose chassis number (1-4)</li>
+                        <li>Select Slot → Choose slot letter (A-K)</li>
+                        <li>Select Port → Choose port number (0-11)</li>
+                        <li>Select Direction → Choose direction (North/Center/South)</li>
+                        <li>Confirm Position → Execute position assignment</li>
+                        <li>View Result → Success message with option to assign another position</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div style="margin: 15px 0; padding-top: 10px; border-top: 2px solid rgba(0, 102, 204, 0.2);">
+                <p style="font-size: 13px; color: #666;"><strong>Navigation:</strong> Back, Cancel, and Reset buttons are available at each step to help you navigate the workflow.</p>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Theme management
         function toggleTheme() {
@@ -821,12 +1526,32 @@
             if (savedTheme === 'dark') {
                 document.body.classList.add('dark-mode');
             }
+            // Initialize guide to show all workflows
+            updateGuideDisplay();
+            
+            // Check for URL parameters to auto-navigate to specific action
+            const urlParams = new URLSearchParams(window.location.search);
+            const partParam = urlParams.get('part');
+            const actionParam = urlParams.get('action');
+            
+            if (partParam && actionParam === 'history') {
+                // Auto-navigate to history view and populate with part number
+                selectAction('history');
+                setTimeout(() => {
+                    selectHistoryMethod('text');
+                    setTimeout(() => {
+                        document.getElementById('history-part-input').value = partParam;
+                        fetchPartHistory();
+                    }, 100);
+                }, 100);
+            }
         });
         
         // Global state
         let state = {
             action: null,          // 'connect' or 'disconnect'
             method: null,          // 'barcode', 'camera', 'manual'
+            currentStep: null,     // Current step/page being displayed
             firstPart: null,       // {part_number, part_type, polarization}
             secondPart: null,      // {part_number, part_type, polarization}
             connections: [],       // For disconnect mode
@@ -839,7 +1564,10 @@
             removePart: null,      // Part being removed
             removeConnections: [], // Connections to be removed
             removePartType: null,  // Selected part type for remove manual entry
-            removePolarization: null // Selected polarization for remove manual entry
+            removePolarization: null, // Selected polarization for remove manual entry
+            notePart: null,        // Part to add note to
+            notePartType: null,    // Selected part type for note manual entry
+            notePolarization: null // Selected polarization for note manual entry
         };
         
         // Function to switch between barcode and manual entry
@@ -864,12 +1592,45 @@
         
         // Navigation functions
         function goToStep(step) {
-            document.querySelectorAll('.section').forEach(el => el.classList.add('hidden'));
-            document.getElementById('step-' + step).classList.remove('hidden');
+            document.querySelectorAll('.section').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('active');
+            });
+            const stepEl = document.getElementById('step-' + step);
+            stepEl.classList.remove('hidden');
+            stepEl.classList.add('active');
+            state.currentStep = step;
+        }
+        
+        // Update guide display based on current action
+        function updateGuideDisplay() {
+            const workflows = document.querySelectorAll('[data-workflow]');
+            const rowHeaders = document.querySelectorAll('.guide-row-header');
+            
+            if (!state.action) {
+                // Show all workflows and row headers on main menu
+                workflows.forEach(el => el.style.display = '');
+                rowHeaders.forEach(el => el.style.display = '');
+            } else {
+                // Hide row headers
+                rowHeaders.forEach(el => el.style.display = 'none');
+                
+                // Show only the workflow matching current action
+                workflows.forEach(el => {
+                    if (el.getAttribute('data-workflow') === state.action) {
+                        el.style.display = '';
+                    } else {
+                        el.style.display = 'none';
+                    }
+                });
+            }
         }
         
         function selectAction(action) {
             state.action = action;
+            
+            // Update guide to show only this workflow
+            updateGuideDisplay();
 
             // Set workflow title
             const workflowTitleEl = document.getElementById('workflow-title');
@@ -878,8 +1639,10 @@
                     connect: 'Connect Parts',
                     disconnect: 'Disconnect Parts',
                     remove: 'Remove Part',
+                    replace: 'Replace Part',
                     history: 'Part History',
-                    'assign-position': 'Assign Antenna Position'
+                    'assign-position': 'Assign Antenna Position',
+                    'add-note': 'Insert Part Notes'
                 };
                 workflowTitleEl.textContent = titleMap[action] || '';
                 workflowTitleEl.classList.remove('hidden');
@@ -901,9 +1664,21 @@
                 return;
             }
             
+            // Replace action goes to method selection
+            if (action === 'replace') {
+                goToStep('replace-method');
+                return;
+            }
+            
             // Assign position action goes to method selection
             if (action === 'assign-position') {
                 goToStep('assign-position-method');
+                return;
+            }
+            
+            // Add note action goes to method selection
+            if (action === 'add-note') {
+                goToStep('add-note-method');
                 return;
             }
             
@@ -928,6 +1703,7 @@
             state = {
                 action: null,
                 method: null,
+                currentStep: null,
                 firstPart: null,
                 secondPart: null,
                 connections: [],
@@ -940,7 +1716,21 @@
                 removePart: null,
                 removeConnections: [],
                 removePartType: null,
-                removePolarization: null
+                removePolarization: null,
+                replaceOldPart: null,
+                replaceNewPart: null,
+                replaceConnectedPart: null,
+                replaceAllConnections: [],
+                replaceOldPartType: null,
+                replaceOldPolarization: null,
+                replaceSnapChoice: null, // 'same' or 'new'
+                replaceNewSnapChassis: null,
+                replaceNewSnapSlot: null,
+                replaceNewSnapPort: null,
+                replaceOldSnapConnection: null, // Store old SNAP connection details
+                notePart: null,
+                notePartType: null,
+                notePolarization: null
             };
             // Clear all button selections
             document.querySelectorAll('.button-selected').forEach(btn => {
@@ -958,6 +1748,9 @@
                 workflowTitleEl.textContent = '';
                 workflowTitleEl.classList.add('hidden');
             }
+            
+            // Reset guide to show all workflows
+            updateGuideDisplay();
             
             goToStep('action');
         }
@@ -1825,6 +2618,894 @@
             }
         });
         
+        // ============================================================================
+        // REPLACE PART FUNCTIONS
+        // ============================================================================
+        
+        function selectReplaceInputMethod(method) {
+            if (method === 'barcode') {
+                setupReplaceBarcodeInput();
+                goToStep('replace-barcode');
+            } else if (method === 'manual') {
+                setupReplaceManualEntry();
+                goToStep('replace-manual');
+            }
+        }
+        
+        function setupReplaceBarcodeInput() {
+            const input = document.getElementById('replace-old-barcode-input');
+            const statusDiv = document.getElementById('replace-barcode-status-msg');
+            const newSection = document.getElementById('replace-barcode-new-section');
+            
+            input.value = '';
+            statusDiv.innerHTML = '';
+            document.getElementById('replace-barcode-status').innerHTML = 'Scan the PART TO BE REPLACED';
+            
+            // Hide new part section if visible
+            if (newSection) {
+                newSection.style.display = 'none';
+            }
+            
+            input.onkeypress = async function(e) {
+                if (e.key === 'Enter') {
+                    const partNumber = input.value.trim();
+                    if (partNumber) {
+                        await processReplaceOldPart(partNumber);
+                    }
+                }
+            };
+            
+            setTimeout(() => input.focus(), 100);
+        }
+        
+        function setupReplaceManualEntry() {
+            // Populate part type buttons (exclude SNAP)
+            const container = document.getElementById('replace-old-part-type-buttons');
+            container.innerHTML = '';
+            
+            const partTypes = ['ANTENNA', 'LNA', 'COAXSHORT', 'COAXLONG', 'BACBOARD'];
+            partTypes.forEach(type => {
+                const button = document.createElement('button');
+                button.textContent = type;
+                button.onclick = () => selectReplaceOldPartType(type);
+                container.appendChild(button);
+            });
+            
+            // Hide subsequent steps
+            document.getElementById('replace-old-polarization').classList.add('hidden');
+            document.getElementById('replace-old-number').classList.add('hidden');
+            document.getElementById('replace-new-part-section').style.display = 'none';
+            document.getElementById('replace-old-status').innerHTML = '';
+            document.getElementById('replace-new-status').innerHTML = '';
+        }
+        
+        function selectReplaceOldPartType(type) {
+            state.replaceOldPartType = type;
+            
+            // Highlight selected button
+            const buttons = document.getElementById('replace-old-part-type-buttons').querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.classList.toggle('button-selected', btn.textContent === type);
+            });
+            
+            // Show polarization selection
+            document.getElementById('replace-old-polarization').classList.remove('hidden');
+            document.getElementById('replace-old-number').classList.add('hidden');
+            state.replaceOldPolarization = null;
+            
+            // Clear polarization button selections
+            const polButtons = document.getElementById('replace-old-polarization-buttons').querySelectorAll('button');
+            polButtons.forEach(btn => btn.classList.remove('button-selected'));
+        }
+        
+        function selectReplaceOldPolarization(pol) {
+            state.replaceOldPolarization = pol;
+            
+            // Highlight selected button
+            const buttons = document.getElementById('replace-old-polarization-buttons').querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.classList.toggle('button-selected', btn.textContent.includes(pol));
+            });
+            
+            // Show number input
+            document.getElementById('replace-old-number').classList.remove('hidden');
+            
+            // Set appropriate placeholder
+            const input = document.getElementById('replace-old-part-number-input');
+            const typePrefix = {
+                'ANTENNA': 'ANT',
+                'LNA': 'LNA',
+                'COAXSHORT': 'CXS',
+                'COAXLONG': 'CXL',
+                'BACBOARD': 'BAC'
+            };
+            const prefix = typePrefix[state.replaceOldPartType];
+            input.placeholder = `e.g., 00001 for ${prefix}00001P${pol}`;
+            
+            setTimeout(() => input.focus(), 100);
+        }
+        
+        async function submitReplaceOldPart() {
+            const numberInput = document.getElementById('replace-old-part-number-input');
+            const number = numberInput.value.trim();
+            
+            if (!number) {
+                document.getElementById('replace-old-status').innerHTML = 
+                    '<div class="status-error">Please enter a part number</div>';
+                return;
+            }
+            
+            const typePrefix = {
+                'ANTENNA': 'ANT',
+                'LNA': 'LNA',
+                'COAXSHORT': 'CXS',
+                'COAXLONG': 'CXL',
+                'BACBOARD': 'BAC'
+            };
+            const prefix = typePrefix[state.replaceOldPartType];
+            const partNumber = `${prefix}${number.padStart(5, '0')}P${state.replaceOldPolarization}`;
+            
+            await processReplaceOldPart(partNumber);
+        }
+        
+        async function processReplaceOldPart(partNumber) {
+            // Determine which status div to use based on current step
+            let statusDiv;
+            const currentStep = state.currentStep || '';
+            
+            if (currentStep === 'replace-barcode' || document.getElementById('step-replace-barcode').classList.contains('active')) {
+                statusDiv = document.getElementById('replace-barcode-status-msg');
+            } else {
+                statusDiv = document.getElementById('replace-old-status');
+            }
+            
+            statusDiv.innerHTML = '<div class="status-info">⏳ Validating old part...</div>';
+            
+            try {
+                // Validate part exists
+                const validateResponse = await fetch('/scanner/api/validate-part', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({part_number: partNumber})
+                });
+                
+                const validateResult = validateResponse.json();
+                
+                if (!await validateResult.then(r => r.success)) {
+                    const result = await validateResult;
+                    statusDiv.innerHTML = `<div class="status-error">${result.error}</div>`;
+                    return;
+                }
+                
+                const result = await validateResult;
+                
+                // Get connections
+                const connectionsResponse = await fetch('/scanner/api/get-connections', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({part_number: partNumber})
+                });
+                
+                const connectionsResult = await connectionsResponse.json();
+                
+                if (!connectionsResult.success) {
+                    statusDiv.innerHTML = `<div class="status-error">${connectionsResult.error}</div>`;
+                    return;
+                }
+                
+                // Check if part has connections
+                if (connectionsResult.count === 0) {
+                    statusDiv.innerHTML = `<div class="status-error">Part ${partNumber} has no connections. Cannot replace a standalone part.</div>`;
+                    return;
+                }
+                
+                // Store old part and ALL connections
+                state.replaceOldPart = {
+                    part_number: result.part_number,
+                    part_type: result.part_type,
+                    polarization: result.polarization
+                };
+                
+                // Store ALL connections (both incoming and outgoing)
+                state.replaceAllConnections = connectionsResult.connections;
+                
+                // Build connection summary
+                const connectionList = state.replaceAllConnections.map(conn => {
+                    if (conn.part_number === partNumber) {
+                        return `• ${conn.part_number} → ${conn.connected_to}`;
+                    } else {
+                        return `• ${conn.part_number} → ${conn.connected_to}`;
+                    }
+                }).join('<br>');
+                
+                // Show success and enable new part entry
+                statusDiv.innerHTML = `
+                    <div class="status-success">
+                        <p><strong>${partNumber}</strong> has ${connectionsResult.count} connection(s):</p>
+                        <div style="margin: 10px 0; padding: 10px; background-color: rgba(0,0,0,0.05); border-radius: 4px; font-size: 14px;">
+                            ${connectionList}
+                        </div>
+                    </div>`;
+                
+                // Check which workflow we're in based on current step
+                const currentStep = state.currentStep || '';
+                
+                if (currentStep === 'replace-barcode' || currentStep.includes('barcode')) {
+                    // Barcode workflow
+                    const barcodeNewSection = document.getElementById('replace-barcode-new-section');
+                    if (barcodeNewSection) {
+                        barcodeNewSection.style.display = 'block';
+                        document.getElementById('replace-barcode-old-part-display').textContent = partNumber;
+                        setupReplaceNewBarcodeInput();
+                    }
+                } else {
+                    // Manual workflow
+                    const manualNewSection = document.getElementById('replace-new-part-section');
+                    if (manualNewSection) {
+                        manualNewSection.style.display = 'block';
+                        document.getElementById('replace-old-part-display').textContent = partNumber;
+                        const newPartInput = document.getElementById('replace-new-part-number-input');
+                        if (newPartInput) {
+                            newPartInput.focus();
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status-error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        function setupReplaceNewBarcodeInput() {
+            const input = document.getElementById('replace-new-barcode-input');
+            const statusDiv = document.getElementById('replace-barcode-new-status');
+            
+            input.value = '';
+            statusDiv.innerHTML = '';
+            
+            input.onkeypress = async function(e) {
+                if (e.key === 'Enter') {
+                    const partNumber = input.value.trim();
+                    if (partNumber) {
+                        await processReplaceNewPartBarcode(partNumber);
+                    }
+                }
+            };
+            
+            setTimeout(() => input.focus(), 100);
+        }
+        
+        async function processReplaceNewPartBarcode(partNumber) {
+            const statusDiv = document.getElementById('replace-barcode-new-status');
+            
+            statusDiv.innerHTML = '<div class="status-info">⏳ Validating new part...</div>';
+            
+            try {
+                // Build expected part number based on old part
+                const typePrefix = {
+                    'ANTENNA': 'ANT',
+                    'LNA': 'LNA',
+                    'COAXSHORT': 'CXS',
+                    'COAXLONG': 'CXL',
+                    'BACBOARD': 'BAC'
+                };
+                
+                const prefix = typePrefix[state.replaceOldPart.part_type];
+                
+                // Validate part
+                const validateResponse = await fetch('/scanner/api/validate-part', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({part_number: partNumber})
+                });
+                
+                const validateResult = await validateResponse.json();
+                
+                if (!validateResult.success) {
+                    statusDiv.innerHTML = `<div class="status-error">${validateResult.error}</div>`;
+                    return;
+                }
+                
+                // Check that new part is not the same as old part
+                if (validateResult.part_number === state.replaceOldPart.part_number) {
+                    statusDiv.innerHTML = `<div class="status-error">New part must be different from old part</div>`;
+                    return;
+                }
+                
+                // Check that new part is same type as old part
+                if (validateResult.part_type !== state.replaceOldPart.part_type) {
+                    statusDiv.innerHTML = `<div class="status-error">New part must be same type (${state.replaceOldPart.part_type}) as old part</div>`;
+                    return;
+                }
+                
+                // Check that new part is same polarization as old part
+                if (validateResult.polarization !== state.replaceOldPart.polarization) {
+                    statusDiv.innerHTML = `<div class="status-error">New part must have same polarization (P${state.replaceOldPart.polarization})</div>`;
+                    return;
+                }
+                
+                // Check if new part is already connected
+                const newPartConnections = validateResult.existing_connections || [];
+                const hasOutgoingConnection = newPartConnections.some(c => c.part_number === partNumber);
+                
+                if (hasOutgoingConnection) {
+                    statusDiv.innerHTML = `<div class="status-error">${partNumber} is already connected to a part. Cannot use as replacement.</div>`;
+                    return;
+                }
+                
+                // Store new part
+                state.replaceNewPart = {
+                    part_number: validateResult.part_number,
+                    part_type: validateResult.part_type,
+                    polarization: validateResult.polarization
+                };
+                
+                // Show confirmation screen
+                showReplaceConfirmation();
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status-error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        function resetReplaceBarcode() {
+            // Hide new part section
+            const newSection = document.getElementById('replace-barcode-new-section');
+            if (newSection) {
+                newSection.style.display = 'none';
+            }
+            
+            // Clear inputs and status
+            document.getElementById('replace-old-barcode-input').value = '';
+            document.getElementById('replace-new-barcode-input').value = '';
+            document.getElementById('replace-barcode-status-msg').innerHTML = '';
+            document.getElementById('replace-barcode-new-status').innerHTML = '';
+            
+            // Reset state
+            state.replaceOldPart = null;
+            state.replaceNewPart = null;
+            state.replaceAllConnections = [];
+            
+            // Focus on old part input
+            setTimeout(() => document.getElementById('replace-old-barcode-input').focus(), 100);
+        }
+        
+        async function submitReplaceNewPart() {
+            const numberInput = document.getElementById('replace-new-part-number-input');
+            const number = numberInput.value.trim();
+            
+            if (!number) {
+                document.getElementById('replace-new-status').innerHTML = 
+                    '<div class="status-error">Please enter a part number</div>';
+                return;
+            }
+            
+            // New part must be same type as old part
+            const typePrefix = {
+                'ANTENNA': 'ANT',
+                'LNA': 'LNA',
+                'COAXSHORT': 'CXS',
+                'COAXLONG': 'CXL',
+                'BACBOARD': 'BAC'
+            };
+            const prefix = typePrefix[state.replaceOldPart.part_type];
+            const partNumber = `${prefix}${number.padStart(5, '0')}P${state.replaceOldPart.polarization}`;
+            
+            const statusDiv = document.getElementById('replace-new-status');
+            statusDiv.innerHTML = '<div class="status-info">⏳ Validating new part...</div>';
+            
+            try {
+                // Validate new part exists
+                const validateResponse = await fetch('/scanner/api/validate-part', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({part_number: partNumber})
+                });
+                
+                const validateResult = await validateResponse.json();
+                
+                if (!validateResult.success) {
+                    statusDiv.innerHTML = `<div class="status-error">${validateResult.error}</div>`;
+                    return;
+                }
+                
+                // Check that new part is not the same as old part
+                if (validateResult.part_number === state.replaceOldPart.part_number) {
+                    statusDiv.innerHTML = `<div class="status-error">New part must be different from old part</div>`;
+                    return;
+                }
+                
+                // Check that new part is same type as old part
+                if (validateResult.part_type !== state.replaceOldPart.part_type) {
+                    statusDiv.innerHTML = `<div class="status-error">New part must be same type (${state.replaceOldPart.part_type}) as old part</div>`;
+                    return;
+                }
+                
+                // Check that new part is same polarization as old part
+                if (validateResult.polarization !== state.replaceOldPart.polarization) {
+                    statusDiv.innerHTML = `<div class="status-error">New part must have same polarization (P${state.replaceOldPart.polarization})</div>`;
+                    return;
+                }
+                
+                // Check if new part is already connected
+                const newPartConnections = validateResult.existing_connections || [];
+                const hasOutgoingConnection = newPartConnections.some(c => c.part_number === partNumber);
+                
+                if (hasOutgoingConnection) {
+                    statusDiv.innerHTML = `<div class="status-error">${partNumber} is already connected to a part. Cannot use as replacement.</div>`;
+                    return;
+                }
+                
+                // Store new part
+                state.replaceNewPart = {
+                    part_number: validateResult.part_number,
+                    part_type: validateResult.part_type,
+                    polarization: validateResult.polarization
+                };
+                
+                // Show confirmation screen
+                showReplaceConfirmation();
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status-error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        function showReplaceConfirmation() {
+            // Check if old part is BACKBOARD
+            if (state.replaceOldPart.part_type === 'BACBOARD') {
+                // Find SNAP connection (if any)
+                const snapConnection = state.replaceAllConnections.find(conn => 
+                    (conn.part_number === state.replaceOldPart.part_number && conn.connected_to.startsWith('SNAP')) ||
+                    (conn.connected_to === state.replaceOldPart.part_number && conn.part_number.startsWith('SNAP'))
+                );
+                
+                if (snapConnection) {
+                    // Store SNAP connection details
+                    state.replaceOldSnapConnection = snapConnection;
+                    
+                    // Show SNAP choice screen
+                    const snapInfoDiv = document.getElementById('replace-snap-current-info');
+                    const snapPort = snapConnection.part_number.startsWith('SNAP') ? 
+                        snapConnection.part_number : snapConnection.connected_to;
+                    
+                    snapInfoDiv.innerHTML = `
+                        <h4 style="margin-top: 0; color: #856404;">Current SNAP Connection:</h4>
+                        <p style="font-size: 16px;"><strong>${state.replaceOldPart.part_number}</strong> is connected to <strong>${snapPort}</strong></p>
+                    `;
+                    
+                    goToStep('replace-snap-choice');
+                    return;
+                }
+            }
+            
+            // No SNAP connection or not a BACKBOARD, go to regular confirmation
+            showReplaceConfirmationScreen();
+        }
+        
+        function showReplaceConfirmationScreen() {
+            function inferType(partNumber, explicitType) {
+                if (explicitType) {
+                    return explicitType;
+                }
+                if (!partNumber) {
+                    return 'Unknown';
+                }
+                const prefixEntry = Object.entries(partPrefixes).find(([, prefix]) => partNumber.startsWith(prefix));
+                return prefixEntry ? prefixEntry[0] : 'Unknown';
+            }
+
+            function getNewSnapPort() {
+                return `SNAP${state.replaceNewSnapChassis}${state.replaceNewSnapSlot}${String(state.replaceNewSnapPort).padStart(2, '0')}`;
+            }
+
+            // Display old part with current connections
+            const oldDisplay = document.getElementById('replace-old-part-confirm');
+            oldDisplay.innerHTML = `
+                <p><strong>Part Number:</strong> <span style="color: #d32f2f; font-weight: bold;">${state.replaceOldPart.part_number}</span></p>
+                <p><strong>Type:</strong> ${state.replaceOldPart.part_type}</p>
+                <p><strong>Polarization:</strong> ${state.replaceOldPart.polarization}</p>
+            `;
+            
+            // Build detailed connection list for OLD part (showing what will be disconnected)
+            const connectionList = state.replaceAllConnections.map(conn => {
+                // Determine if this is an outgoing connection FROM the old part
+                const isOutgoing = conn.part_number === state.replaceOldPart.part_number;
+                
+                if (isOutgoing) {
+                    // Old part → Something else
+                    const targetType = inferType(conn.connected_to, conn.connected_to_type);
+                    return `• Outgoing: <span style="color: #d32f2f;">${conn.part_number}</span> → ${conn.connected_to} (${targetType})`;
+                } else {
+                    // Something else → Old part
+                    const sourceType = inferType(conn.part_number, conn.part_type);
+                    return `• Incoming: ${conn.part_number} (${sourceType}) → <span style="color: #d32f2f;">${conn.connected_to}</span>`;
+                }
+            }).join('<br>');
+            
+            let connectionInfo = `<strong>All Connections (${state.replaceAllConnections.length}):</strong><br><div style="margin-top: 8px; font-size: 14px;">${connectionList}</div>`;
+            
+            // Add SNAP choice info if applicable
+            if (state.replaceOldPart.part_type === 'BACBOARD' && state.replaceSnapChoice) {
+                if (state.replaceSnapChoice === 'same') {
+                    const snapPort = state.replaceOldSnapConnection.part_number.startsWith('SNAP') ? 
+                        state.replaceOldSnapConnection.part_number : state.replaceOldSnapConnection.connected_to;
+                    connectionInfo += `<br><div style="margin-top: 10px; padding: 10px; background-color: rgba(40, 167, 69, 0.1); border-radius: 4px;"><strong>✓ New BACKBOARD will connect to same SNAP port:</strong> ${snapPort}</div>`;
+                } else if (state.replaceSnapChoice === 'new') {
+                    const newSnapPort = `SNAP${state.replaceNewSnapChassis}${state.replaceNewSnapSlot}${String(state.replaceNewSnapPort).padStart(2, '0')}`;
+                    connectionInfo += `<br><div style="margin-top: 10px; padding: 10px; background-color: rgba(0, 123, 255, 0.1); border-radius: 4px;"><strong>→ New BACKBOARD will connect to new SNAP port:</strong> ${newSnapPort}</div>`;
+                }
+            }
+            
+            document.getElementById('replace-old-connections-info').innerHTML = connectionInfo;
+            
+            // Display NEW part with connections that will be created
+            const newDisplay = document.getElementById('replace-new-part-confirm');
+            const newConnectionList = state.replaceAllConnections.map(conn => {
+                // Determine if this connection was outgoing FROM the old part
+                const isOutgoingFromOld = conn.part_number === state.replaceOldPart.part_number;
+                
+                // Initialize with connection partners (not the old part)
+                let source = conn.part_number;
+                let target = conn.connected_to;
+                let sourceType = inferType(conn.part_number, conn.part_type);
+                let targetType = inferType(conn.connected_to, conn.connected_to_type);
+
+                // Replace old part with NEW part in the appropriate position
+                if (isOutgoingFromOld) {
+                    // Was: OLD → target, Now: NEW → target
+                    source = state.replaceNewPart.part_number;
+                    sourceType = state.replaceNewPart.part_type;
+                } else {
+                    // Was: source → OLD, Now: source → NEW
+                    target = state.replaceNewPart.part_number;
+                    targetType = state.replaceNewPart.part_type;
+                }
+
+                // Handle BACBOARD SNAP port changes if applicable
+                if (state.replaceOldPart.part_type === 'BACBOARD' && state.replaceSnapChoice === 'new') {
+                    const newSnapPort = getNewSnapPort();
+                    
+                    // If this was an outgoing connection to a SNAP port, use the new SNAP port
+                    if (isOutgoingFromOld && conn.connected_to && conn.connected_to.startsWith('SNAP')) {
+                        target = newSnapPort;
+                        targetType = 'SNAP';
+                    } 
+                    // If this was an incoming connection FROM a SNAP port, use the new SNAP port
+                    else if (!isOutgoingFromOld && conn.part_number && conn.part_number.startsWith('SNAP')) {
+                        source = newSnapPort;
+                        sourceType = 'SNAP';
+                    }
+                }
+
+                // Format the connection display with NEW part highlighted
+                if (isOutgoingFromOld) {
+                    return `• Outgoing: <span style="color: #2e7d32; font-weight: bold;">${source}</span> → ${target} (${targetType})`;
+                }
+                
+                return `• Incoming: ${source} (${sourceType}) → <span style="color: #2e7d32; font-weight: bold;">${target}</span>`;
+            }).join('<br>');
+
+            newDisplay.innerHTML = `
+                <p><strong>Part Number:</strong> <span style="color: #2e7d32; font-weight: bold;">${state.replaceNewPart.part_number}</span></p>
+                <p><strong>Type:</strong> ${state.replaceNewPart.part_type}</p>
+                <p><strong>Polarization:</strong> ${state.replaceNewPart.polarization}</p>
+                <p style="margin-top: 10px; font-size: 14px; color: #0066cc;"><strong>New Connections (${state.replaceAllConnections.length}):</strong></p>
+                <div style="margin-top: 8px; font-size: 14px;">${newConnectionList}</div>
+            `;
+            
+            // Populate note preview with part numbers
+            document.getElementById('note-old-part-preview').textContent = state.replaceOldPart.part_number;
+            document.getElementById('note-new-part-preview').textContent = state.replaceNewPart.part_number;
+            
+            goToStep('replace-confirm');
+        }
+        
+        function chooseReplaceSnapOption(choice) {
+            state.replaceSnapChoice = choice;
+            
+            if (choice === 'same') {
+                // Use same SNAP port, go directly to confirmation
+                showReplaceConfirmationScreen();
+            } else {
+                // Choose new SNAP port
+                const displayDiv = document.getElementById('replace-new-bacboard-display');
+                displayDiv.innerHTML = `<p><strong>New BACKBOARD:</strong> ${state.replaceNewPart.part_number}</p><p>Select new SNAP port:</p>`;
+                goToStep('replace-new-snap');
+            }
+        }
+        
+        function selectReplaceChassis(chassis) {
+            state.replaceNewSnapChassis = chassis;
+            document.getElementById('replace-slot-selection').classList.remove('hidden');
+            
+            // Highlight selected button
+            document.querySelectorAll('#replace-chassis-buttons button').forEach(btn => {
+                btn.classList.remove('button-selected');
+            });
+            event.target.classList.add('button-selected');
+        }
+        
+        function selectReplaceSlot(slot) {
+            state.replaceNewSnapSlot = slot;
+            document.getElementById('replace-port-selection').classList.remove('hidden');
+            
+            // Highlight selected button
+            document.querySelectorAll('#replace-slot-buttons button').forEach(btn => {
+                btn.classList.remove('button-selected');
+            });
+            event.target.classList.add('button-selected');
+        }
+        
+        function selectReplacePort(port) {
+            state.replaceNewSnapPort = port;
+            
+            // Highlight selected button
+            document.querySelectorAll('#replace-port-buttons button').forEach(btn => {
+                btn.classList.remove('button-selected');
+            });
+            event.target.classList.add('button-selected');
+            
+            // Show confirmation
+            const newSnapPort = `SNAP${state.replaceNewSnapChassis}${state.replaceNewSnapSlot}${String(port).padStart(2, '0')}`;
+            const statusDiv = document.getElementById('replace-snap-status');
+            statusDiv.innerHTML = `
+                <div class="status-success">
+                    <p><strong>New SNAP Port Selected:</strong> ${newSnapPort}</p>
+                    <button onclick="showReplaceConfirmationScreen()" style="margin-top: 10px; padding: 15px 30px; background-color: #28a745; color: white; font-weight: bold; border: none; border-radius: 5px; cursor: pointer;">✓ Confirm SNAP Port</button>
+                </div>
+            `;
+        }
+        
+        async function confirmReplacement() {
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = '⏳ Processing...';
+            
+            const resultsDiv = document.getElementById('replace-results');
+            resultsDiv.innerHTML = '<div class="status-info">Processing replacement...</div>';
+            
+            try {
+                let successCount = 0;
+                let failureCount = 0;
+                const details = [];
+                
+                // Loop through ALL connections
+                for (const conn of state.replaceAllConnections) {
+                    // Determine parts and their properties for disconnection
+                    const part1 = conn.part_number;
+                    const part2 = conn.connected_to;
+                    const type1 = conn.part_type;
+                    const type2 = conn.connected_to_type;
+                    const pol1 = conn.polarization;
+                    const pol2 = conn.connected_polarization;
+                    
+                    // Step 1: Disconnect old connection
+                    const disconnectResponse = await fetch('/scanner/api/record-disconnection', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            part_number: part1,
+                            part_type: type1,
+                            polarization: pol1,
+                            connected_to: part2,
+                            connected_to_type: type2,
+                            connected_polarization: pol2
+                        })
+                    });
+                    
+                    const disconnectResult = await disconnectResponse.json();
+                    
+                    if (!disconnectResult.success) {
+                        failureCount++;
+                        details.push(`❌ Failed to disconnect: ${part1} from ${part2} - ${disconnectResult.error || 'Unknown error'}`);
+                        continue;
+                    }
+                    
+                    // Step 2: Connect new part
+                    const isOldPartSource = conn.part_number === state.replaceOldPart.part_number;
+                    
+                    let newPart1, newPart2, newType1, newType2, newPol1, newPol2;
+                    
+                    if (isOldPartSource) {
+                        // Old part was the source: NEW → target
+                        newPart1 = state.replaceNewPart.part_number;
+                        newType1 = state.replaceNewPart.part_type;
+                        newPol1 = state.replaceNewPart.polarization;
+                        newPart2 = part2;
+                        newType2 = type2;
+                        newPol2 = pol2;
+                        
+                        // Special case: If this is a BACKBOARD→SNAP connection and user chose new SNAP
+                        if (state.replaceOldPart.part_type === 'BACBOARD' && part2.startsWith('SNAP') && state.replaceSnapChoice === 'new') {
+                            newPart2 = `SNAP${state.replaceNewSnapChassis}${state.replaceNewSnapSlot}${String(state.replaceNewSnapPort).padStart(2, '0')}`;
+                            newType2 = 'SNAP';
+                            newPol2 = state.replaceNewPart.polarization; // SNAP inherits BACKBOARD polarization
+                        }
+                    } else {
+                        // Old part was the target: source → NEW
+                        newPart1 = part1;
+                        newType1 = type1;
+                        newPol1 = pol1;
+                        newPart2 = state.replaceNewPart.part_number;
+                        newType2 = state.replaceNewPart.part_type;
+                        newPol2 = state.replaceNewPart.polarization;
+                        
+                        // Special case: If this is a SNAP→BACKBOARD connection and user chose new SNAP
+                        if (state.replaceOldPart.part_type === 'BACBOARD' && part1.startsWith('SNAP') && state.replaceSnapChoice === 'new') {
+                            newPart1 = `SNAP${state.replaceNewSnapChassis}${state.replaceNewSnapSlot}${String(state.replaceNewSnapPort).padStart(2, '0')}`;
+                            newType1 = 'SNAP';
+                            newPol1 = state.replaceNewPart.polarization; // SNAP inherits BACKBOARD polarization
+                        }
+                    }
+                    
+                    const connectResponse = await fetch('/scanner/api/record-connection', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            part_number: newPart1,
+                            part_type: newType1,
+                            polarization: newPol1,
+                            connected_to: newPart2,
+                            connected_to_type: newType2,
+                            connected_polarization: newPol2
+                        })
+                    });
+                    
+                    const connectResult = await connectResponse.json();
+                    
+                    if (!connectResult.success) {
+                        failureCount++;
+                        details.push(`⚠️ Disconnected ${part1} from ${part2}, but failed to reconnect: ${connectResult.error}`);
+                        continue;
+                    }
+                    
+                    successCount++;
+                    details.push(`✓ ${newPart1} ↔ ${newPart2}`);
+                }
+                
+                // Add notes if user provided one
+                const noteInput = document.getElementById('replace-note-input');
+                const userNote = noteInput ? noteInput.value.trim() : '';
+                
+                if (userNote) {
+                    // Add note to OLD part
+                    try {
+                        const oldNoteText = `Replaced by ${state.replaceNewPart.part_number}: ${userNote}`;
+                        const oldNoteResponse = await fetch('/scanner/api/add-note', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                part_number: state.replaceOldPart.part_number,
+                                note: oldNoteText
+                            })
+                        });
+                        const oldNoteResult = await oldNoteResponse.json();
+                        if (oldNoteResult.success) {
+                            details.push(`📝 Note added to ${state.replaceOldPart.part_number}`);
+                        } else {
+                            details.push(`⚠️ Failed to add note to ${state.replaceOldPart.part_number}`);
+                        }
+                    } catch (error) {
+                        details.push(`⚠️ Error adding note to ${state.replaceOldPart.part_number}: ${error.message}`);
+                    }
+                    
+                    // Add note to NEW part
+                    try {
+                        const newNoteText = `Replacing ${state.replaceOldPart.part_number}: ${userNote}`;
+                        const newNoteResponse = await fetch('/scanner/api/add-note', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                part_number: state.replaceNewPart.part_number,
+                                note: newNoteText
+                            })
+                        });
+                        const newNoteResult = await newNoteResponse.json();
+                        if (newNoteResult.success) {
+                            details.push(`📝 Note added to ${state.replaceNewPart.part_number}`);
+                        } else {
+                            details.push(`⚠️ Failed to add note to ${state.replaceNewPart.part_number}`);
+                        }
+                    } catch (error) {
+                        details.push(`⚠️ Error adding note to ${state.replaceNewPart.part_number}: ${error.message}`);
+                    }
+                }
+                
+                // Show final results
+                if (failureCount === 0) {
+                    resultsDiv.innerHTML = `
+                        <div class="status-success">
+                            <h3>✓ Replacement Successful</h3>
+                            <p><strong>${state.replaceOldPart.part_number}</strong> has been replaced with <strong>${state.replaceNewPart.part_number}</strong></p>
+                            <p style="margin-top: 15px;"><strong>${successCount} connection(s) transferred:</strong></p>
+                            <div style="margin: 10px 0; padding: 10px; background-color: rgba(0,0,0,0.05); border-radius: 4px; font-size: 14px;">
+                                ${details.join('<br>')}
+                            </div>
+                        </div>`;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="status-error">
+                            <h3>⚠️ Partial Replacement</h3>
+                            <p><strong>Success:</strong> ${successCount} connection(s)</p>
+                            <p><strong>Failed:</strong> ${failureCount} connection(s)</p>
+                            <div style="margin: 10px 0; padding: 10px; background-color: rgba(0,0,0,0.05); border-radius: 4px; font-size: 14px;">
+                                ${details.join('<br>')}
+                            </div>
+                        </div>`;
+                }
+                goToStep('replace-result');
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="status-error">Error: ${error.message}</div>`;
+                goToStep('replace-result');
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Confirm Replacement';
+                
+                // Clear note input for next use
+                const noteInput = document.getElementById('replace-note-input');
+                if (noteInput) {
+                    noteInput.value = '';
+                }
+            }
+        }
+        
+        function cancelReplacement() {
+            state.replaceOldPart = null;
+            state.replaceNewPart = null;
+            state.replaceConnectedPart = null;
+            state.replaceAllConnections = [];
+            state.replaceOldPartType = null;
+            state.replaceOldPolarization = null;
+            state.replaceSnapChoice = null;
+            state.replaceNewSnapChassis = null;
+            state.replaceNewSnapSlot = null;
+            state.replaceNewSnapPort = null;
+            state.replaceOldSnapConnection = null;
+            
+            // Clear inputs
+            document.getElementById('replace-old-barcode-input').value = '';
+            document.getElementById('replace-new-part-number-input').value = '';
+            document.getElementById('replace-old-status').innerHTML = '';
+            document.getElementById('replace-new-status').innerHTML = '';
+            document.getElementById('replace-new-part-section').style.display = 'none';
+            document.getElementById('replace-snap-status').innerHTML = '';
+            
+            // Clear barcode workflow inputs
+            const barcodeNewInput = document.getElementById('replace-new-barcode-input');
+            const barcodeNewSection = document.getElementById('replace-barcode-new-section');
+            const barcodeStatusMsg = document.getElementById('replace-barcode-status-msg');
+            const barcodeNewStatus = document.getElementById('replace-barcode-new-status');
+            
+            if (barcodeNewInput) barcodeNewInput.value = '';
+            if (barcodeNewSection) barcodeNewSection.style.display = 'none';
+            if (barcodeStatusMsg) barcodeStatusMsg.innerHTML = '';
+            if (barcodeNewStatus) barcodeNewStatus.innerHTML = '';
+            
+            // Clear note input
+            const noteInput = document.getElementById('replace-note-input');
+            if (noteInput) {
+                noteInput.value = '';
+            }
+            
+            // Hide SNAP selection sections
+            document.getElementById('replace-slot-selection').classList.add('hidden');
+            document.getElementById('replace-port-selection').classList.add('hidden');
+            
+            goToStep('replace-method');
+        }
+        
+        function switchToReplaceManual() {
+            setupReplaceManualEntry();
+            goToStep('replace-manual');
+        }
+        
+        function switchToReplaceBarcode() {
+            setupReplaceBarcodeInput();
+            goToStep('replace-barcode');
+        }
+        
         function selectHistoryMethod(method) {
             // Hide all input methods
             document.getElementById('history-method-selection').classList.add('hidden');
@@ -1968,46 +3649,74 @@
                 
                 const result = await response.json();
                 
-                if (result.success && result.history.length > 0) {
-                    let tableHTML = `
-                        <div class="status-success">
-                            <h3>History for ${result.part_number}</h3>
-                            <p>Found ${result.history.length} record(s)</p>
-                            <table style="width: 100%; margin-top: 15px; border-collapse: collapse; text-align: left;">
-                                <thead>
-                                    <tr style="background-color: #f0f0f0; border-bottom: 2px solid #333;">
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Connected Part</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Timestamp</th>
-                                        <th style="padding: 10px; border: 1px solid #ddd;">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>`;
+                if (result.success) {
+                    let outputHTML = `<div class="status-success"><h3>History for ${result.part_number}</h3>`;
                     
-                    result.history.forEach(record => {
-                        // Determine which part is the "other" part (not the one we're querying for)
-                        const otherPart = record.part_number === partNumber ? record.connected_to : record.part_number;
-                        const otherPartType = record.part_number === partNumber ? record.connected_to_type : record.part_type;
+                    // Display connection history
+                    if (result.history && result.history.length > 0) {
+                        outputHTML += `
+                            <div style="margin-bottom: 20px;">
+                                <h4 class="history-section-title">Connection History (${result.history.length} record(s))</h4>
+                                <table class="history-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Connected Part</th>
+                                            <th>Timestamp</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
                         
-                        const statusIcon = record.status === 'connected' ? '[C]' : '[D]';
-                        const statusText = record.status === 'connected' ? 'Connected' : 'Disconnected';
-                        const rowColor = record.status === 'connected' ? '#e8f5e9' : '#ffebee';
+                        result.history.forEach(record => {
+                            const otherPart = record.part_number === partNumber ? record.connected_to : record.part_number;
+                            const otherPartType = record.part_number === partNumber ? record.connected_to_type : record.part_type;
+                            
+                            const statusIcon = record.status === 'connected' ? '[C]' : '[D]';
+                            const statusText = record.status === 'connected' ? 'Connected' : 'Disconnected';
+                            const rowClass = record.status === 'connected' ? 'history-row-connected' : 'history-row-disconnected';
+                            
+                            outputHTML += `
+                                <tr class="${rowClass}">
+                                    <td><strong>${otherPart}</strong><br><small>${otherPartType}</small></td>
+                                    <td><small>${record.timestamp}</small></td>
+                                    <td style="text-align: center;">${statusIcon} ${statusText}</td>
+                                </tr>`;
+                        });
                         
-                        tableHTML += `
-                            <tr style="background-color: ${rowColor};">
-                                <td style="padding: 10px; border: 1px solid #ddd;"><strong>${otherPart}</strong><br><small>${otherPartType}</small></td>
-                                <td style="padding: 10px; border: 1px solid #ddd;"><small>${record.timestamp}</small></td>
-                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${statusIcon} ${statusText}</td>
-                            </tr>`;
-                    });
+                        outputHTML += `
+                                    </tbody>
+                                </table>
+                            </div>`;
+                    } else {
+                        outputHTML += `<p class="history-no-data">ℹ️ No connection history found</p>`;
+                    }
                     
-                    tableHTML += `
-                                </tbody>
-                            </table>
-                        </div>`;
+                    // Display notes section
+                    if (result.notes && result.notes.length > 0) {
+                        outputHTML += `
+                            <div class="history-notes-container">
+                                <h4 class="history-section-title">Part Notes (${result.notes.length} note(s))</h4>`;
+                        
+                        result.notes.forEach(note => {
+                            outputHTML += `
+                                <div class="history-note-item">
+                                    <div class="history-note-timestamp"><strong>${note.timestamp}</strong></div>
+                                    <div class="history-note-text">${note.note}</div>
+                                </div>`;
+                        });
+                        
+                        outputHTML += `
+                            </div>`;
+                    } else {
+                        outputHTML += `
+                            <div class="history-notes-container">
+                                <h4 class="history-section-title">Part Notes</h4>
+                                <p class="history-no-data">📝 No notes added yet</p>
+                            </div>`;
+                    }
                     
-                    resultsDiv.innerHTML = tableHTML;
-                } else if (result.success && result.history.length === 0) {
-                    resultsDiv.innerHTML = `<div class="status-info">ℹ️ No connection history found for ${partNumber}</div>`;
+                    outputHTML += `</div>`;
+                    resultsDiv.innerHTML = outputHTML;
                 } else {
                     resultsDiv.innerHTML = `<div class="status-error">${result.error}</div>`;
                 }
@@ -3018,6 +4727,315 @@
                 goToStep('assign-position-method');
             }
         }
+        
+        // ============================================================
+        // INSERT PART NOTES FUNCTIONS
+        // ============================================================
+        
+        function selectNoteMethod(method) {
+            if (method === 'barcode') {
+                setupNoteBarcodeInput();
+                goToStep('add-note-barcode');
+            } else if (method === 'manual') {
+                setupNoteManualEntry();
+                goToStep('add-note-manual');
+            }
+        }
+        
+        function setupNoteBarcodeInput() {
+            const input = document.getElementById('note-barcode-input');
+            const statusDiv = document.getElementById('note-barcode-status');
+            
+            input.value = '';
+            statusDiv.innerHTML = '';
+            
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const partNumber = input.value.trim().toUpperCase();
+                    if (partNumber) {
+                        validateNotePartNumber(partNumber);
+                    }
+                }
+            });
+            
+            setTimeout(() => input.focus(), 100);
+        }
+        
+        function setupNoteManualEntry() {
+            const container = document.getElementById('note-part-type-buttons');
+            container.innerHTML = '';
+            
+            // Get part types from global config (excluding SNAP)
+            fetch('/scanner/api/validate-part', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({part_number: 'DUMMY'})
+            }).then(() => {
+                // Just use the globally available part types, but exclude SNAP
+                const partTypes = {{ all_part_types|tojson|safe }}.filter(type => type !== 'SNAP');
+                partTypes.forEach(type => {
+                    const btn = document.createElement('button');
+                    btn.textContent = type;
+                    btn.onclick = () => selectNotePartType(type);
+                    container.appendChild(btn);
+                });
+            }).catch(() => {
+                // Fallback (excluding SNAP)
+                const partTypes = ['ANTENNA', 'LNA', 'COAXSHORT', 'COAXLONG', 'BACBOARD'];
+                partTypes.forEach(type => {
+                    const btn = document.createElement('button');
+                    btn.textContent = type;
+                    btn.onclick = () => selectNotePartType(type);
+                    container.appendChild(btn);
+                });
+            });
+            
+            document.getElementById('note-polarization').classList.add('hidden');
+            document.getElementById('note-number').classList.add('hidden');
+            document.getElementById('note-manual-status').innerHTML = '';
+        }
+        
+        function selectNotePartType(partType) {
+            state.notePartType = partType;
+            
+            // Highlight selected button
+            document.querySelectorAll('#note-part-type-buttons button').forEach(btn => {
+                if (btn.textContent === partType) {
+                    btn.classList.add('button-selected');
+                } else {
+                    btn.classList.remove('button-selected');
+                }
+            });
+            
+            // Show polarization selection for polarized parts
+            const polarizedParts = ['ANTENNA', 'LNA', 'COAXSHORT', 'COAXLONG', 'BACBOARD'];
+            if (polarizedParts.includes(partType)) {
+                document.getElementById('note-polarization').classList.remove('hidden');
+                document.getElementById('note-number').classList.add('hidden');
+            } else {
+                // SNAP doesn't have polarization
+                document.getElementById('note-polarization').classList.add('hidden');
+                document.getElementById('note-number').classList.remove('hidden');
+                state.notePolarization = null;
+            }
+        }
+        
+        function selectNotePolarization(pol) {
+            state.notePolarization = pol;
+            
+            // Highlight selected button
+            document.querySelectorAll('#note-polarization-buttons button').forEach(btn => {
+                if (btn.textContent.includes(pol)) {
+                    btn.classList.add('button-selected');
+                } else {
+                    btn.classList.remove('button-selected');
+                }
+            });
+            
+            document.getElementById('note-number').classList.remove('hidden');
+        }
+        
+        function submitNotePart() {
+            console.log('submitNotePart called');
+            const partType = state.notePartType;
+            const polarization = state.notePolarization;
+            const numberInput = document.getElementById('note-part-number-input');
+            const number = numberInput.value.trim();
+            
+            console.log('Part type:', partType, 'Polarization:', polarization, 'Number:', number);
+            
+            if (!partType || !number) {
+                document.getElementById('note-manual-status').innerHTML = 
+                    '<div class="status-error status-message">Please complete all fields</div>';
+                return;
+            }
+            
+            // Check if polarization is required
+            const polarizedParts = ['ANTENNA', 'LNA', 'COAXSHORT', 'COAXLONG', 'BACBOARD'];
+            if (polarizedParts.includes(partType) && !polarization) {
+                document.getElementById('note-manual-status').innerHTML = 
+                    '<div class="status-error status-message">Please select polarization</div>';
+                return;
+            }
+            
+            // Show button feedback - change to green
+            const submitBtn = document.getElementById('submit-note-part-btn');
+            const originalBg = submitBtn.style.backgroundColor;
+            const originalBorder = submitBtn.style.borderColor;
+            submitBtn.style.backgroundColor = '#28a745';
+            submitBtn.style.borderColor = '#28a745';
+            submitBtn.style.color = '#fff';
+            
+            // Build part number (SNAP excluded from note workflow)
+            const typeAbbrevs = {
+                'ANTENNA': 'ANT',
+                'LNA': 'LNA',
+                'COAXSHORT': 'CXS',
+                'COAXLONG': 'CXL',
+                'BACBOARD': 'BAC'
+            };
+            
+            const abbrev = typeAbbrevs[partType];
+            const paddedNumber = number.padStart(5, '0');
+            const partNumber = polarization ? 
+                `${abbrev}${paddedNumber}P${polarization}` : 
+                `${abbrev}${paddedNumber}`;
+            
+            console.log('Built part number:', partNumber);
+            
+            // Validate and restore button after a delay to show feedback
+            validateNotePartNumber(partNumber).finally(() => {
+                setTimeout(() => {
+                    submitBtn.style.backgroundColor = originalBg;
+                    submitBtn.style.borderColor = originalBorder;
+                    submitBtn.style.color = '';
+                }, 300);
+            });
+        }
+        
+        async function validateNotePartNumber(partNumber) {
+            const statusBarcode = document.getElementById('note-barcode-status');
+            const statusManual = document.getElementById('note-manual-status');
+            const statusDiv = statusBarcode || statusManual;
+            
+            console.log('Validating note part number:', partNumber);
+            console.log('Status div found:', statusDiv !== null);
+            
+            try {
+                const response = await fetch('/scanner/api/validate-part', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({part_number: partNumber})
+                });
+                
+                const result = await response.json();
+                console.log('Validation result:', result);
+                
+                if (result.success || result.exists) {
+                    state.notePart = {
+                        part_number: partNumber,
+                        part_type: result.part_type,
+                        polarization: result.polarization
+                    };
+                    
+                    console.log('Part validated, showing note entry screen');
+                    // Show note entry screen
+                    showNoteEntryScreen();
+                } else {
+                    if (statusDiv) {
+                        statusDiv.innerHTML = `<div class="status-error status-message">❌ Part ${partNumber} not found in database</div>`;
+                    }
+                }
+            } catch (error) {
+                console.error('Error validating part:', error);
+                if (statusDiv) {
+                    statusDiv.innerHTML = `<div class="status-error status-message">Error: ${error.message}</div>`;
+                }
+            }
+        }
+        
+        function showNoteEntryScreen() {
+            console.log('showNoteEntryScreen called');
+            console.log('state.notePart:', state.notePart);
+            
+            const part = state.notePart;
+            const displayDiv = document.getElementById('note-part-display');
+            
+            if (!part) {
+                console.error('No part in state!');
+                return;
+            }
+            
+            displayDiv.innerHTML = `
+                <h3>Part to Add Note To</h3>
+                <p><strong>Part Number:</strong> ${part.part_number}</p>
+                <p><strong>Type:</strong> ${part.part_type}</p>
+                ${part.polarization ? `<p><strong>Polarization:</strong> ${part.polarization}</p>` : ''}
+            `;
+            
+            document.getElementById('note-text-input').value = '';
+            console.log('Navigating to add-note-text step');
+            goToStep('add-note-text');
+            
+            setTimeout(() => document.getElementById('note-text-input').focus(), 100);
+        }
+        
+        async function submitNote() {
+            const noteText = document.getElementById('note-text-input').value.trim();
+            
+            if (!noteText) {
+                alert('Please enter a note');
+                return;
+            }
+            
+            if (!state.notePart) {
+                alert('No part selected');
+                return;
+            }
+            
+            // Show button feedback - change to green
+            const submitBtn = document.getElementById('submit-note-btn');
+            const originalBg = submitBtn.style.backgroundColor;
+            const originalBorder = submitBtn.style.borderColor;
+            submitBtn.style.backgroundColor = '#28a745';
+            submitBtn.style.borderColor = '#28a745';
+            submitBtn.style.color = '#fff';
+            
+            try {
+                const response = await fetch('/scanner/api/add-note', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        part_number: state.notePart.part_number,
+                        note: noteText
+                    })
+                });
+                
+                const result = await response.json();
+                const resultDiv = document.getElementById('note-result-message');
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="status-success status-message">
+                            <h3>✓ Note Added Successfully</h3>
+                            <p><strong>Part:</strong> ${state.notePart.part_number}</p>
+                            <p><strong>Note:</strong> ${noteText}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="status-error status-message">❌ ${result.error}</div>`;
+                }
+                
+                goToStep('add-note-result');
+            } catch (error) {
+                alert('Error adding note: ' + error.message);
+            } finally {
+                // Restore button color after a delay to show feedback
+                setTimeout(() => {
+                    submitBtn.style.backgroundColor = originalBg;
+                    submitBtn.style.borderColor = originalBorder;
+                    submitBtn.style.color = '';
+                }, 300);
+            }
+        }
+        
+        function cancelAddNote() {
+            resetScanner();
+        }
+        
+        function switchNoteToManual() {
+            setupNoteManualEntry();
+            goToStep('add-note-manual');
+        }
+        
+        function switchNoteToBarcode() {
+            setupNoteBarcodeInput();
+            goToStep('add-note-barcode');
+        }
     </script>
+    
+    <div class="version-footer">
+        CAsMan v{{ version }}
+    </div>
 </body>
 </html>

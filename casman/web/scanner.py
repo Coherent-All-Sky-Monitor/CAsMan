@@ -17,6 +17,7 @@ from casman.assembly.connections import (
     record_assembly_disconnection,
 )
 from casman.database.connection import get_database_path
+from casman.database.operations import add_part_note, get_part_notes
 from casman.database.antenna_positions import (
     assign_antenna_position,
     get_antenna_at_position,
@@ -137,8 +138,11 @@ def get_existing_connections(part_number: str) -> List[Dict]:
                         CASE WHEN part_number < connected_to 
                             THEN connected_to ELSE part_number END as part2,
                         part_number,
+                        part_type,
+                        polarization,
                         connected_to,
                         connected_to_type,
+                        connected_polarization,
                         connection_status,
                         scan_time
                     FROM assembly
@@ -149,7 +153,9 @@ def get_existing_connections(part_number: str) -> List[Dict]:
                     FROM normalized_pairs
                     GROUP BY part1, part2
                 )
-                SELECT np.part_number, np.connected_to, np.connected_to_type, np.scan_time
+                SELECT np.part_number, np.part_type, np.polarization, 
+                       np.connected_to, np.connected_to_type, np.connected_polarization,
+                       np.scan_time
                 FROM normalized_pairs np
                 INNER JOIN latest_per_pair lpp
                     ON np.part1 = lpp.part1 
@@ -164,9 +170,12 @@ def get_existing_connections(part_number: str) -> List[Dict]:
             return [
                 {
                     "part_number": row[0],
-                    "connected_to": row[1],
-                    "connected_to_type": row[2],
-                    "scan_time": row[3],
+                    "part_type": row[1],
+                    "polarization": row[2],
+                    "connected_to": row[3],
+                    "connected_to_type": row[4],
+                    "connected_polarization": row[5],
+                    "scan_time": row[6],
                 }
                 for row in rows
             ]
@@ -199,6 +208,7 @@ def scanner_index():
     return render_template(
         "scanner.html",
         part_types=ALL_PART_TYPES,
+        all_part_types=ALL_PART_TYPES,
         connection_chain=connection_chain,
         part_prefixes=part_prefixes,
         coax_types=coax_types,
@@ -582,7 +592,7 @@ def add_parts():
 
 @scanner_bp.route("/api/part-history", methods=["POST"])
 def get_part_history():
-    """Get complete connection/disconnection history for a part."""
+    """Get complete connection/disconnection history and notes for a part."""
     data = request.json
     part_number = data.get("part_number", "").strip()
 
@@ -650,15 +660,79 @@ def get_part_history():
                     }
                 )
 
+            # Get notes for this part from the parts.db
+            notes = get_part_notes(part_number)
+            notes_list = [
+                {"note": note, "timestamp": timestamp} for note, timestamp in notes
+            ]
+
             logger.info(
-                "Retrieved %d history records for part %s", len(history), part_number
+                "Retrieved %d history records and %d notes for part %s",
+                len(history),
+                len(notes_list),
+                part_number,
             )
             return jsonify(
-                {"success": True, "part_number": part_number, "history": history}
+                {
+                    "success": True,
+                    "part_number": part_number,
+                    "history": history,
+                    "notes": notes_list,
+                }
             )
 
     except sqlite3.Error as e:
         logger.error("Database error getting part history for %s: %s", part_number, e)
+        return jsonify({"success": False, "error": str(e)})
+
+
+@scanner_bp.route("/api/add-note", methods=["POST"])
+def add_note():
+    """Add a note to a part."""
+    data = request.json
+    part_number = data.get("part_number", "").strip()
+    note = data.get("note", "").strip()
+
+    if not part_number:
+        return jsonify({"success": False, "error": "Part number is required"})
+    
+    if not note:
+        return jsonify({"success": False, "error": "Note text is required"})
+
+    # Verify part exists first
+    part_details = get_part_details(part_number)
+    if not part_details:
+        return jsonify({"success": False, "error": f"Part {part_number} not found in database"})
+
+    try:
+        success = add_part_note(part_number, note)
+        if success:
+            logger.info("Added note to part %s: %s", part_number, note[:50])
+            return jsonify({"success": True, "part_number": part_number})
+        else:
+            return jsonify({"success": False, "error": "Failed to add note"})
+    except Exception as e:
+        logger.error("Error adding note to part %s: %s", part_number, e)
+        return jsonify({"success": False, "error": str(e)})
+
+
+@scanner_bp.route("/api/get-notes", methods=["POST"])
+def get_notes():
+    """Get all notes for a part."""
+    data = request.json
+    part_number = data.get("part_number", "").strip()
+
+    if not part_number:
+        return jsonify({"success": False, "error": "Part number is required"})
+
+    try:
+        notes = get_part_notes(part_number)
+        notes_list = [{"note": note, "timestamp": timestamp} for note, timestamp in notes]
+        
+        logger.info("Retrieved %d notes for part %s", len(notes_list), part_number)
+        return jsonify({"success": True, "part_number": part_number, "notes": notes_list})
+    except Exception as e:
+        logger.error("Error getting notes for part %s: %s", part_number, e)
         return jsonify({"success": False, "error": str(e)})
 
 

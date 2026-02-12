@@ -85,6 +85,7 @@ for both parts and assembly tracking.
 - `init_parts_db()` - Initialize the parts
 - `init_assembled_db()` - Initialize the assembled_casm
 - `init_all_databases()` - Initialize all databases
+- `ensure_schema_migrations()` - Ensure all required schema updates and migrations are applied
 
 ### operations
 
@@ -96,6 +97,8 @@ from the CAsMan databases.
 **Functions:**
 - `check_part_in_db()` - Check if a part number exists in the parts database and get its polarization
 - `get_parts_by_criteria()` - Get parts from the database based on criteria
+- `add_part_note()` - Add a note to a part in the parts database
+- `get_part_notes()` - Get all notes for a part from the parts database
 
 ### connection
 
@@ -676,6 +679,23 @@ None
 
 ---
 
+### ensure_schema_migrations
+
+**Signature:** `ensure_schema_migrations(db_dir: Optional[str]) -> None`
+
+Ensure all required schema updates and migrations are applied. This function should be called on application startup to handle any schema migrations needed for new features. It ensures backward compatibility by adding missing tables/columns to existing databases without data loss. Migrations applied: - Adds part_notes table if it doesn't exist (for notes feature)
+
+**Parameters:**
+
+db_dir : str, optional
+Custom database directory. If not provided, uses the project root's database directory.
+
+**Returns:**
+
+None
+
+---
+
 ## Operations Module Details
 
 This module provides functions for querying and retrieving data
@@ -725,6 +745,44 @@ Custom database directory. If not provided, uses the project root's database dir
 
 List[Tuple[int, str, str, str, str, str]]
 List of part records as tuples of             (id, part_number, part_type, polarization, date_created, date_modified).
+
+---
+
+### add_part_note
+
+**Signature:** `add_part_note(part_number: str, note: str, db_dir: Optional[str]) -> bool`
+
+Add a note to a part in the parts database.
+
+**Parameters:**
+
+part_number : str
+The part number to add a note to.
+
+**Returns:**
+
+bool
+True if note was added successfully, False otherwise.
+
+---
+
+### get_part_notes
+
+**Signature:** `get_part_notes(part_number: str, db_dir: Optional[str]) -> List[Tuple[str, str]]`
+
+Get all notes for a part from the parts database.
+
+**Parameters:**
+
+part_number : str
+The part number to get notes for.
+db_dir : str, optional
+Custom database directory. If not provided, uses the project root's database directory.
+
+**Returns:**
+
+List[Tuple[str, str]]
+List of (note, timestamp) tuples, ordered by timestamp (newest first).
 
 ---
 

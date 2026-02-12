@@ -261,8 +261,12 @@ def format_display_data(
     def ts(val: Optional[str]) -> str:
         return val if val else ts_placeholder
 
+    # Create clickable link to part history
+    history_url = f"/scanner?part={part}&action=history"
+    part_link = f"<a href='{history_url}' style='text-decoration: none; color: inherit;' title='View history for {part}'>{part}</a>"
+
     display_lines: List[str] = [
-        f"<span class='{part_class}' style='{part_style}'>{part}</span>",
+        f"<span class='{part_class}' style='{part_style}'>{part_link}</span>",
         "<br>",
         f"<span class='monospace'>FRM: {ts(frm_time)}</span>",
         f"<span class='monospace'>NOW: {ts(now_time)}</span>",

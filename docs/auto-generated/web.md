@@ -30,7 +30,9 @@ Provides web interface for scanning, connecting, and disconnecting parts.
 - `record_connection()` - Record a new connection between two parts, preventing duplicates
 - `record_disconnection()` - Record a disconnection between two parts
 - `add_parts()` - Add new part numbers for a given part type
-- `get_part_history()` - Get complete connection/disconnection history for a part
+- `get_part_history()` - Get complete connection/disconnection history and notes for a part
+- `add_note()` - Add a note to a part
+- `get_notes()` - Get all notes for a part
 - `get_grid_config()` - Get grid configuration for UI - returns all available arrays
 - `check_position_status()` - Check if a grid position is occupied
 - `api_assign_position()` - Assign an antenna to a grid position
@@ -82,6 +84,7 @@ Flask application factory and configuration.
 **Functions:**
 - `configure_apps()` - Configure which applications to enable
 - `create_app()` - Create and configure the unified Flask application
+- `inject_version()` - No docstring available
 - `home()` - Home page with links to available interfaces
 
 ## Scanner Module Details
@@ -220,7 +223,27 @@ Add new part numbers for a given part type.
 
 **Signature:** `get_part_history()`
 
-Get complete connection/disconnection history for a part.
+Get complete connection/disconnection history and notes for a part.
+
+---
+
+### add_note
+
+*@scanner_bp.route('/api/add-note', methods=['POST'])*
+
+**Signature:** `add_note()`
+
+Add a note to a part.
+
+---
+
+### get_notes
+
+*@scanner_bp.route('/api/get-notes', methods=['POST'])*
+
+**Signature:** `get_notes()`
+
+Get all notes for a part.
 
 ---
 
@@ -514,6 +537,16 @@ Configure which applications to enable.
 **Signature:** `create_app(enable_scanner: bool, enable_visualization: bool) -> Flask`
 
 Create and configure the unified Flask application.
+
+---
+
+### inject_version
+
+*@app.context_processor*
+
+**Signature:** `inject_version()`
+
+No docstring available.
 
 ---
 
