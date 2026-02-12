@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import List, Optional, Tuple
 
 from .connection import get_database_path
+from .initialization import ensure_schema_migrations
 
 
 def check_part_in_db(
@@ -119,6 +120,9 @@ def add_part_note(
         True if note was added successfully, False otherwise.
     """
     try:
+        # Ensure notes schema exists before write operations
+        ensure_schema_migrations(db_dir)
+
         conn = sqlite3.connect(get_database_path("parts.db", db_dir))
         c = conn.cursor()
         
@@ -160,6 +164,9 @@ def get_part_notes(
     List[Tuple[str, str]]
         List of (note, timestamp) tuples, ordered by timestamp (newest first).
     """
+    # Ensure notes schema exists before read operations
+    ensure_schema_migrations(db_dir)
+
     conn = sqlite3.connect(get_database_path("parts.db", db_dir))
     c = conn.cursor()
     

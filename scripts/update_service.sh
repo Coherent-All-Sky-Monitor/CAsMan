@@ -98,6 +98,10 @@ main() {
     log_info "Updating dependencies..."
     sudo -u "$ACTUAL_USER" "$INSTALL_DIR/.venv/bin/pip" install --quiet --upgrade pip
     sudo -u "$ACTUAL_USER" "$INSTALL_DIR/.venv/bin/pip" install --quiet -e .
+
+    # Apply database schema migrations before restarting service
+    log_info "Applying database schema migrations..."
+    sudo -u "$ACTUAL_USER" "$INSTALL_DIR/.venv/bin/python" -c "from casman.database.initialization import ensure_schema_migrations; ensure_schema_migrations()"
     
     # Verify installation
     if ! "$INSTALL_DIR/.venv/bin/casman" --version &> /dev/null; then
